@@ -1,0 +1,8 @@
+kwst (KWin Scripting Tool) is (c) 2025 Pavel Urusov.
+
+kwst is licensed under the terms of GNU GPLv2 or later license.
+
+The project uses the following libraries:
+
+* Kong by Alec Thomas and contributors, licensed under the terms of the MIT license (also known as the Expat license);
+* Go Dbus by Georg Reinke and contributors, licensed under the terms of the BSD 2-clause license.
