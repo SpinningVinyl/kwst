@@ -1,0 +1,5 @@
+github.com/alecthomas/kong v1.8.1 h1:6aamvWBE/REnR/BCq10EcozmcpUPc5aGI1lPAWdB0EE=
+github.com/alecthomas/kong v1.8.1/go.mod h1:p2vqieVMeTAnaC83txKtXe8FLke2X07aruPWXyMPQrU=
+github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
+github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
+github.com/integrii/flaggy v1.5.2/go.mod h1:dO13u7SYuhk910nayCJ+s1DeAAGC1THCMj1uSFmwtQ8=
