@@ -119,14 +119,13 @@ func main() {
 	conn.Export(s, "/net/prsv/kwst", "net.prsv.kwst")
     
 
-
     // create and populate the ScriptParams struct
     var params ScriptParams
     params.ScriptName = filepath.Base(scriptFile.Name())
     params.DbusAddr = conn.Names()[0]
     params.Debug = debug
 
-    // do the deed
+    // process the template depending on the command line arguments
     scriptTemplate := ""
     debugPrint("cmd:", ctx.Command())
     if ctx.Command() == "list" {
@@ -149,14 +148,17 @@ func main() {
     }
     tmpl.Execute(scriptFile, params)
 
+    // get the KWin object and load the script
     var scriptId int;
     kwinConn := conn.Object("org.kde.KWin", "/Scripting")
     err = kwinConn.Call("loadScript", 0, scriptFile.Name(), params.ScriptName).Store(&scriptId)
     debugPrint("Registered script ID:", strconv.Itoa(scriptId))
+
+    // get the script object and run the script
     scriptConn := conn.Object("org.kde.KWin", dbus.ObjectPath(fmt.Sprintf("/Scripting/Script%d", scriptId)))
     scriptConn.Call("org.kde.kwin.Script.run", 0)
 
-    // make sure that we eventually exit even if the script does not call Close()
+    // make sure that the program eventually exits even if we do not receive the Close() call
     go timerStart()
     
 	select {
