@@ -46,6 +46,7 @@ type ScriptParams struct {
 	SearchField           string
 	IncludeSpecialWindows bool
 	Uuid                  string
+    WorkspaceId           int
 }
 
 // define the DBus object for exporting
@@ -55,7 +56,7 @@ func (s Server) Msg(msgType, message string) *dbus.Error {
 	if msgType == "result" {
 		fmt.Fprintln(os.Stdout, message)
 	} else if msgType == "error" {
-		fmt.Fprintln(os.Stderr, "KWin scripting error:", message)
+		fmt.Fprintln(os.Stderr, "KWin script returned an error:", message)
 	}
 	return nil
 }
@@ -147,6 +148,10 @@ func main() {
 	}
     if ctx.Command() == "get-workspace" {
 		scriptTemplate = JS_HEADER + JS_GET_WORKSPACE + JS_FOOTER        
+    }
+    if ctx.Command() == "set-workspace <id>" {
+        params.WorkspaceId = CLI.SetWorkspace.Id
+        scriptTemplate = JS_HEADER + JS_SET_WORKSPACE + JS_FOOTER
     }
 
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)

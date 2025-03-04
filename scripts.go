@@ -85,6 +85,15 @@ var JS_GET_WORKSPACE string = `debugLog(scriptName + " executing JS_GET_WORKSPAC
 returnResult(workspace.currentDesktop.x11DesktopNumber);
 `
 
+var JS_SET_WORKSPACE string = `debugLog(scriptName + " executing JS_SET_WORKSPACE");
+
+let ws = workspace.desktops.find((ws) => ws.x11DesktopNumber == {{.WorkspaceId}});
+if (ws) {
+    workspace.currentDesktop = ws;
+} else {
+    returnError("Invalid workspace number: " + {{.WorkspaceId}});
+}
+`
 
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
