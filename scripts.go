@@ -93,6 +93,20 @@ if (ws) {
 } else {
     returnError("Invalid workspace number: " + {{.WorkspaceId}});
 }
+
+`
+
+var JS_ACTIVATE_WINDOW string = `debugLog(scriptName + " executing JS_ACTIVATE_WINDOW");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    let w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+         debugLog("Activating window {{.Uuid}}");
+         workspace.activeWindow = w;
+    }
+}
+
 `
 
 var JS_FOOTER string = `close();

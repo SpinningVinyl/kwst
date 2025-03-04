@@ -46,7 +46,7 @@ type ScriptParams struct {
 	SearchField           string
 	IncludeSpecialWindows bool
 	Uuid                  string
-    WorkspaceId           int
+	WorkspaceId           int
 }
 
 // define the DBus object for exporting
@@ -146,13 +146,17 @@ func main() {
 		params.Uuid = CLI.GetWindowGeometry.Uuid
 		scriptTemplate = JS_HEADER + JS_GET_WINDOW_GEOMETRY + JS_FOOTER
 	}
-    if ctx.Command() == "get-workspace" {
-		scriptTemplate = JS_HEADER + JS_GET_WORKSPACE + JS_FOOTER        
-    }
-    if ctx.Command() == "set-workspace <id>" {
-        params.WorkspaceId = CLI.SetWorkspace.Id
-        scriptTemplate = JS_HEADER + JS_SET_WORKSPACE + JS_FOOTER
-    }
+	if ctx.Command() == "get-workspace" {
+		scriptTemplate = JS_HEADER + JS_GET_WORKSPACE + JS_FOOTER
+	}
+	if ctx.Command() == "set-workspace <id>" {
+		params.WorkspaceId = CLI.SetWorkspace.Id
+		scriptTemplate = JS_HEADER + JS_SET_WORKSPACE + JS_FOOTER
+	}
+	if ctx.Command() == "activate-window <uuid>" {
+		params.Uuid = CLI.ActivateWindow.Uuid
+		scriptTemplate = JS_HEADER + JS_ACTIVATE_WINDOW + JS_FOOTER
+	}
 
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
 	if err != nil {
