@@ -19,7 +19,7 @@ type GetWindowGeometryCmd struct {
 type GetWorkspaceCmd struct{}
 
 type SetWorkspaceCmd struct {
-	Id int `arg required help:"Workspace number"`
+	WorkspaceId int `arg required help:"Workspace number"`
 }
 
 type ActivateWindowCmd struct {

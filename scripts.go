@@ -121,6 +121,7 @@ for (let i = 0; i < allWindows.length; i++) {
         w.frameGeometry = newGeometry;
     }
 }
+
 `
 
 var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION");
@@ -135,6 +136,7 @@ for (let i = 0; i < allWindows.length; i++) {
         w.frameGeometry = newGeometry;
     }
 }
+
 `
 
 var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY");
@@ -150,6 +152,25 @@ for (let i = 0; i < allWindows.length; i++) {
         newGeometry.y = {{.Y}}
         w.frameGeometry = newGeometry;
     }
+}
+
+`
+
+var JS_SET_WINDOW_WORKSPACE string = `debugLog(scriptName + " executing JS_SET_WINDOW_WORKSPACE");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    var w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+        break;
+    }
+}
+
+let ws = workspace.desktops.find((ws) => ws.x11DesktopNumber == {{.WorkspaceId}});
+if (ws) {
+    w.desktops = [ws];
+} else {
+    returnError("Invalid workspace number: " + {{.WorkspaceId}});
 }
 
 `

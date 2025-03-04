@@ -153,8 +153,8 @@ func main() {
 	if ctx.Command() == "get-workspace" {
 		scriptTemplate += JS_GET_WORKSPACE
 	}
-	if ctx.Command() == "set-workspace <id>" {
-		params.WorkspaceId = CLI.SetWorkspace.Id
+	if ctx.Command() == "set-workspace <workspace-id>" {
+		params.WorkspaceId = CLI.SetWorkspace.WorkspaceId
 		scriptTemplate += JS_SET_WORKSPACE
 	}
 	if ctx.Command() == "activate-window <uuid>" {
@@ -181,7 +181,11 @@ func main() {
 		params.Uuid = CLI.SetWindowPosition.Uuid
 		scriptTemplate += JS_SET_WINDOW_POSITION
 	}
-
+	if ctx.Command() == "set-window-workspace <uuid> <workspace-id>" {
+		params.Uuid = CLI.SetWindowWorkspace.Uuid
+		params.WorkspaceId = CLI.SetWindowWorkspace.WorkspaceId
+		scriptTemplate += JS_SET_WINDOW_WORKSPACE
+	}
 	scriptTemplate += JS_FOOTER
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
 	if err != nil {
