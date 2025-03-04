@@ -109,6 +109,34 @@ for (let i = 0; i < allWindows.length; i++) {
 
 `
 
+var JS_SET_WINDOW_SIZE string = `debugLog(scriptName + " executing JS_SET_WINDOW_SIZE");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    let w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+        let newGeometry = Object.assign({}, w.frameGeometry);
+        newGeometry.width = {{.Width}}
+        newGeometry.height = {{.Height}}
+        w.frameGeometry = newGeometry;
+    }
+}
+`
+
+var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    let w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+        let newGeometry = Object.assign({}, w.frameGeometry);
+        newGeometry.x = {{.X}}
+        newGeometry.y = {{.Y}}
+        w.frameGeometry = newGeometry;
+    }
+}
+`
+
 var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY");
 
 const allWindows = workspace.windowList();

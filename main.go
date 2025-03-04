@@ -169,6 +169,18 @@ func main() {
 		params.Uuid = CLI.SetWindowGeometry.Uuid
 		scriptTemplate += JS_SET_WINDOW_GEOMETRY
 	}
+	if ctx.Command() == "set-window-size <uuid> <width> <height>" {
+		params.Width = CLI.SetWindowSize.Width
+		params.Height = CLI.SetWindowSize.Height
+		params.Uuid = CLI.SetWindowSize.Uuid
+		scriptTemplate += JS_SET_WINDOW_SIZE
+	}
+	if ctx.Command() == "set-window-position <uuid> <x> <y>" {
+		params.X = CLI.SetWindowPosition.X
+		params.Y = CLI.SetWindowPosition.Y
+		params.Uuid = CLI.SetWindowPosition.Uuid
+		scriptTemplate += JS_SET_WINDOW_POSITION
+	}
 
 	scriptTemplate += JS_FOOTER
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
