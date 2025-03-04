@@ -80,6 +80,12 @@ for (let i = 0; i < allWindows.length; i++) {
 
 `
 
+var JS_GET_WORKSPACE string = `debugLog(scriptName + " executing JS_GET_WORKSPACE");
+
+returnResult(workspace.currentDesktop.x11DesktopNumber);
+`
+
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

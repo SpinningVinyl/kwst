@@ -145,6 +145,9 @@ func main() {
 		params.Uuid = CLI.GetWindowGeometry.Uuid
 		scriptTemplate = JS_HEADER + JS_GET_WINDOW_GEOMETRY + JS_FOOTER
 	}
+    if ctx.Command() == "get-workspace" {
+		scriptTemplate = JS_HEADER + JS_GET_WORKSPACE + JS_FOOTER        
+    }
 
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
 	if err != nil {
