@@ -47,6 +47,10 @@ type ScriptParams struct {
 	IncludeSpecialWindows bool
 	Uuid                  string
 	WorkspaceId           int
+	X                     int
+	Y                     int
+	Width                 int
+	Height                int
 }
 
 // define the DBus object for exporting
@@ -128,36 +132,45 @@ func main() {
 	params.Debug = debug
 
 	// process the template depending on the command line arguments
-	scriptTemplate := ""
+	scriptTemplate := JS_HEADER
 	debugPrint("cmd:", ctx.Command())
 	if ctx.Command() == "list" {
 		params.IncludeSpecialWindows = CLI.List.IncludeSpecialWindows
-		scriptTemplate = JS_HEADER + JS_LIST + JS_FOOTER
+		scriptTemplate += JS_LIST
 	}
 	if ctx.Command() == "find <search-term>" {
 		params.SearchTerm = CLI.Find.SearchTerm
 		params.SearchField = CLI.Find.SearchField
-		scriptTemplate = JS_HEADER + JS_FIND + JS_FOOTER
+		scriptTemplate += JS_FIND
 	}
 	if ctx.Command() == "get-active-window" {
-		scriptTemplate = JS_HEADER + JS_GET_ACTIVE_WINDOW + JS_FOOTER
+		scriptTemplate += JS_GET_ACTIVE_WINDOW
 	}
 	if ctx.Command() == "get-window-geometry <uuid>" {
 		params.Uuid = CLI.GetWindowGeometry.Uuid
-		scriptTemplate = JS_HEADER + JS_GET_WINDOW_GEOMETRY + JS_FOOTER
+		scriptTemplate += JS_GET_WINDOW_GEOMETRY
 	}
 	if ctx.Command() == "get-workspace" {
-		scriptTemplate = JS_HEADER + JS_GET_WORKSPACE + JS_FOOTER
+		scriptTemplate += JS_GET_WORKSPACE
 	}
 	if ctx.Command() == "set-workspace <id>" {
 		params.WorkspaceId = CLI.SetWorkspace.Id
-		scriptTemplate = JS_HEADER + JS_SET_WORKSPACE + JS_FOOTER
+		scriptTemplate += JS_SET_WORKSPACE
 	}
 	if ctx.Command() == "activate-window <uuid>" {
 		params.Uuid = CLI.ActivateWindow.Uuid
-		scriptTemplate = JS_HEADER + JS_ACTIVATE_WINDOW + JS_FOOTER
+		scriptTemplate += JS_ACTIVATE_WINDOW
+	}
+	if ctx.Command() == "set-window-geometry <uuid> <x> <y> <width> <height>" {
+		params.X = CLI.SetWindowGeometry.X
+		params.Y = CLI.SetWindowGeometry.Y
+		params.Width = CLI.SetWindowGeometry.Width
+		params.Height = CLI.SetWindowGeometry.Height
+		params.Uuid = CLI.SetWindowGeometry.Uuid
+		scriptTemplate += JS_SET_WINDOW_GEOMETRY
 	}
 
+	scriptTemplate += JS_FOOTER
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error parsing script template:", err)
