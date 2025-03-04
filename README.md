@@ -27,3 +27,7 @@ Also check shell scripts in the `_examples` directory to get an idea of what you
 ## License
 
 The project is licensed under the terms of GNU GPLv2 or later license.
+
+## See also
+
+- [KWin scripting API documentation](https://develop.kde.org/docs/plasma/kwin/api/)
