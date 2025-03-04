@@ -33,7 +33,7 @@ debugLog(scriptName + " START");
 
 `
 
-var JS_LIST = `debugLog(scriptName + " executing JS_LIST");
+var JS_LIST string = `debugLog(scriptName + " executing JS_LIST");
 
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
@@ -49,7 +49,7 @@ var JS_FIND string = `debugLog(scriptName + " executing JS_SEARCH");
 const allWindows = workspace.windowList();
 let results = [];
 ` + "const regExp = new RegExp(String.raw`{{.SearchTerm}}`, 'i');\n" +
-`for (let i = 0; i < allWindows.length; i++) {
+	`for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.{{.SearchField}}.search(regExp) >= 0) {
         results.push(w);
@@ -64,6 +64,19 @@ for (let i = 0; i < results.length; i++) {
 var JS_GET_ACTIVE_WINDOW string = `debugLog(scriptName + " executing JS_GET_ACTIVE_WINDOW");
 
 returnResult(workspace.activeWindow.internalId);
+
+`
+
+var JS_GET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_GET_WINDOW_GEOMETRY");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    let w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+         let result = w.x + " " + w.y + " " + w.width + " " + w.height;
+         returnResult(result);
+    }
+}
 
 `
 
