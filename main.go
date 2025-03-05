@@ -21,7 +21,7 @@ type Globals struct {
 	Debug bool `help:"Enable debug mode." short:"d"`
 }
 
-var CLI struct {
+type CLI struct {
 	Globals
 
 	List               ListCmd               `cmd:"" help:"List all windows. The data is returned as tab-separated rows containing the window's UUID, resourceClass, resourceName and PID of the process the window belongs to (the PID is not guaranteed to be correct for X11 windows). Each window is represented by a separate row."`
@@ -94,13 +94,15 @@ func debugPrint(a ...any) {
 
 func main() {
 
+    cli := CLI{}
+
 	// parse command line parameters
-	ctx := kong.Parse(&CLI,
+	ctx := kong.Parse(&cli,
 		kong.Name("kwst"),
 		kong.Description("KWin scripting tool"),
 		kong.UsageOnError())
 
-	debug = CLI.Globals.Debug
+	debug = cli.Globals.Debug
 
 	// create a temporary file
 	scriptFile, err := os.CreateTemp(os.TempDir(), "kwst-*")
@@ -135,55 +137,55 @@ func main() {
 	scriptTemplate := JS_HEADER
 	debugPrint("cmd:", ctx.Command())
 	if ctx.Command() == "list" {
-		params.IncludeSpecialWindows = CLI.List.IncludeSpecialWindows
+		params.IncludeSpecialWindows = cli.List.IncludeSpecialWindows
 		scriptTemplate += JS_LIST
 	}
 	if ctx.Command() == "find <search-term>" {
-		params.SearchTerm = CLI.Find.SearchTerm
-		params.SearchField = CLI.Find.SearchField
+		params.SearchTerm = cli.Find.SearchTerm
+		params.SearchField = cli.Find.SearchField
 		scriptTemplate += JS_FIND
 	}
 	if ctx.Command() == "get-active-window" {
 		scriptTemplate += JS_GET_ACTIVE_WINDOW
 	}
 	if ctx.Command() == "get-window-geometry <uuid>" {
-		params.Uuid = CLI.GetWindowGeometry.Uuid
+		params.Uuid = cli.GetWindowGeometry.Uuid
 		scriptTemplate += JS_GET_WINDOW_GEOMETRY
 	}
 	if ctx.Command() == "get-workspace" {
 		scriptTemplate += JS_GET_WORKSPACE
 	}
 	if ctx.Command() == "set-workspace <workspace-id>" {
-		params.WorkspaceId = CLI.SetWorkspace.WorkspaceId
+		params.WorkspaceId = cli.SetWorkspace.WorkspaceId
 		scriptTemplate += JS_SET_WORKSPACE
 	}
 	if ctx.Command() == "activate-window <uuid>" {
-		params.Uuid = CLI.ActivateWindow.Uuid
+		params.Uuid = cli.ActivateWindow.Uuid
 		scriptTemplate += JS_ACTIVATE_WINDOW
 	}
 	if ctx.Command() == "set-window-geometry <uuid> <x> <y> <width> <height>" {
-		params.X = CLI.SetWindowGeometry.X
-		params.Y = CLI.SetWindowGeometry.Y
-		params.Width = CLI.SetWindowGeometry.Width
-		params.Height = CLI.SetWindowGeometry.Height
-		params.Uuid = CLI.SetWindowGeometry.Uuid
+		params.X = cli.SetWindowGeometry.X
+		params.Y = cli.SetWindowGeometry.Y
+		params.Width = cli.SetWindowGeometry.Width
+		params.Height = cli.SetWindowGeometry.Height
+		params.Uuid = cli.SetWindowGeometry.Uuid
 		scriptTemplate += JS_SET_WINDOW_GEOMETRY
 	}
 	if ctx.Command() == "set-window-size <uuid> <width> <height>" {
-		params.Width = CLI.SetWindowSize.Width
-		params.Height = CLI.SetWindowSize.Height
-		params.Uuid = CLI.SetWindowSize.Uuid
+		params.Width = cli.SetWindowSize.Width
+		params.Height = cli.SetWindowSize.Height
+		params.Uuid = cli.SetWindowSize.Uuid
 		scriptTemplate += JS_SET_WINDOW_SIZE
 	}
 	if ctx.Command() == "set-window-position <uuid> <x> <y>" {
-		params.X = CLI.SetWindowPosition.X
-		params.Y = CLI.SetWindowPosition.Y
-		params.Uuid = CLI.SetWindowPosition.Uuid
+		params.X = cli.SetWindowPosition.X
+		params.Y = cli.SetWindowPosition.Y
+		params.Uuid = cli.SetWindowPosition.Uuid
 		scriptTemplate += JS_SET_WINDOW_POSITION
 	}
 	if ctx.Command() == "set-window-workspace <uuid> <workspace-id>" {
-		params.Uuid = CLI.SetWindowWorkspace.Uuid
-		params.WorkspaceId = CLI.SetWindowWorkspace.WorkspaceId
+		params.Uuid = cli.SetWindowWorkspace.Uuid
+		params.WorkspaceId = cli.SetWindowWorkspace.WorkspaceId
 		scriptTemplate += JS_SET_WINDOW_WORKSPACE
 	}
 	scriptTemplate += JS_FOOTER

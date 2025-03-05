@@ -73,7 +73,7 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.internalId == "{{.Uuid}}") {
-         let result = w.x + " " + w.y + " " + w.width + " " + w.height;
+         let result = Math.round(w.x) + " " + Math.round(w.y) + " " + w.width + " " + w.height;
          returnResult(result);
     }
 }
