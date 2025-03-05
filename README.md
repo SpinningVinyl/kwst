@@ -22,6 +22,10 @@ Here is the list of things that you can currently do with **kwst**:
 
 Run `kwst --help` to get context-sensitive help. Run `kwst <command> --help` for more information on a command.
 
+## Installation
+
+**kwst** is distributed as a single statically-linked binary. Just copy it to a directory that is listed in your `PATH` environment variable.
+
 Also check shell scripts in the `_examples` directory to get an idea of what you can use **kwst** for.
 
 ## License
