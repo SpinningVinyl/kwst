@@ -16,6 +16,9 @@ var quit = make(chan int)
 
 var debug = false
 
+var Version = "v00000"
+var BuildTime = "Thu 01 Jan 1970 00:00:00 UTC"
+
 // define the CLI structure for Kong to parse. See also commands.go
 type Globals struct {
 	Debug bool `help:"Enable debug mode." short:"d"`
@@ -94,6 +97,12 @@ func debugPrint(a ...any) {
 
 func main() {
 
+    if os.Args[1] == "--version" {
+        fmt.Println(Version)
+        fmt.Println(BuildTime)
+        os.Exit(0)
+    }
+
     cli := CLI{}
 
 	// parse command line parameters
@@ -113,7 +122,7 @@ func main() {
 	debugPrint("Temp script file name:", scriptFile.Name())
 	if !debug { // do not delete the script file in the debug mode
 		defer os.Remove(scriptFile.Name())
-	}
+	} 
 
 	// set up the DBus connection
 	conn, err := dbus.ConnectSessionBus()
