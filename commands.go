@@ -50,3 +50,10 @@ type SetWindowWorkspaceCmd struct {
 	Uuid        string `arg required help:"UUID of the window to manipulate"`
 	WorkspaceId int    `arg required help:"Number of the workspace to send the window to"`
 }
+
+type SetWindowPropertyCmd struct {
+	Property string `required enum:"keepAbove,keepBelow,shade,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: keepAbove, keepBelow, shade, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
+	Value    string `required enum:"true,false,toggle" short:"v" help:"Possible values: true, false, toggle"`
+
+	Uuid string `arg required help:"UUID of the window to manipulate"`
+}
