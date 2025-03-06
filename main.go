@@ -38,6 +38,7 @@ type CLI struct {
 	SetWindowPosition  SetWindowPosCmd       `cmd:"" help:"Set the position of the window with the provided UUID."`
 	SetWindowGeometry  SetWindowGeometryCmd  `cmd:"" help:"Change geometry of the window with the provided UUID."`
 	SetWindowWorkspace SetWindowWorkspaceCmd `cmd:"" help:"Send the window with the specified UUID to the workspace with the specified number."`
+	SetWindowProperty  SetWindowPropertyCmd  `cmd:"" help:"Change the value of a property on a window with the specified UUID."`
 }
 
 // parameters that are passed to the script template
@@ -54,6 +55,8 @@ type ScriptParams struct {
 	Y                     int
 	Width                 int
 	Height                int
+	WindowProperty        string
+	PropertyValue         string
 }
 
 // define the DBus object for exporting
@@ -97,13 +100,13 @@ func debugPrint(a ...any) {
 
 func main() {
 
-    if os.Args[1] == "--version" {
-        fmt.Println(Version)
-        fmt.Println(BuildTime)
-        os.Exit(0)
-    }
+	if os.Args[1] == "--version" {
+		fmt.Println(Version)
+		fmt.Println(BuildTime)
+		os.Exit(0)
+	}
 
-    cli := CLI{}
+	cli := CLI{}
 
 	// parse command line parameters
 	ctx := kong.Parse(&cli,
@@ -122,7 +125,7 @@ func main() {
 	debugPrint("Temp script file name:", scriptFile.Name())
 	if !debug { // do not delete the script file in the debug mode
 		defer os.Remove(scriptFile.Name())
-	} 
+	}
 
 	// set up the DBus connection
 	conn, err := dbus.ConnectSessionBus()
@@ -197,6 +200,13 @@ func main() {
 		params.WorkspaceId = cli.SetWindowWorkspace.WorkspaceId
 		scriptTemplate += JS_SET_WINDOW_WORKSPACE
 	}
+	if ctx.Command() == "set-window-property <uuid>" {
+		params.WindowProperty = cli.SetWindowProperty.Property
+		params.PropertyValue = cli.SetWindowProperty.Value
+		params.Uuid = cli.SetWindowProperty.Uuid
+		scriptTemplate += JS_SET_WINDOW_PROPERTY
+	}
+
 	scriptTemplate += JS_FOOTER
 	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
 	if err != nil {

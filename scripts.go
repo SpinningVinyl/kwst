@@ -175,6 +175,18 @@ if (ws) {
 
 `
 
+var JS_SET_WINDOW_PROPERTY string = `debugLog(scriptName + " executing JS_SET_WINDOW_PROPERTY");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    let w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+        w.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!w.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}}
+    }
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `
