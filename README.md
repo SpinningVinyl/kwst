@@ -17,6 +17,7 @@ Here is the list of things that you can currently do with **kwst**:
 - Get the number of the active workspace.
 - Switch to a workspace.
 - Send a window to a workspace.
+- Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
 
 ## Usage
 

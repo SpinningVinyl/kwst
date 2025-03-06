@@ -1,7 +1,6 @@
 package main
 
-var JS_HEADER string = `
-const dbusAddr = "{{.DbusAddr}}";
+var JS_HEADER string = `const dbusAddr = "{{.DbusAddr}}";
 
 const debug = {{.Debug}};
 
