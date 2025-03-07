@@ -39,6 +39,7 @@ type CLI struct {
 	SetWindowGeometry  SetWindowGeometryCmd  `cmd:"" help:"Change geometry of the window with the provided UUID."`
 	SetWindowWorkspace SetWindowWorkspaceCmd `cmd:"" help:"Send the window with the specified UUID to the workspace with the specified number."`
 	SetWindowProperty  SetWindowPropertyCmd  `cmd:"" help:"Change the value of a property on a window with the specified UUID."`
+	CloseWindow        CloseWindowCmd        `cmd:"" help:"Close the window with the provided UUID."`
 }
 
 // parameters that are passed to the script template
@@ -205,6 +206,10 @@ func main() {
 		params.PropertyValue = cli.SetWindowProperty.Value
 		params.Uuid = cli.SetWindowProperty.Uuid
 		scriptTemplate += JS_SET_WINDOW_PROPERTY
+	}
+	if ctx.Command() == "close-window <uuid>" {
+		params.Uuid = cli.CloseWindow.Uuid
+		scriptTemplate += JS_CLOSE_WINDOW
 	}
 
 	scriptTemplate += JS_FOOTER
