@@ -186,6 +186,18 @@ for (let i = 0; i < allWindows.length; i++) {
 
 `
 
+var JS_CLOSE_WINDOW string = `debugLog(scriptName + " executing JS_SET_WINDOW_PROPERTY");
+
+const allWindows = workspace.windowList();
+for (let i = 0; i < allWindows.length; i++) {
+    let w = allWindows[i];
+    if (w.internalId == "{{.Uuid}}") {
+        debugLog("Closing window with UUID={{.Uuid}}");
+        w.closeWindow();
+    }
+}
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

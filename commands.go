@@ -57,3 +57,7 @@ type SetWindowPropertyCmd struct {
 
 	Uuid string `arg required help:"UUID of the window to manipulate"`
 }
+
+type CloseWindowCmd struct {
+	Uuid string `arg required help:"UUID of the window to close"`
+}
