@@ -101,7 +101,7 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.internalId == "{{.Uuid}}") {
-         debugLog("Activating window {{.Uuid}}");
+         debugLog("Activating window with UUID={{.Uuid}}");
          workspace.activeWindow = w;
     }
 }
@@ -114,6 +114,7 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.internalId == "{{.Uuid}}") {
+        debugLog("New size for window with UUID={{.Uuid}}: width={{.Width}}, height={{.Height}}");
         let newGeometry = Object.assign({}, w.frameGeometry);
         newGeometry.width = {{.Width}}
         newGeometry.height = {{.Height}}
@@ -129,6 +130,7 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.internalId == "{{.Uuid}}") {
+        debugLog("New position for window with UUID={{.Uuid}}: X={{.X}}, Y={{.Y}}");
         let newGeometry = Object.assign({}, w.frameGeometry);
         newGeometry.x = {{.X}}
         newGeometry.y = {{.Y}}
@@ -144,6 +146,7 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.internalId == "{{.Uuid}}") {
+        debugLog("New geometry for window with UUID={{.Uuid}}: X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
         let newGeometry = Object.assign({}, w.frameGeometry);
         newGeometry.width = {{.Width}}
         newGeometry.height = {{.Height}}
@@ -180,9 +183,10 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.internalId == "{{.Uuid}}") {
+        debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID={{.Uuid}}");
         w.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!w.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}}
     }
-}
+} 
 
 `
 
@@ -196,6 +200,7 @@ for (let i = 0; i < allWindows.length; i++) {
         w.closeWindow();
     }
 }
+
 `
 
 var JS_FOOTER string = `close();
