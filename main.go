@@ -27,7 +27,7 @@ type Globals struct {
 type CLI struct {
 	Globals
 
-	List               ListCmd               `cmd:"" help:"List all windows. The data is returned as tab-separated rows containing the window's UUID, resourceClass, resourceName and PID of the process the window belongs to (the PID is not guaranteed to be correct for X11 windows). Each window is represented by a separate row."`
+	List               ListCmd               `cmd:"" help:"List all windows. The data is returned as tab-separated rows containing the window's UUID, resourceClass and resourceName. Each window is represented by a separate row."`
 	Find               FindCmd               `cmd:"" help:"Search for windows using the specified search term."`
 	GetActiveWindow    GetActiveWindowCmd    `cmd:"" help:"Get the UUID of the active window."`
 	GetWindowGeometry  GetWindowGeometryCmd  `cmd:"" help:"Get the geometry (size and position) of the window with the specified UUID. The data is returned in the format required for the set-window-geometry command (x y width height)."`
@@ -50,6 +50,8 @@ type ScriptParams struct {
 	SearchTerm            string
 	SearchField           string
 	IncludeSpecialWindows bool
+	ShowCaptions          bool
+	ShowPids              bool
 	Uuid                  string
 	WorkspaceId           int
 	X                     int
@@ -151,6 +153,8 @@ func main() {
 	debugPrint("cmd:", ctx.Command())
 	if ctx.Command() == "list" {
 		params.IncludeSpecialWindows = cli.List.IncludeSpecialWindows
+		params.ShowCaptions = cli.List.ShowCaptions
+		params.ShowPids = cli.List.ShowPids
 		scriptTemplate += JS_LIST
 	}
 	if ctx.Command() == "find <search-term>" {
