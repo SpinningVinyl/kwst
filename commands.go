@@ -2,6 +2,8 @@ package main
 
 type ListCmd struct {
 	IncludeSpecialWindows bool `default:"false" short:"s" help:"Include special windows that are not meant to be manipulated, e.g. plasmashell panels, desktop, etc. Such windows are not listed by default."`
+	ShowCaptions          bool `default:"false" short:"c" help:"Show window captions in the list."`
+	ShowPids              bool `default:"false" short:"p" help:"Show the PID of the process that the window belongs to (the PID is not guaranteed to be correct for X11 windows)."`
 }
 
 type FindCmd struct {
