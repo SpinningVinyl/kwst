@@ -63,8 +63,8 @@ type ScriptParams struct {
 }
 
 type ScriptPackage struct {
-    ScriptTemplate string
-    Params ScriptParams
+	ScriptTemplate string
+	Params         ScriptParams
 }
 
 // define the DBus object for exporting
@@ -154,10 +154,9 @@ func main() {
 	sp.Params.Debug = debug
 
 	// process the template depending on the command line arguments
-    sp.ScriptTemplate = JS_HEADER
-    err = ctx.Run(&sp)
-    ctx.FatalIfErrorf(err)
-    
+	sp.ScriptTemplate = JS_HEADER
+	err = ctx.Run(&sp)
+	ctx.FatalIfErrorf(err)
 
 	sp.ScriptTemplate += JS_FOOTER
 	tmpl, err := template.New("kwin_script").Parse(sp.ScriptTemplate)

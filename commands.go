@@ -7,11 +7,11 @@ type ListCmd struct {
 }
 
 func (lc *ListCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_LIST
-    sp.Params.IncludeSpecialWindows = lc.IncludeSpecialWindows
-    sp.Params.ShowCaptions = lc.ShowCaptions
-    sp.Params.ShowPids = lc.ShowPids
-    return nil
+	sp.ScriptTemplate += JS_LIST
+	sp.Params.IncludeSpecialWindows = lc.IncludeSpecialWindows
+	sp.Params.ShowCaptions = lc.ShowCaptions
+	sp.Params.ShowPids = lc.ShowPids
+	return nil
 }
 
 type FindCmd struct {
@@ -21,17 +21,17 @@ type FindCmd struct {
 }
 
 func (fc *FindCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_FIND
-    sp.Params.SearchTerm = fc.SearchTerm
-    sp.Params.SearchField = fc.SearchField
-    return nil
+	sp.ScriptTemplate += JS_FIND
+	sp.Params.SearchTerm = fc.SearchTerm
+	sp.Params.SearchField = fc.SearchField
+	return nil
 }
 
 type GetActiveWindowCmd struct{}
 
 func (gawc *GetActiveWindowCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_GET_ACTIVE_WINDOW
-    return nil
+	sp.ScriptTemplate += JS_GET_ACTIVE_WINDOW
+	return nil
 }
 
 type GetWindowGeometryCmd struct {
@@ -39,16 +39,16 @@ type GetWindowGeometryCmd struct {
 }
 
 func (gwgc *GetWindowGeometryCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_GET_WINDOW_GEOMETRY
-    sp.Params.Uuid = gwgc.Uuid
-    return nil
+	sp.ScriptTemplate += JS_GET_WINDOW_GEOMETRY
+	sp.Params.Uuid = gwgc.Uuid
+	return nil
 }
 
 type GetWorkspaceCmd struct{}
 
 func (gwc *GetWorkspaceCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_GET_WORKSPACE
-    return nil
+	sp.ScriptTemplate += JS_GET_WORKSPACE
+	return nil
 }
 
 type SetWorkspaceCmd struct {
@@ -56,9 +56,9 @@ type SetWorkspaceCmd struct {
 }
 
 func (swc *SetWorkspaceCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_SET_WORKSPACE
-    sp.Params.WorkspaceId = swc.WorkspaceId
-    return nil
+	sp.ScriptTemplate += JS_SET_WORKSPACE
+	sp.Params.WorkspaceId = swc.WorkspaceId
+	return nil
 }
 
 type ActivateWindowCmd struct {
@@ -66,9 +66,9 @@ type ActivateWindowCmd struct {
 }
 
 func (awc *ActivateWindowCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_ACTIVATE_WINDOW
-    sp.Params.Uuid = awc.Uuid
-    return nil
+	sp.ScriptTemplate += JS_ACTIVATE_WINDOW
+	sp.Params.Uuid = awc.Uuid
+	return nil
 }
 
 type SetWindowSizeCmd struct {
@@ -78,11 +78,11 @@ type SetWindowSizeCmd struct {
 }
 
 func (swsc *SetWindowSizeCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_SET_WINDOW_SIZE
-    sp.Params.Uuid = swsc.Uuid
-    sp.Params.Width = swsc.Width
-    sp.Params.Height = swsc.Height
-    return nil
+	sp.ScriptTemplate += JS_SET_WINDOW_SIZE
+	sp.Params.Uuid = swsc.Uuid
+	sp.Params.Width = swsc.Width
+	sp.Params.Height = swsc.Height
+	return nil
 }
 
 type SetWindowPosCmd struct {
@@ -92,11 +92,11 @@ type SetWindowPosCmd struct {
 }
 
 func (swpc *SetWindowPosCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_SET_WINDOW_POSITION
-    sp.Params.Uuid = swpc.Uuid
-    sp.Params.X = swpc.X
-    sp.Params.Y = swpc.Y
-    return nil
+	sp.ScriptTemplate += JS_SET_WINDOW_POSITION
+	sp.Params.Uuid = swpc.Uuid
+	sp.Params.X = swpc.X
+	sp.Params.Y = swpc.Y
+	return nil
 }
 
 type SetWindowGeometryCmd struct {
@@ -108,13 +108,13 @@ type SetWindowGeometryCmd struct {
 }
 
 func (swgc *SetWindowGeometryCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_SET_WINDOW_GEOMETRY
-    sp.Params.Uuid = swgc.Uuid
-    sp.Params.X = swgc.X
-    sp.Params.Y = swgc.Y
-    sp.Params.Width = swgc.Width
-    sp.Params.Height = swgc.Height
-    return nil
+	sp.ScriptTemplate += JS_SET_WINDOW_GEOMETRY
+	sp.Params.Uuid = swgc.Uuid
+	sp.Params.X = swgc.X
+	sp.Params.Y = swgc.Y
+	sp.Params.Width = swgc.Width
+	sp.Params.Height = swgc.Height
+	return nil
 }
 
 type SetWindowWorkspaceCmd struct {
@@ -123,10 +123,10 @@ type SetWindowWorkspaceCmd struct {
 }
 
 func (swwc *SetWindowWorkspaceCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_SET_WINDOW_WORKSPACE
-    sp.Params.Uuid = swwc.Uuid
-    sp.Params.WorkspaceId = swwc.WorkspaceId
-    return nil
+	sp.ScriptTemplate += JS_SET_WINDOW_WORKSPACE
+	sp.Params.Uuid = swwc.Uuid
+	sp.Params.WorkspaceId = swwc.WorkspaceId
+	return nil
 }
 
 type SetWindowPropertyCmd struct {
@@ -137,11 +137,11 @@ type SetWindowPropertyCmd struct {
 }
 
 func (swpc *SetWindowPropertyCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_SET_WINDOW_PROPERTY
-    sp.Params.Uuid = swpc.Uuid
-    sp.Params.WindowProperty = swpc.Property
-    sp.Params.PropertyValue = swpc.Value
-    return nil
+	sp.ScriptTemplate += JS_SET_WINDOW_PROPERTY
+	sp.Params.Uuid = swpc.Uuid
+	sp.Params.WindowProperty = swpc.Property
+	sp.Params.PropertyValue = swpc.Value
+	return nil
 }
 
 type CloseWindowCmd struct {
@@ -149,7 +149,7 @@ type CloseWindowCmd struct {
 }
 
 func (cwc *CloseWindowCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_CLOSE_WINDOW
-    sp.Params.Uuid = cwc.Uuid
-    return nil
+	sp.ScriptTemplate += JS_CLOSE_WINDOW
+	sp.Params.Uuid = cwc.Uuid
+	return nil
 }
