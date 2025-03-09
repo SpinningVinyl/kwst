@@ -62,6 +62,11 @@ type ScriptParams struct {
 	PropertyValue         string
 }
 
+type ScriptPackage struct {
+	ScriptTemplate string
+	Params         ScriptParams
+}
+
 // define the DBus object for exporting
 type Server struct{}
 
@@ -143,91 +148,28 @@ func main() {
 	conn.Export(s, "/net/prsv/kwst", "net.prsv.kwst")
 
 	// create and populate the ScriptParams struct
-	var params ScriptParams
-	params.ScriptName = filepath.Base(scriptFile.Name())
-	params.DbusAddr = conn.Names()[0]
-	params.Debug = debug
+	var sp ScriptPackage
+	sp.Params.ScriptName = filepath.Base(scriptFile.Name())
+	sp.Params.DbusAddr = conn.Names()[0]
+	sp.Params.Debug = debug
 
 	// process the template depending on the command line arguments
-	scriptTemplate := JS_HEADER
-	debugPrint("cmd:", ctx.Command())
-	if ctx.Command() == "list" {
-		params.IncludeSpecialWindows = cli.List.IncludeSpecialWindows
-		params.ShowCaptions = cli.List.ShowCaptions
-		params.ShowPids = cli.List.ShowPids
-		scriptTemplate += JS_LIST
-	}
-	if ctx.Command() == "find <search-term>" {
-		params.SearchTerm = cli.Find.SearchTerm
-		params.SearchField = cli.Find.SearchField
-		scriptTemplate += JS_FIND
-	}
-	if ctx.Command() == "get-active-window" {
-		scriptTemplate += JS_GET_ACTIVE_WINDOW
-	}
-	if ctx.Command() == "get-window-geometry <uuid>" {
-		params.Uuid = cli.GetWindowGeometry.Uuid
-		scriptTemplate += JS_GET_WINDOW_GEOMETRY
-	}
-	if ctx.Command() == "get-workspace" {
-		scriptTemplate += JS_GET_WORKSPACE
-	}
-	if ctx.Command() == "set-workspace <workspace-id>" {
-		params.WorkspaceId = cli.SetWorkspace.WorkspaceId
-		scriptTemplate += JS_SET_WORKSPACE
-	}
-	if ctx.Command() == "activate-window <uuid>" {
-		params.Uuid = cli.ActivateWindow.Uuid
-		scriptTemplate += JS_ACTIVATE_WINDOW
-	}
-	if ctx.Command() == "set-window-geometry <uuid> <x> <y> <width> <height>" {
-		params.X = cli.SetWindowGeometry.X
-		params.Y = cli.SetWindowGeometry.Y
-		params.Width = cli.SetWindowGeometry.Width
-		params.Height = cli.SetWindowGeometry.Height
-		params.Uuid = cli.SetWindowGeometry.Uuid
-		scriptTemplate += JS_SET_WINDOW_GEOMETRY
-	}
-	if ctx.Command() == "set-window-size <uuid> <width> <height>" {
-		params.Width = cli.SetWindowSize.Width
-		params.Height = cli.SetWindowSize.Height
-		params.Uuid = cli.SetWindowSize.Uuid
-		scriptTemplate += JS_SET_WINDOW_SIZE
-	}
-	if ctx.Command() == "set-window-position <uuid> <x> <y>" {
-		params.X = cli.SetWindowPosition.X
-		params.Y = cli.SetWindowPosition.Y
-		params.Uuid = cli.SetWindowPosition.Uuid
-		scriptTemplate += JS_SET_WINDOW_POSITION
-	}
-	if ctx.Command() == "set-window-workspace <uuid> <workspace-id>" {
-		params.Uuid = cli.SetWindowWorkspace.Uuid
-		params.WorkspaceId = cli.SetWindowWorkspace.WorkspaceId
-		scriptTemplate += JS_SET_WINDOW_WORKSPACE
-	}
-	if ctx.Command() == "set-window-property <uuid>" {
-		params.WindowProperty = cli.SetWindowProperty.Property
-		params.PropertyValue = cli.SetWindowProperty.Value
-		params.Uuid = cli.SetWindowProperty.Uuid
-		scriptTemplate += JS_SET_WINDOW_PROPERTY
-	}
-	if ctx.Command() == "close-window <uuid>" {
-		params.Uuid = cli.CloseWindow.Uuid
-		scriptTemplate += JS_CLOSE_WINDOW
-	}
+	sp.ScriptTemplate = JS_HEADER
+	err = ctx.Run(&sp)
+	ctx.FatalIfErrorf(err)
 
-	scriptTemplate += JS_FOOTER
-	tmpl, err := template.New("kwin_script").Parse(scriptTemplate)
+	sp.ScriptTemplate += JS_FOOTER
+	tmpl, err := template.New("kwin_script").Parse(sp.ScriptTemplate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error parsing script template:", err)
 		os.Exit(1)
 	}
-	tmpl.Execute(scriptFile, params)
+	tmpl.Execute(scriptFile, sp.Params)
 
 	// get the KWin object and load the script
 	var scriptId int
 	kwinConn := conn.Object("org.kde.KWin", "/Scripting")
-	err = kwinConn.Call("loadScript", 0, scriptFile.Name(), params.ScriptName).Store(&scriptId)
+	err = kwinConn.Call("loadScript", 0, scriptFile.Name(), sp.Params.ScriptName).Store(&scriptId)
 	debugPrint("Registered script ID:", strconv.Itoa(scriptId))
 
 	// get the script object and run the script
@@ -242,7 +184,7 @@ func main() {
 		// give it some time to finish receiving and processing DBus messages
 		time.Sleep(5 * time.Millisecond)
 		// unload the script from KWin
-		kwinConn.Call("unloadScript", 0, params.ScriptName)
+		kwinConn.Call("unloadScript", 0, sp.Params.ScriptName)
 		return
 	}
 }
