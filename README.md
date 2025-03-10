@@ -20,6 +20,10 @@ Here is the list of things that you can currently do with **kwst**:
 - Send a window to a workspace.
 - Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
 
+## Wayland/X11
+
+I personally use (and extensively test) **kwst** in Wayland, but as far as I understand, it should also be fully functional in KWin under X11 (since the scripting API remains the same). That said, I haven't tried it in X11 and presently I don't plan to fix any X11-only bugs, if such bugs exist.
+
 ## Usage
 
 Run `kwst --help` to get context-sensitive help. Run `kwst <command> --help` for more information on a command.
