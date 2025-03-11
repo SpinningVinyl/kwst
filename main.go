@@ -40,6 +40,7 @@ type CLI struct {
 	SetWindowWorkspace SetWindowWorkspaceCmd `cmd:"" help:"Send the window with the specified UUID to the workspace with the specified number."`
 	SetWindowProperty  SetWindowPropertyCmd  `cmd:"" help:"Change the value of a property on a window with the specified UUID."`
 	CloseWindow        CloseWindowCmd        `cmd:"" help:"Close the window with the provided UUID."`
+	RunCustomScript    RunCustomScriptCmd    `cmd:"" help:"Run a custom script. Supports up to six optional parameters."`
 }
 
 // parameters that are passed to the script template
@@ -60,6 +61,12 @@ type ScriptParams struct {
 	Height                int
 	WindowProperty        string
 	PropertyValue         string
+	P1                    string
+	P2                    string
+	P3                    string
+	P4                    string
+	P5                    string
+	P6                    string
 }
 
 type ScriptPackage struct {

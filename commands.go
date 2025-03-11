@@ -1,5 +1,9 @@
 package main
 
+import (
+    "os"
+)
+
 type ListCmd struct {
 	IncludeSpecialWindows bool `default:"false" short:"s" help:"Include special windows that are not meant to be manipulated, e.g. plasmashell panels, desktop, etc. Such windows are not listed by default."`
 	ShowCaptions          bool `default:"false" short:"c" help:"Show window captions in the list."`
@@ -152,4 +156,33 @@ func (cwc *CloseWindowCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_CLOSE_WINDOW
 	sp.Params.Uuid = cwc.Uuid
 	return nil
+}
+
+type RunCustomScriptCmd struct {
+    Parameter1 string
+    Parameter2 string
+    Parameter3 string
+    Parameter4 string
+    Parameter5 string
+    Parameter6 string
+
+    ScriptFile *os.File `arg required help:"Path to the script template."`
+}
+
+func (rcsc *RunCustomScriptCmd) Run(sp *ScriptPackage) error {
+    bytes, err := os.ReadFile(rcsc.ScriptFile.Name())
+    if err != nil {
+        return err
+    }
+    defer rcsc.ScriptFile.Close()
+    sp.ScriptTemplate = string(bytes)
+
+    sp.Params.P1 = rcsc.Parameter1
+    sp.Params.P2 = rcsc.Parameter2
+    sp.Params.P3 = rcsc.Parameter3
+    sp.Params.P4 = rcsc.Parameter4
+    sp.Params.P5 = rcsc.Parameter5
+    sp.Params.P6 = rcsc.Parameter6
+    
+    return nil
 }
