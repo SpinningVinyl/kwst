@@ -30,6 +30,28 @@ Run `kwst --help` to get context-sensitive help. Run `kwst <command> --help` for
 
 Also check shell scripts in the `_examples` directory to get an idea of what you can use **kwst** for.
 
+## Running custom scripts
+
+Since version 1.1.0, **kwst** supports running custom scripts. Please see the recommended script template in `custom-script-template.js` and example scripts in the `_examples` directory.
+
+The custom scripts are parsed using Go's built-in `text/template` package. 
+
+**kwst** supports passing up to six parameters to your custom scripts: 
+
+```
+kwst run-custom-script --parameter-1="value1" --parameter-2="value2" ... --parameter-6="value6" </path/to/script/file.js>
+```
+
+Inside your custom scripts, `{{.P1}}` will be replaced with the value of parameter 1, `{{.P2}}` will be replaced with the value of parameter 2, etc.
+
+You can also use comparisons:
+
+```
+{{if (eq .P1 "value1")}}do something{{else}}do something else{{end}}
+```
+
+You can find the full documentation of the Go text templating engine [here](https://pkg.go.dev/text/template).
+
 ## Installation
 
 **kwst** is distributed as a single statically-linked binary. Just copy it to a directory that is listed in your `PATH` environment variable.
