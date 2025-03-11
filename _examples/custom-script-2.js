@@ -31,12 +31,14 @@ debugLog(scriptName + " START");
 // return "true" if there is a window with caption that matches parameter 1 
 const allWindows = workspace.windowList();
 const regExp = new RegExp(String.raw`{{.P1}}`, 'i');
+let result = false;
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.caption.search(regExp) >= 0) {
-         returnResult("true");
+        result = true;
     }
 }
+returnResult(result);
 
 close();
 debugLog(scriptName + " END");
