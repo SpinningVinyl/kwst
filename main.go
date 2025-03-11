@@ -115,7 +115,7 @@ func debugPrint(a ...any) {
 
 func main() {
 
-	if os.Args[1] == "--version" {
+	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Println(Version)
 		fmt.Println(BuildTime)
 		os.Exit(0)
