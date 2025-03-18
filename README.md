@@ -56,6 +56,8 @@ You can find the full documentation of the Go text templating engine [here](http
 
 **kwst** is distributed as a single statically-linked binary. Just copy it to a directory that is listed in your `PATH` environment variable.
 
+Or, if building from source (requires Go 1.23 or later), use `make && sudo make install`. 
+
 ## License
 
 The project is licensed under the terms of GNU GPLv2 or later license.
