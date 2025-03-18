@@ -16,7 +16,7 @@ var quit = make(chan int)
 
 var debug = false
 
-var Version = "v00000"
+var Version = "v0.0.0"
 var BuildTime = "Thu 01 Jan 1970 00:00:00 UTC"
 
 // define the CLI structure for Kong to parse. See also commands.go

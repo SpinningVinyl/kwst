@@ -1,7 +1,7 @@
 package main
 
 import (
-    "os"
+	"os"
 )
 
 type ListCmd struct {
@@ -21,7 +21,7 @@ func (lc *ListCmd) Run(sp *ScriptPackage) error {
 type FindCmd struct {
 	SearchField string `enum:"resourceClass,resourceName,caption" help:"Specify the field to search in. Possible values: resourceClass, resourceName, caption" short:"f" default:"resourceClass"`
 
-	SearchTerm string `arg required help:"String to search for"`
+	SearchTerm string `arg:"" required:"" help:"String to search for"`
 }
 
 func (fc *FindCmd) Run(sp *ScriptPackage) error {
@@ -39,7 +39,7 @@ func (gawc *GetActiveWindowCmd) Run(sp *ScriptPackage) error {
 }
 
 type GetWindowGeometryCmd struct {
-	Uuid string `arg required help:"UUID of the window to manipulate"`
+	Uuid string `arg:"" required:"" help:"UUID of the window to manipulate"`
 }
 
 func (gwgc *GetWindowGeometryCmd) Run(sp *ScriptPackage) error {
@@ -56,7 +56,7 @@ func (gwc *GetWorkspaceCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWorkspaceCmd struct {
-	WorkspaceId int `arg required help:"Workspace number"`
+	WorkspaceId int `arg:"" required:"" help:"Workspace number"`
 }
 
 func (swc *SetWorkspaceCmd) Run(sp *ScriptPackage) error {
@@ -66,7 +66,7 @@ func (swc *SetWorkspaceCmd) Run(sp *ScriptPackage) error {
 }
 
 type ActivateWindowCmd struct {
-	Uuid string `arg required help:"UUID of the window you want to activate"`
+	Uuid string `arg:"" required:"" help:"UUID of the window you want to activate"`
 }
 
 func (awc *ActivateWindowCmd) Run(sp *ScriptPackage) error {
@@ -76,9 +76,9 @@ func (awc *ActivateWindowCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowSizeCmd struct {
-	Uuid   string `arg required help:"UUID of the window to manipulate"`
-	Width  int    `arg required`
-	Height int    `arg required`
+	Uuid   string `arg:"" required:"" help:"UUID of the window to manipulate"`
+	Width  int    `arg:"" required:""`
+	Height int    `arg:"" required:""`
 }
 
 func (swsc *SetWindowSizeCmd) Run(sp *ScriptPackage) error {
@@ -90,9 +90,9 @@ func (swsc *SetWindowSizeCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowPosCmd struct {
-	Uuid string `arg required help:"UUID of the window to manipulate"`
-	X    int    `arg required`
-	Y    int    `arg required`
+	Uuid string `arg:"" required:"" help:"UUID of the window to manipulate"`
+	X    int    `arg:"" required:""`
+	Y    int    `arg:"" required:""`
 }
 
 func (swpc *SetWindowPosCmd) Run(sp *ScriptPackage) error {
@@ -104,11 +104,11 @@ func (swpc *SetWindowPosCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowGeometryCmd struct {
-	Uuid   string `arg required help:"UUID of the window to manipulate"`
-	X      int    `arg required`
-	Y      int    `arg required`
-	Width  int    `arg required`
-	Height int    `arg required`
+	Uuid   string `arg:"" required:"" help:"UUID of the window to manipulate"`
+	X      int    `arg:"" required:""`
+	Y      int    `arg:"" required:""`
+	Width  int    `arg:"" required:""`
+	Height int    `arg:"" required:""`
 }
 
 func (swgc *SetWindowGeometryCmd) Run(sp *ScriptPackage) error {
@@ -122,8 +122,8 @@ func (swgc *SetWindowGeometryCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowWorkspaceCmd struct {
-	Uuid        string `arg required help:"UUID of the window to manipulate"`
-	WorkspaceId int    `arg required help:"Number of the workspace to send the window to"`
+	Uuid        string `arg:"" required:"" help:"UUID of the window to manipulate"`
+	WorkspaceId int    `arg:"" required:"" help:"Number of the workspace to send the window to"`
 }
 
 func (swwc *SetWindowWorkspaceCmd) Run(sp *ScriptPackage) error {
@@ -134,10 +134,10 @@ func (swwc *SetWindowWorkspaceCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowPropertyCmd struct {
-	Property string `required enum:"keepAbove,keepBelow,shade,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: keepAbove, keepBelow, shade, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
-	Value    string `required enum:"true,false,toggle" short:"v" help:"Possible values: true, false, toggle"`
+	Property string `required:"" enum:"keepAbove,keepBelow,shade,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: keepAbove, keepBelow, shade, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
+	Value    string `required:"" enum:"true,false,toggle" short:"v" help:"Possible values: true, false, toggle"`
 
-	Uuid string `arg required help:"UUID of the window to manipulate"`
+	Uuid string `arg:"" required:"" help:"UUID of the window to manipulate"`
 }
 
 func (swpc *SetWindowPropertyCmd) Run(sp *ScriptPackage) error {
@@ -149,7 +149,7 @@ func (swpc *SetWindowPropertyCmd) Run(sp *ScriptPackage) error {
 }
 
 type CloseWindowCmd struct {
-	Uuid string `arg required help:"UUID of the window to close"`
+	Uuid string `arg:"" required:"" help:"UUID of the window to close"`
 }
 
 func (cwc *CloseWindowCmd) Run(sp *ScriptPackage) error {
@@ -159,30 +159,30 @@ func (cwc *CloseWindowCmd) Run(sp *ScriptPackage) error {
 }
 
 type RunCustomScriptCmd struct {
-    Parameter1 string
-    Parameter2 string
-    Parameter3 string
-    Parameter4 string
-    Parameter5 string
-    Parameter6 string
+	Parameter1 string
+	Parameter2 string
+	Parameter3 string
+	Parameter4 string
+	Parameter5 string
+	Parameter6 string
 
-    ScriptFile *os.File `arg required help:"Path to the script template."`
+	ScriptFile *os.File `arg:"" required:"" help:"Path to the script template."`
 }
 
 func (rcsc *RunCustomScriptCmd) Run(sp *ScriptPackage) error {
-    bytes, err := os.ReadFile(rcsc.ScriptFile.Name())
-    if err != nil {
-        return err
-    }
-    defer rcsc.ScriptFile.Close()
-    sp.ScriptTemplate = string(bytes)
+	bytes, err := os.ReadFile(rcsc.ScriptFile.Name())
+	if err != nil {
+		return err
+	}
+	defer rcsc.ScriptFile.Close()
+	sp.ScriptTemplate = string(bytes)
 
-    sp.Params.P1 = rcsc.Parameter1
-    sp.Params.P2 = rcsc.Parameter2
-    sp.Params.P3 = rcsc.Parameter3
-    sp.Params.P4 = rcsc.Parameter4
-    sp.Params.P5 = rcsc.Parameter5
-    sp.Params.P6 = rcsc.Parameter6
-    
-    return nil
+	sp.Params.P1 = rcsc.Parameter1
+	sp.Params.P2 = rcsc.Parameter2
+	sp.Params.P3 = rcsc.Parameter3
+	sp.Params.P4 = rcsc.Parameter4
+	sp.Params.P5 = rcsc.Parameter5
+	sp.Params.P6 = rcsc.Parameter6
+
+	return nil
 }
