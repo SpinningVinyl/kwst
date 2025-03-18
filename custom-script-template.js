@@ -6,6 +6,7 @@ const scriptName = "{{.ScriptName}}";
 
 // use this function to print debug messages to the system log.
 // the messages will be printed only if kwst is called with the `--debug` flag.
+// to make sure that debug messages are added to the system log, 
 // you should run `kdebugsettings` and set KWin Scripting to `Full Debug`.
 // you can read the messages by using the following command:
 // `journalctl -f QT_CATEGORY=js QT_CATEGORY=kwin_scripting`
