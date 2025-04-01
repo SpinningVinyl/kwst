@@ -203,6 +203,21 @@ for (let i = 0; i < allWindows.length; i++) {
 
 `
 
+var JS_PREVIOUS_WINDOW string = `debugLog(scriptName + " executing JS_PREVIOUS_WINDOW");
+
+const windowStack = [];
+for (let i = 0; i < workspace.stackingOrder.length; i++) {
+    let w = workspace.stackingOrder[i];
+    if (w.resourceClass == 'plasmashell' || w.resourceClass == 'xwaylandvideobridge') {
+        continue;
+    }
+    windowStack.push(w);
+}
+
+workspace.activeWindow = windowStack[windowStack.length - 2];
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `
