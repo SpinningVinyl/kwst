@@ -37,7 +37,8 @@ var JS_LIST string = `debugLog(scriptName + " executing JS_LIST");
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     if ({{if .IncludeSpecialWindows}}true{{else}}!allWindows[i].specialWindow{{end}}) {
-        returnResult(allWindows[i].internalId + "\t" + allWindows[i].resourceClass + "\t" + allWindows[i].resourceName {{if .ShowPids}}+ "\t" + allWindows[i].pid{{end}}{{if .ShowCaptions}}+ "\t" + allWindows[i].caption{{end}});
+        let w = allWindows[i];
+        returnResult(w.internalId + "\t" + w.resourceClass + "\t" + (w.resourceName.length == 0 ? "n/a" : w.resourceName ) {{if .ShowPids}}+ "\t" + w.pid{{end}}{{if .ShowCaptions}}+ "\t" + w.caption{{end}});
     }
 }
 
