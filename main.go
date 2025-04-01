@@ -34,6 +34,7 @@ type CLI struct {
 	GetWorkspace       GetWorkspaceCmd       `cmd:"" help:"Get the ID of the active workspace."`
 	SetWorkspace       SetWorkspaceCmd       `cmd:"" help:"Switch to the workspace with the specified ID."`
 	ActivateWindow     ActivateWindowCmd     `cmd:"" help:"Activate the window with the provided UUID, if such a window exists."`
+	PreviousWindow     PreviousWindowCmd     `cmd:"" help:"Switch to the second most recently active window. This command can be used to quickly switch between two windows."`
 	SetWindowSize      SetWindowSizeCmd      `cmd:"" help:"Set the size of the window with the provided UUID."`
 	SetWindowPosition  SetWindowPosCmd       `cmd:"" help:"Set the position of the window with the provided UUID."`
 	SetWindowGeometry  SetWindowGeometryCmd  `cmd:"" help:"Change geometry of the window with the provided UUID."`
