@@ -13,6 +13,7 @@ Here is the list of things that you can currently do with **kwst**:
 - Get the UUID of the active window.
 - Activate a window.
 - Close a window.
+- Switch to the previous window in the window stack (this allows users to quickly switch between two most recently used windows).
 - Get window geometry (size and position).
 - Set window geometry (size and position).
 - Get the number of the active workspace.
