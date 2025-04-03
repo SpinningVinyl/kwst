@@ -123,6 +123,9 @@ Run "kwst <command> --help" for more information on a command.
 *--parameter-5=STRING*++
 *--parameter-6=STRING*
 
+		See the "Running custom scripts" section for more information
+		about optional parameters.
+
 # RUNNING CUSTOM SCRIPTS
 
 Starting with version 1.0.0, *kwst* supports running custom scripts. Please see
