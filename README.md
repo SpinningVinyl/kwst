@@ -55,7 +55,7 @@ You can find the full documentation of the Go text templating engine [here](http
 
 ## Installation
 
-**kwst** is distributed as a single statically-linked binary. Just copy it to a directory that is listed in your `PATH` environment variable.
+**kwst** is distributed as a single statically-linked binary. Just copy or symlink it to a directory that is listed in your `PATH` environment variable, e.g. `/usr/local/bin`. If you want to install a manpage, copy `kwst.1.gz` to `/usr/local/man/man1`.
 
 To build from source, you would need GNU make and Go v1.23 or later. First clone the repository:
 
