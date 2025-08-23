@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="utf-8" />
+ <meta name="generator" content="scd2html" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+ <title>KWST(1)</title>
+ <style>
+ html {
+   line-height: 1.5;
+   font-family: Georgia, serif;
+   font-size: 20px;
+   color: #1a1a1a;
+   background-color: #fdfdfd;
+ }
+ body {
+   margin: 0 auto;
+   max-width: 36em;
+   padding-left: 50px;
+   padding-right: 50px;
+   padding-top: 50px;
+   padding-bottom: 50px;
+   hyphens: auto;
+   overflow-wrap: break-word;
+   text-rendering: optimizeLegibility;
+   font-kerning: normal;
+ }
+ @media (max-width: 600px) {
+   body {
+     font-size: 0.9em;
+     padding: 1em;
+   }
+   h1 {
+     font-size: 1.8em;
+   }
+ }
+ @media print {
+   body {
+     background-color: transparent;
+     color: black;
+     font-size: 12pt;
+   }
+   p, h2, h3 {
+     orphans: 3;
+     widows: 3;
+   }
+   h2, h3 {
+     page-break-after: avoid;
+   }
+ }
+ p {
+   margin: 1em 0;
+ }
+ a {
+   color: #1a1a80;
+ }
+ a:visited {
+   color: #1a1a80;
+ }
+ img {
+   max-width: 100%;
+ }
+ h1, h2, h3 {
+   margin-top: 1.4em;
+ }
+ h2>a:first-child, h3>a:first-child {
+   opacity: 0;
+ }
+ h2:hover>a:first-child, h3:hover>a:first-child {
+   opacity: 1;
+ }
+ ol, ul {
+   padding-left: 1.7em;
+   margin-top: 1em;
+ }
+ li > ol, li > ul {
+   margin-top: 0;
+ }
+ blockquote {
+   margin: 1em 0 1em 1.7em;
+   padding-left: 1em;
+ }
+ code {
+   font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+   font-size: 85%;
+   margin: 0;
+ }
+ pre {
+   margin: 1em 0;
+   overflow: auto;
+ }
+ pre code {
+   padding: 0;
+   overflow: visible;
+   overflow-wrap: normal;
+ }
+ table {
+   margin: 1em 0;
+   border-collapse: collapse;
+   overflow-x: auto;
+   font-variant-numeric: lining-nums tabular-nums;
+ }
+ table.box, td.allbox {
+   border: 1px solid #1a1a1a;
+ }
+ .expand {
+   width: 100%;
+ }
+ tbody {
+   margin-top: 0.5em;
+ }
+ td {
+   padding: 0.125em 0.5em 0.25em 0.5em;
+ }
+ td.left {
+   text-align: left;
+ }
+ td.center {
+   text-align: center;
+ }
+ td.right {
+   text-align: right;
+ }
+ header {
+   margin-bottom: 4em;
+   text-align: center;
+ }
+ .header-date {
+   color: #666;
+ }
+ code{white-space: pre-wrap;}
+ </style>
+</head>
+<body>
+<header>
+<h1>KWST(1)</h1>
+<p class="header-date">2025-08-15</p>
+</header>
+<section>
+<h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
+
+<p>kwst -- KWin Scripting Tool
+</p>
+</section>
+<section>
+<h2 id="SYNOPSIS">SYNOPSIS <a aria-hidden="true" href="#SYNOPSIS">¶</a></h2>
+
+<p><b>kwst</b> &lt;command&gt; [<u>flags</u>]
+</p>
+</section>
+<section>
+<h2 id="DESCRIPTION">DESCRIPTION <a aria-hidden="true" href="#DESCRIPTION">¶</a></h2>
+
+<p>The KWin Scripting Tool is designed to control some functions of the K Window
+Manager (used by KDE Plasma) from the command line. It was written because no
+such tools currently target kwin_wayland. The main purpose of the tool is to
+provide something similar to <u>wmctrl</u> and other tools used to control X11 window
+managers implementing NET_WM and EWMH specifications.
+</p>
+</section>
+<section>
+<h2 id="GLOBAL_FLAGS">GLOBAL FLAGS <a aria-hidden="true" href="#GLOBAL_FLAGS">¶</a></h2>
+
+<blockquote><b>-h</b>, <b>--help</b><br>
+	Show context-sensitive help.
+</blockquote>
+
+<blockquote><b>-d</b>, <b>--debug</b><br>
+	Enable debug mode.
+</blockquote>
+
+<blockquote><b>--version</b><br>
+	Show version information and exit.
+</blockquote>
+
+<p></p>
+</section>
+<section>
+<h2 id="CONTEXT-SENSITIVE_HELP">CONTEXT-SENSITIVE HELP <a aria-hidden="true" href="#CONTEXT-SENSITIVE_HELP">¶</a></h2>
+
+<p>Run "kwst &lt;command&gt; --help" for more information on a command.
+</p>
+</section>
+<section>
+<h2 id="COMMANDS">COMMANDS <a aria-hidden="true" href="#COMMANDS">¶</a></h2>
+
+<blockquote><b>list</b> [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>List all windows. The data is returned as tab-separated rows containing the
+window's UUID, resourceClass and resourceName. Each window is represented
+by a separate row.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-s</b>, <b>--include-special-windows</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Include special windows that are not meant to be manipulated, e.g.
+plasmashell panels, desktop, etc. Such windows are not listed by
+default.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-c</b>, <b>--show-caption</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Show window captions in the list.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-p</b>, <b>--show-pids</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Show the PID of the process that the window belongs to (the PID is
+not guaranteed to be correct for X11 windows).
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote><b>find</b> &lt;search-term&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Search for windows using the specified search term.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-f</b>, <b>--search-field</b>="<u>resourceClass</u>"
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Specify the field to search in. Possible values: 'resourceClass'
+(default), 'resourceName', 'caption'.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-active-window</b>
+</blockquote>
+
+<blockquote>
+<blockquote>Get the UUID of the active window.
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-window-geometry</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Get the geometry (size and position) of the window with the specified UUID.
+The data is returned in the format required for the set-window-geometry
+command (x y width height).
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-workspace</b>
+</blockquote>
+
+<blockquote>
+<blockquote>Get the ID of the active workspace.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-workspace</b> &lt;workspace-id&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Switch to the workspace with the specified ID.
+</blockquote>
+</blockquote>
+
+<blockquote><b>activate-window</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Activate the window with the provided UUID, if such a window exists.
+</blockquote>
+</blockquote>
+
+<blockquote><b>previous-window</b>
+</blockquote>
+
+<blockquote>
+<blockquote>Switch to the second most recently active window. This command can be used
+to quickly switch between two windows.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-size</b> &lt;uuid&gt; &lt;width&gt; &lt;height&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Set the size of the window with the provided UUID, provided that
+such a window exists.		
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-position</b> &lt;uuid&gt; &lt;x&gt; &lt;y&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Set the position of the window with the provided UUID, provided
+that such a window exists.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-geometry</b> &lt;uuid&gt; &lt;x&gt; &lt;y&gt; &lt;width&gt; &lt;height&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Change geometry of the window with the provided UUID, provided
+that such a window exists.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-workspace</b> &lt;uuid&gt; &lt;workspace-id&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Send the window with the specified UUID to the workspace with the specified
+number, provided that both exist.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-property</b> <u>--property</u>=STRING <u>--value</u>=STRING &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Change the value of a property on a window with the specified UUID.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The required flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-p</b>, <b>--property=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Property to change the value of. Possible values of this flag:
+'keepAbove', 'keepBelow', 'shade', 'fullScreen', 'skipTaskbar',
+'skipPager', 'skipSwitcher'
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-v</b>, <b>--value=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Possible values: 'true', 'false', 'toggle'
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote><b>close-window</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Close the window with the provided UUID, provided that it exists.
+</blockquote>
+</blockquote>
+
+<blockquote><b>run-custom-script</b> [<u>parameters</u>] &lt;script-file&gt; 
+</blockquote>
+
+<blockquote>
+<blockquote>Run a custom script. Supports up to six optional parameters.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Optional parameters:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--parameter-1=STRING</b><br>
+<b>--parameter-2=STRING</b><br>
+<b>--parameter-3=STRING</b><br>
+<b>--parameter-4=STRING</b><br>
+<b>--parameter-5=STRING</b><br>
+<b>--parameter-6=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>See the "Running custom scripts" section for more information
+about optional parameters.
+</blockquote>
+</blockquote>
+
+<p></p>
+</section>
+<section>
+<h2 id="RUNNING_CUSTOM_SCRIPTS">RUNNING CUSTOM SCRIPTS <a aria-hidden="true" href="#RUNNING_CUSTOM_SCRIPTS">¶</a></h2>
+
+<p>Starting with version 1.0.0, <b>kwst</b> supports running custom scripts. Please see
+the recommended script template supplied with the program for further details.
+</p>
+
+<p>Custom scripts are parsed using Go's built-in 'text/template' package.
+</p>
+
+<p>kwst supports passing up to six parameters to your custom scripts:
+</p>
+
+<blockquote><b>kwst</b> run-custom-script [[<u>--parameter-1="value1"</u>] ... [<u>--parameter-6="value6"</u>]]
+&lt;/path/to/script/file.js&gt;
+</blockquote>
+
+<p>Inside your custom scripts, <b>{{.P1}}</b> will be replaced with the value of parameter 1,
+<b>{{.P2}}</b> will be replaced with the value of parameter 2, etc.
+</p>
+
+<p>You can also use comparisons:
+</p>
+
+<blockquote><b>{{if (eq .P1 "value1")}}</b>do something<b>{{else}}</b>do something else<b>{{end}}</b>
+</blockquote>
+
+<p>See Golang documentation for further information about Go's templating engine.
+</p>
+</section>
+<section>
+<h2 id="AUTHORS">AUTHORS <a aria-hidden="true" href="#AUTHORS">¶</a></h2>
+
+<p>Written and maintained by Pavel Urusov. Please see <u>https://github.com/SpinningVinyl/kwst</u>
+for up-to-date sources, etc.
+</p>
+</section>
+</body>
+</html>
