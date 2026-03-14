@@ -42,6 +42,7 @@ type CLI struct {
 	SetWindowProperty  SetWindowPropertyCmd  `cmd:"" help:"Change the value of a property on a window with the specified UUID."`
 	CloseWindow        CloseWindowCmd        `cmd:"" help:"Close the window with the provided UUID."`
 	RunCustomScript    RunCustomScriptCmd    `cmd:"" help:"Run a custom script. Supports up to six optional parameters."`
+	GetMousePosition   MousePosCmd           `cmd:"" help:"Return the absolute position of the mouse cursor."`
 }
 
 // parameters that are passed to the script template
