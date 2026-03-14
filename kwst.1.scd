@@ -126,6 +126,10 @@ Run "kwst <command> --help" for more information on a command.
 		See the "Running custom scripts" section for more information
 		about optional parameters.
 
+	*get-mouse-position*
+		Get the absolute position of the mouse cursor.
+
+
 # RUNNING CUSTOM SCRIPTS
 
 Starting with version 1.0.0, *kwst* supports running custom scripts. Please see
