@@ -187,9 +187,16 @@ func (rcsc *RunCustomScriptCmd) Run(sp *ScriptPackage) error {
 	return nil
 }
 
-type PreviousWindowCmd struct {}
+type PreviousWindowCmd struct{}
 
 func (pwc *PreviousWindowCmd) Run(sp *ScriptPackage) error {
-    sp.ScriptTemplate += JS_PREVIOUS_WINDOW
-    return nil
+	sp.ScriptTemplate += JS_PREVIOUS_WINDOW
+	return nil
+}
+
+type MousePosCmd struct{}
+
+func (mpc *MousePosCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_MOUSE_POS
+	return nil
 }

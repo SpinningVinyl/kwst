@@ -222,6 +222,15 @@ workspace.activeWindow = windowStack[windowStack.length - 2];
 
 `
 
+var JS_MOUSE_POS string = `debugLog(scriptName + " executing JS_MOUSE_POS");
+
+const x = workspace.cursorPos.x;
+const y = workspace.cursorPos.y;
+
+returnResult(x + " " + y);
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `
