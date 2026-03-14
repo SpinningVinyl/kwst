@@ -16,10 +16,11 @@ Here is the list of things that you can currently do with **kwst**:
 - Switch to the previous window in the window stack (this allows users to quickly switch between two most recently used windows).
 - Get window geometry (size and position).
 - Set window geometry (size and position).
+- Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
 - Get the number of the active workspace.
 - Switch to a workspace.
 - Send a window to a workspace.
-- Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
+- Get the absolute position of the mouse cursor.
 
 ## Wayland/X11
 
