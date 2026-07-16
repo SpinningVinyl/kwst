@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -74,6 +75,17 @@ type ScriptParams struct {
 type ScriptPackage struct {
 	ScriptTemplate string
 	Params         ScriptParams
+}
+
+// jsString returns value as a quoted JavaScript string literal. JSON string
+// literals are also valid JavaScript string literals and safely escape values
+// that would otherwise alter the generated script.
+func jsString(value string) (string, error) {
+	quoted, err := json.Marshal(value)
+	if err != nil {
+		return "", err
+	}
+	return string(quoted), nil
 }
 
 // define the DBus object for exporting
@@ -168,7 +180,9 @@ func main() {
 	ctx.FatalIfErrorf(err)
 
 	sp.ScriptTemplate += JS_FOOTER
-	tmpl, err := template.New("kwin_script").Parse(sp.ScriptTemplate)
+	tmpl, err := template.New("kwin_script").Funcs(template.FuncMap{
+		"jsString": jsString,
+	}).Parse(sp.ScriptTemplate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error parsing script template:", err)
 		os.Exit(1)
