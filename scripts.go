@@ -72,7 +72,7 @@ var JS_GET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_GET_WI
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
+    if (w.internalId == {{jsString .Uuid}}) {
          let result = Math.round(w.x) + " " + Math.round(w.y) + " " + w.width + " " + w.height;
          returnResult(result);
     }
@@ -101,8 +101,8 @@ var JS_ACTIVATE_WINDOW string = `debugLog(scriptName + " executing JS_ACTIVATE_W
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
-         debugLog("Activating window with UUID={{.Uuid}}");
+    if (w.internalId == {{jsString .Uuid}}) {
+         debugLog("Activating window with UUID=" + {{jsString .Uuid}});
          workspace.activeWindow = w;
     }
 }
@@ -114,8 +114,8 @@ var JS_SET_WINDOW_SIZE string = `debugLog(scriptName + " executing JS_SET_WINDOW
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
-        debugLog("New size for window with UUID={{.Uuid}}: width={{.Width}}, height={{.Height}}");
+    if (w.internalId == {{jsString .Uuid}}) {
+        debugLog("New size for window with UUID=" + {{jsString .Uuid}} + ": width={{.Width}}, height={{.Height}}");
         let newGeometry = Object.assign({}, w.frameGeometry);
         newGeometry.width = {{.Width}}
         newGeometry.height = {{.Height}}
@@ -130,8 +130,8 @@ var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WI
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
-        debugLog("New position for window with UUID={{.Uuid}}: X={{.X}}, Y={{.Y}}");
+    if (w.internalId == {{jsString .Uuid}}) {
+        debugLog("New position for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}");
         let newGeometry = Object.assign({}, w.frameGeometry);
         newGeometry.x = {{.X}}
         newGeometry.y = {{.Y}}
@@ -146,8 +146,8 @@ var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WI
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
-        debugLog("New geometry for window with UUID={{.Uuid}}: X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
+    if (w.internalId == {{jsString .Uuid}}) {
+        debugLog("New geometry for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
         let newGeometry = Object.assign({}, w.frameGeometry);
         newGeometry.width = {{.Width}}
         newGeometry.height = {{.Height}}
@@ -164,7 +164,7 @@ var JS_SET_WINDOW_WORKSPACE string = `debugLog(scriptName + " executing JS_SET_W
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     var w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
+    if (w.internalId == {{jsString .Uuid}}) {
         break;
     }
 }
@@ -183,8 +183,8 @@ var JS_SET_WINDOW_PROPERTY string = `debugLog(scriptName + " executing JS_SET_WI
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
-        debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID={{.Uuid}}");
+    if (w.internalId == {{jsString .Uuid}}) {
+        debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID=" + {{jsString .Uuid}});
         w.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!w.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}}
     }
 } 
@@ -196,8 +196,8 @@ var JS_CLOSE_WINDOW string = `debugLog(scriptName + " executing JS_SET_WINDOW_PR
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
-    if (w.internalId == "{{.Uuid}}") {
-        debugLog("Closing window with UUID={{.Uuid}}");
+    if (w.internalId == {{jsString .Uuid}}) {
+        debugLog("Closing window with UUID=" + {{jsString .Uuid}});
         w.closeWindow();
     }
 }
