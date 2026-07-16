@@ -3,17 +3,18 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"text/template"
 	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/godbus/dbus/v5"
 )
-
-var quit = make(chan int)
 
 var debug = false
 
@@ -89,31 +90,84 @@ func jsString(value string) (string, error) {
 }
 
 // define the DBus object for exporting
-type Server struct{}
+type Server struct {
+	done   chan int
+	failed atomic.Bool
+	once   sync.Once
+	stdout io.Writer
+	stderr io.Writer
+}
 
-func (s Server) Msg(msgType, message string) *dbus.Error {
+func newServer(stdout, stderr io.Writer) *Server {
+	return &Server{
+		done:   make(chan int, 1),
+		stdout: stdout,
+		stderr: stderr,
+	}
+}
+
+func (s *Server) Msg(msgType, message string) *dbus.Error {
 	if msgType == "result" {
-		fmt.Fprintln(os.Stdout, message)
+		fmt.Fprintln(s.stdout, message)
 	} else if msgType == "error" {
-		fmt.Fprintln(os.Stderr, "KWin script returned an error:", message)
+		s.failed.Store(true)
+		fmt.Fprintln(s.stderr, "KWin script returned an error:", message)
 	}
 	return nil
 }
 
-func (s Server) Close() *dbus.Error {
-	quit <- 0
+// Close is retained for compatibility with existing custom scripts. New
+// scripts should use CloseWithStatus so completion does not depend on the
+// ordering of separate Msg and Close calls.
+func (s *Server) Close() *dbus.Error {
+	exitCode := 0
+	if s.failed.Load() {
+		exitCode = 1
+	}
+	s.finish(exitCode)
 	return nil
 }
 
-func timerStart() {
-	delay := "5s"
+func (s *Server) CloseWithStatus(exitCode int32) *dbus.Error {
+	status := normalizeExitCode(int(exitCode))
+	if s.failed.Load() {
+		status = 1
+	}
+	s.finish(status)
+	return nil
+}
+
+func (s *Server) finish(exitCode int) {
+	s.once.Do(func() {
+		s.done <- exitCode
+	})
+}
+
+func normalizeExitCode(exitCode int) int {
+	if exitCode < 0 || exitCode > 255 {
+		return 1
+	}
+	return exitCode
+}
+
+func scriptTimeout(debug bool) time.Duration {
 	if debug {
-		delay = "5m"
+		return 5 * time.Minute
 	}
-	duration, _ := time.ParseDuration(delay)
-	time.Sleep(duration)
-	fmt.Fprintln(os.Stderr, "Close() call not received from KWin scripting. Timing out...")
-	quit <- 0
+	return 5 * time.Second
+}
+
+func waitForCompletion(done <-chan int, timeout time.Duration, stderr io.Writer) int {
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	select {
+	case exitCode := <-done:
+		return normalizeExitCode(exitCode)
+	case <-timer.C:
+		fmt.Fprintln(stderr, "Close() call not received from KWin scripting. Timing out...")
+		return 124
+	}
 }
 
 func debugPrint(a ...any) {
@@ -128,11 +182,14 @@ func debugPrint(a ...any) {
 }
 
 func main() {
+	os.Exit(run())
+}
 
+func run() int {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Println(Version)
 		fmt.Println(BuildTime)
-		os.Exit(0)
+		return 0
 	}
 
 	cli := CLI{}
@@ -149,8 +206,9 @@ func main() {
 	scriptFile, err := os.CreateTemp(os.TempDir(), "kwst-*")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating temporary file:", err)
-		os.Exit(1)
+		return 1
 	}
+	defer scriptFile.Close()
 	debugPrint("Temp script file name:", scriptFile.Name())
 	if !debug { // do not delete the script file in the debug mode
 		defer os.Remove(scriptFile.Name())
@@ -160,13 +218,16 @@ func main() {
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to connect to session bus:", err)
-		os.Exit(1)
+		return 1
 	}
 	defer conn.Close()
 	debugPrint("DBus address:", conn.Names()[0])
 
-	s := Server{}
-	conn.Export(s, "/net/prsv/kwst", "net.prsv.kwst")
+	s := newServer(os.Stdout, os.Stderr)
+	if err := conn.Export(s, "/net/prsv/kwst", "net.prsv.kwst"); err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to export D-Bus server:", err)
+		return 1
+	}
 
 	// create and populate the ScriptParams struct
 	var sp ScriptPackage
@@ -177,7 +238,10 @@ func main() {
 	// process the template depending on the command line arguments
 	sp.ScriptTemplate = JS_HEADER
 	err = ctx.Run(&sp)
-	ctx.FatalIfErrorf(err)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
 
 	sp.ScriptTemplate += JS_FOOTER
 	tmpl, err := template.New("kwin_script").Funcs(template.FuncMap{
@@ -185,29 +249,44 @@ func main() {
 	}).Parse(sp.ScriptTemplate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error parsing script template:", err)
-		os.Exit(1)
+		return 1
 	}
-	tmpl.Execute(scriptFile, sp.Params)
+	if err := tmpl.Execute(scriptFile, sp.Params); err != nil {
+		fmt.Fprintln(os.Stderr, "Error executing script template:", err)
+		return 1
+	}
+	if err := scriptFile.Close(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error closing temporary script file:", err)
+		return 1
+	}
 
 	// get the KWin object and load the script
 	var scriptId int
 	kwinConn := conn.Object("org.kde.KWin", "/Scripting")
 	err = kwinConn.Call("loadScript", 0, scriptFile.Name(), sp.Params.ScriptName).Store(&scriptId)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to load KWin script:", err)
+		return 1
+	}
 	debugPrint("Registered script ID:", strconv.Itoa(scriptId))
 
 	// get the script object and run the script
 	scriptConn := conn.Object("org.kde.KWin", dbus.ObjectPath(fmt.Sprintf("/Scripting/Script%d", scriptId)))
-	scriptConn.Call("org.kde.kwin.Script.run", 0)
-
-	// make sure that the program eventually exits even if we do not receive the Close() call
-	go timerStart()
-
-	select {
-	case <-quit:
-		// give it some time to finish receiving and processing DBus messages
-		time.Sleep(5 * time.Millisecond)
-		// unload the script from KWin
-		kwinConn.Call("unloadScript", 0, sp.Params.ScriptName)
-		return
+	if call := scriptConn.Call("org.kde.kwin.Script.run", 0); call.Err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to run KWin script:", call.Err)
+		if unloadCall := kwinConn.Call("unloadScript", 0, sp.Params.ScriptName); unloadCall.Err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to unload KWin script:", unloadCall.Err)
+		}
+		return 1
 	}
+
+	exitCode := waitForCompletion(s.done, scriptTimeout(debug), os.Stderr)
+
+	// give it some time to finish receiving and processing DBus messages
+	time.Sleep(5 * time.Millisecond)
+	if call := kwinConn.Call("unloadScript", 0, sp.Params.ScriptName); call.Err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to unload KWin script:", call.Err)
+		return 1
+	}
+	return exitCode
 }
