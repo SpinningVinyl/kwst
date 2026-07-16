@@ -61,6 +61,37 @@ func TestUUIDIsEscapedInGeneratedScript(t *testing.T) {
 	}
 }
 
+func TestSearchTermIsEscapedInGeneratedScript(t *testing.T) {
+	params := ScriptParams{
+		SearchTerm:  "term\"` ${malicious} \\\nnext line",
+		SearchField: "caption",
+	}
+	tmpl, err := template.New("test").Funcs(template.FuncMap{
+		"jsString": jsString,
+	}).Parse(JS_FIND)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var script strings.Builder
+	if err := tmpl.Execute(&script, params); err != nil {
+		t.Fatal(err)
+	}
+
+	quotedSearchTerm, err := jsString(params.SearchTerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated := script.String()
+	expected := "const regExp = new RegExp(" + quotedSearchTerm + ", 'i');"
+	if !strings.Contains(generated, expected) {
+		t.Fatalf("generated script does not contain %q:\n%s", expected, generated)
+	}
+	if strings.Contains(generated, "String.raw`") {
+		t.Fatalf("generated script still uses an unsafe template literal:\n%s", generated)
+	}
+}
+
 func TestSetWindowWorkspaceGuardsMissingWindow(t *testing.T) {
 	params := ScriptParams{
 		Uuid:        `missing\"; malicious(); //`,

@@ -51,8 +51,8 @@ var JS_FIND string = `debugLog(scriptName + " executing JS_SEARCH");
 
 const allWindows = workspace.windowList();
 let results = [];
-` + "const regExp = new RegExp(String.raw`{{.SearchTerm}}`, 'i');\n" +
-	`for (let i = 0; i < allWindows.length; i++) {
+const regExp = new RegExp({{jsString .SearchTerm}}, 'i');
+for (let i = 0; i < allWindows.length; i++) {
     let w = allWindows[i];
     if (w.{{.SearchField}}.search(regExp) >= 0) {
         results.push(w);
