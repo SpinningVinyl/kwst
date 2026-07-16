@@ -55,3 +55,41 @@ func TestUUIDIsEscapedInGeneratedScript(t *testing.T) {
 		t.Fatalf("quoted UUID occurs %d times in generated script, want 2:\n%s", occurrences, script.String())
 	}
 }
+
+func TestSetWindowWorkspaceGuardsMissingWindow(t *testing.T) {
+	params := ScriptParams{
+		Uuid:        `missing\"; malicious(); //`,
+		WorkspaceId: 3,
+	}
+	tmpl, err := template.New("test").Funcs(template.FuncMap{
+		"jsString": jsString,
+	}).Parse(JS_SET_WINDOW_WORKSPACE)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var script strings.Builder
+	if err := tmpl.Execute(&script, params); err != nil {
+		t.Fatal(err)
+	}
+
+	quotedUUID, err := jsString(params.Uuid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated := script.String()
+	for _, expected := range []string{
+		"const targetWindow = workspace.windowList().find(",
+		"window.internalId == " + quotedUUID,
+		"if (!targetWindow)",
+		`returnError("Window not found: " + ` + quotedUUID + `);`,
+		"targetWindow.desktops = [targetWorkspace];",
+	} {
+		if !strings.Contains(generated, expected) {
+			t.Errorf("generated script does not contain %q:\n%s", expected, generated)
+		}
+	}
+	if strings.Contains(generated, "var w = allWindows[i]") {
+		t.Errorf("generated script still uses the unsafe fall-through window lookup:\n%s", generated)
+	}
+}
