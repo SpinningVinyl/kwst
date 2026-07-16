@@ -50,7 +50,7 @@ to finish returns status 124.
 			Include special windows that are not meant to be manipulated, e.g.
 			plasmashell panels, desktop, etc. Such windows are not listed by
 			default.
-		*-c*, *--show-caption*
+		*-c*, *--show-captions*
 			Show window captions in the list.
 		*-p*, *--show-pids*
 			Show the PID of the process that the window belongs to (the PID is
@@ -138,7 +138,7 @@ to finish returns status 124.
 
 # RUNNING CUSTOM SCRIPTS
 
-Starting with version 1.0.0, *kwst* supports running custom scripts. Please see
+Starting with version 1.1.0, *kwst* supports running custom scripts. Please see
 the recommended script template supplied with the program for further details.
 
 Custom scripts are parsed using Go's built-in 'text/template' package.
@@ -161,4 +161,3 @@ See Golang documentation for further information about Go's templating engine.
 
 Written and maintained by Pavel Urusov. Please see _https://github.com/SpinningVinyl/kwst_
 for up-to-date sources, etc.
-
