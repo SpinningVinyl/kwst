@@ -161,19 +161,19 @@ for (let i = 0; i < allWindows.length; i++) {
 
 var JS_SET_WINDOW_WORKSPACE string = `debugLog(scriptName + " executing JS_SET_WINDOW_WORKSPACE");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    var w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-        break;
-    }
-}
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+const targetWorkspace = workspace.desktops.find(
+    (desktop) => desktop.x11DesktopNumber == {{.WorkspaceId}}
+);
 
-let ws = workspace.desktops.find((ws) => ws.x11DesktopNumber == {{.WorkspaceId}});
-if (ws) {
-    w.desktops = [ws];
-} else {
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else if (!targetWorkspace) {
     returnError("Invalid workspace number: " + {{.WorkspaceId}});
+} else {
+    targetWindow.desktops = [targetWorkspace];
 }
 
 `
