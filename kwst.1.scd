@@ -31,6 +31,12 @@ managers implementing NET_WM and EWMH specifications.
 
 Run "kwst <command> --help" for more information on a command.
 
+# EXIT STATUS
+
+*kwst* exits with status 0 when a command succeeds and a non-zero status when
+setup, DBus, or KWin script execution fails. A timeout waiting for a KWin script
+to finish returns status 124.
+
 # COMMANDS
 
 	*list* [_flags_]
@@ -155,5 +161,4 @@ See Golang documentation for further information about Go's templating engine.
 
 Written and maintained by Pavel Urusov. Please see _https://github.com/SpinningVinyl/kwst_
 for up-to-date sources, etc.
-
 

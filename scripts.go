@@ -6,6 +6,8 @@ const debug = {{.Debug}};
 
 const scriptName = "{{.ScriptName}}";
 
+let exitCode = 0;
+
 const debugLog = (msg) => {
     if (debug) {
         print(msg.toString());
@@ -13,8 +15,8 @@ const debugLog = (msg) => {
 }
 
 const close = () => {
-    debugLog("Calling Close() on " + dbusAddr); 
-    callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "Close");
+    debugLog("Calling CloseWithStatus() on " + dbusAddr);
+    callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "CloseWithStatus", exitCode);
 }
 
 const returnResult = (msgBody) => {
@@ -23,6 +25,7 @@ const returnResult = (msgBody) => {
 }
 
 const returnError = (msgBody) => {
+    exitCode = 1;
     debugLog("ERROR: " + msgBody);
     callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "Msg", "error", msgBody.toString());
 }

@@ -32,6 +32,10 @@ Run `kwst --help` to get context-sensitive help. Run `kwst <command> --help` for
 
 Also check shell scripts in the `_examples` directory to get an idea of what you can use **kwst** for.
 
+## Exit status
+
+**kwst** exits with status 0 when a command succeeds and a non-zero status when setup, D-Bus, or KWin script execution fails. A timeout waiting for a KWin script to finish returns status 124.
+
 ## Running custom scripts
 
 Since version 1.1.0, **kwst** supports running custom scripts. Please see the recommended script template in `custom-script-template.js` and example scripts in the `_examples` directory.

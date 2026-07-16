@@ -4,6 +4,8 @@ const debug = {{.Debug}};
 
 const scriptName = "{{.ScriptName}}";
 
+let exitCode = 0;
+
 // use this function to print debug messages to the system log.
 // the messages will be printed only if kwst is called with the `--debug` flag.
 // to make sure that debug messages are added to the system log, 
@@ -20,8 +22,8 @@ const debugLog = (msg) => {
 // it tells kwst that the script is done and terminates the execution
 // of the program.
 const close = () => {
-    debugLog("Calling Close() on " + dbusAddr); 
-    callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "Close");
+    debugLog("Calling CloseWithStatus() on " + dbusAddr);
+    callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "CloseWithStatus", exitCode);
 }
 
 // use this function to return results back to kwst. The results
@@ -32,8 +34,9 @@ const returnResult = (msgBody) => {
 }
 
 // use this function to return errors back to kwst. The errors
-// will be printed to stderr
+// will be printed to stderr and kwst will exit with a non-zero status.
 const returnError = (msgBody) => {
+    exitCode = 1;
     debugLog("ERROR: " + msgBody);
     callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "Msg", "error", msgBody.toString());
 }

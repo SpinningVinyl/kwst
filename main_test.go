@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"io"
 	"strings"
 	"testing"
 	"text/template"
+	"time"
+
+	"github.com/godbus/dbus/v5/introspect"
 )
 
 func TestJSString(t *testing.T) {
@@ -91,5 +96,94 @@ func TestSetWindowWorkspaceGuardsMissingWindow(t *testing.T) {
 	}
 	if strings.Contains(generated, "var w = allWindows[i]") {
 		t.Errorf("generated script still uses the unsafe fall-through window lookup:\n%s", generated)
+	}
+}
+
+func TestServerCloseWithStatus(t *testing.T) {
+	server := newServer(io.Discard, io.Discard)
+	if err := server.CloseWithStatus(1); err != nil {
+		t.Fatalf("CloseWithStatus returned a D-Bus error: %v", err)
+	}
+
+	if exitCode := <-server.done; exitCode != 1 {
+		t.Fatalf("exit code = %d, want 1", exitCode)
+	}
+}
+
+func TestCloseWithStatusDBusSignature(t *testing.T) {
+	for _, method := range introspect.Methods(newServer(io.Discard, io.Discard)) {
+		if method.Name != "CloseWithStatus" {
+			continue
+		}
+		if len(method.Args) != 1 || method.Args[0].Type != "i" || method.Args[0].Direction != "in" {
+			t.Fatalf("CloseWithStatus D-Bus arguments = %#v, want one INT32 input", method.Args)
+		}
+		return
+	}
+	t.Fatal("CloseWithStatus is not exported over D-Bus")
+}
+
+func TestLegacyCloseReportsPriorScriptError(t *testing.T) {
+	server := newServer(io.Discard, io.Discard)
+	if err := server.Msg("error", "invalid workspace"); err != nil {
+		t.Fatalf("Msg returned a D-Bus error: %v", err)
+	}
+	if err := server.Close(); err != nil {
+		t.Fatalf("Close returned a D-Bus error: %v", err)
+	}
+
+	if exitCode := <-server.done; exitCode != 1 {
+		t.Fatalf("exit code = %d, want 1", exitCode)
+	}
+}
+
+func TestWaitForCompletion(t *testing.T) {
+	done := make(chan int, 1)
+	done <- 1
+
+	if exitCode := waitForCompletion(done, time.Second, io.Discard); exitCode != 1 {
+		t.Fatalf("exit code = %d, want 1", exitCode)
+	}
+}
+
+func TestWaitForCompletionTimesOut(t *testing.T) {
+	var stderr bytes.Buffer
+	exitCode := waitForCompletion(make(chan int), time.Nanosecond, &stderr)
+
+	if exitCode != 124 {
+		t.Fatalf("exit code = %d, want 124", exitCode)
+	}
+	if !strings.Contains(stderr.String(), "Timing out") {
+		t.Fatalf("timeout message not written to stderr: %q", stderr.String())
+	}
+}
+
+func TestGeneratedScriptReportsExitStatus(t *testing.T) {
+	for _, expected := range []string{
+		"let exitCode = 0;",
+		"exitCode = 1;",
+		`"CloseWithStatus", exitCode`,
+	} {
+		if !strings.Contains(JS_HEADER, expected) {
+			t.Errorf("JS_HEADER does not contain %q", expected)
+		}
+	}
+}
+
+func TestNormalizeExitCode(t *testing.T) {
+	for _, test := range []struct {
+		input int
+		want  int
+	}{
+		{input: -1, want: 1},
+		{input: 0, want: 0},
+		{input: 1, want: 1},
+		{input: 124, want: 124},
+		{input: 255, want: 255},
+		{input: 256, want: 1},
+	} {
+		if got := normalizeExitCode(test.input); got != test.want {
+			t.Errorf("normalizeExitCode(%d) = %d, want %d", test.input, got, test.want)
+		}
 	}
 }
