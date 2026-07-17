@@ -76,6 +76,12 @@ make && sudo make install
 
 If you have [scdoc](https://git.sr.ht/~sircmpwn/scdoc) installed, this should also generate and install the man page.
 
+## Integration tests
+
+An opt-in integration suite exercises the compiled program against a live KWin
+session using KDialog fixture windows. See [`integration/README.md`](integration/README.md)
+for prerequisites, safety notes, and execution instructions.
+
 ## License
 
 The project is licensed under the terms of GNU GPLv2 or later license.
