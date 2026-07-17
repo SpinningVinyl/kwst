@@ -94,6 +94,16 @@ func TestKWinWorkflow(t *testing.T) {
 	}
 
 	kwst := buildKWST(t)
+	t.Run("find rejects invalid regular expression", func(t *testing.T) {
+		result := runKWST(t, kwst, "find", "[")
+		if result.exitCode != 1 {
+			t.Fatalf("find with an invalid regular expression returned exit code %d, want 1:\n%s", result.exitCode, result.String())
+		}
+		if !strings.Contains(result.stderr, "Invalid regular expression") {
+			t.Fatalf("find with an invalid regular expression did not report the error:\n%s", result.String())
+		}
+	})
+
 	originalWorkspace := getWorkspace(t, kwst)
 
 	runID := fmt.Sprintf("%d-%d", os.Getpid(), time.Now().UnixNano())

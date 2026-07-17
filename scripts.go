@@ -51,15 +51,22 @@ var JS_FIND string = `debugLog(scriptName + " executing JS_SEARCH");
 
 const allWindows = workspace.windowList();
 let results = [];
-const regExp = new RegExp({{jsString .SearchTerm}}, 'i');
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.{{.SearchField}}.search(regExp) >= 0) {
-        results.push(w);
-    }
+let regExp;
+try {
+    regExp = new RegExp({{jsString .SearchTerm}}, 'i');
+} catch (error) {
+    returnError("Invalid regular expression: " + error.message);
 }
-for (let i = 0; i < results.length; i++) {
-    returnResult(results[i].internalId);
+if (regExp) {
+    for (let i = 0; i < allWindows.length; i++) {
+        let w = allWindows[i];
+        if (w.{{.SearchField}}.search(regExp) >= 0) {
+            results.push(w);
+        }
+    }
+    for (let i = 0; i < results.length; i++) {
+        returnResult(results[i].internalId);
+    }
 }
 
 `
