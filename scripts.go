@@ -66,7 +66,12 @@ for (let i = 0; i < results.length; i++) {
 
 var JS_GET_ACTIVE_WINDOW string = `debugLog(scriptName + " executing JS_GET_ACTIVE_WINDOW");
 
-returnResult(workspace.activeWindow.internalId);
+const activeWindow = workspace.activeWindow;
+if (activeWindow.specialWindow) {
+    returnError("No active regular window");
+} else {
+    returnResult(activeWindow.internalId);
+}
 
 `
 

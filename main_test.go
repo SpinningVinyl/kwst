@@ -92,6 +92,19 @@ func TestSearchTermIsEscapedInGeneratedScript(t *testing.T) {
 	}
 }
 
+func TestGetActiveWindowRejectsSpecialWindow(t *testing.T) {
+	for _, expected := range []string{
+		"const activeWindow = workspace.activeWindow;",
+		"if (activeWindow.specialWindow)",
+		`returnError("No active regular window");`,
+		"returnResult(activeWindow.internalId);",
+	} {
+		if !strings.Contains(JS_GET_ACTIVE_WINDOW, expected) {
+			t.Errorf("JS_GET_ACTIVE_WINDOW does not contain %q", expected)
+		}
+	}
+}
+
 func TestSetWindowWorkspaceGuardsMissingWindow(t *testing.T) {
 	params := ScriptParams{
 		Uuid:        `missing\"; malicious(); //`,
