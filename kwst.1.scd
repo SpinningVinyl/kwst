@@ -82,10 +82,6 @@ to finish returns status 124.
 	*activate-window* <uuid>
 		Activate the window with the provided UUID, if such a window exists.
 
-	*previous-window*
-		Switch to the second most recently active window. This command can be used
-		to quickly switch between two windows.
-
 	*set-window-size* <uuid> <width> <height>
 		Set the size of the window with the provided UUID, provided that
 		such a window exists.		

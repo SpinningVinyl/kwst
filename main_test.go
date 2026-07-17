@@ -148,24 +148,6 @@ func TestGetActiveWindowRejectsSpecialWindow(t *testing.T) {
 	}
 }
 
-func TestPreviousWindowGuardsShortWindowStack(t *testing.T) {
-	for _, expected := range []string{
-		"if (windowStack.length < 2)",
-		`returnError("No previous window available");`,
-		"workspace.activeWindow = windowStack[windowStack.length - 2];",
-	} {
-		if !strings.Contains(JS_PREVIOUS_WINDOW, expected) {
-			t.Errorf("JS_PREVIOUS_WINDOW does not contain %q", expected)
-		}
-	}
-
-	guard := strings.Index(JS_PREVIOUS_WINDOW, "if (windowStack.length < 2)")
-	activation := strings.Index(JS_PREVIOUS_WINDOW, "workspace.activeWindow =")
-	if guard < 0 || activation < guard {
-		t.Error("previous-window activation is not protected by the short-stack guard")
-	}
-}
-
 func TestSetWindowWorkspaceGuardsMissingWindow(t *testing.T) {
 	params := ScriptParams{
 		Uuid:        `missing\"; malicious(); //`,
