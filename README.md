@@ -13,7 +13,6 @@ Here is the list of things that you can currently do with **kwst**:
 - Get the UUID of the active window.
 - Activate a window.
 - Close a window.
-- Switch to the previous window in the window stack (this allows users to quickly switch between two most recently used windows).
 - Get window geometry (size and position).
 - Set window geometry (size and position).
 - Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
@@ -31,6 +30,13 @@ I personally use (and extensively test) **kwst** in Wayland, but as far as I und
 Run `kwst --help` to get context-sensitive help. Run `kwst <command> --help` for more information on a command.
 
 Also check shell scripts in the `_examples` directory to get an idea of what you can use **kwst** for.
+
+## Optional previous-window shortcut
+
+The [`kwin-previous-window-script`](kwin-previous-window-script/README.md)
+directory contains an optional resident KWin script that tracks window
+activation and provides a shortcut for switching to the previously active
+window. It is installed separately and is not required for any **kwst** command.
 
 ## Exit status
 

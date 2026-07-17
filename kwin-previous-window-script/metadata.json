@@ -1,0 +1,19 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "31886681+SpinningVinyl@users.noreply.github.com",
+                "Name": "Pavel Urusov"
+            }
+        ],
+        "Description": "Tracks window activation and switches to the previously active window.",
+        "Id": "net.prsv.kwst.previouswindow",
+        "License": "GPL-2.0-or-later",
+        "Name": "KWST Previous Window",
+        "Version": "1.0.0",
+        "Website": "https://github.com/SpinningVinyl/kwst"
+    },
+    "KPackageStructure": "KWin/Script",
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}

@@ -123,12 +123,6 @@ func TestKWinWorkflow(t *testing.T) {
 	activateAndVerify(t, kwst, first)
 	activateAndVerify(t, kwst, second)
 
-	requireSuccess(t, runKWST(t, kwst, "previous-window"), "switch to the previous window")
-	eventually(t, "the first fixture to become active again", func() (bool, string) {
-		result := runKWST(t, kwst, "get-active-window")
-		return result.exitCode == 0 && result.stdout == first.uuid, result.String()
-	})
-
 	resizeAndMoveFixture(t, kwst, first)
 
 	t.Run("change active workspace", func(t *testing.T) {

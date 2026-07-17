@@ -219,28 +219,6 @@ for (let i = 0; i < allWindows.length; i++) {
 
 `
 
-var JS_PREVIOUS_WINDOW string = `debugLog(scriptName + " executing JS_PREVIOUS_WINDOW");
-
-const allWindows = workspace.windowList();
-const windowStack = [];
-for (let i = 0; i < workspace.stackingOrder.length; i++) {
-    let w = workspace.stackingOrder[i];
-    if (w.resourceClass == 'plasmashell' || 
-        w.resourceClass == 'xwaylandvideobridge' ||
-        !allWindows.includes(w)) {
-        continue;
-    }
-    windowStack.push(w);
-}
-
-if (windowStack.length < 2) {
-    returnError("No previous window available");
-} else {
-    workspace.activeWindow = windowStack[windowStack.length - 2];
-}
-
-`
-
 var JS_MOUSE_POS string = `debugLog(scriptName + " executing JS_MOUSE_POS");
 
 const x = workspace.cursorPos.x;
