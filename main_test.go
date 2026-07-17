@@ -83,12 +83,55 @@ func TestSearchTermIsEscapedInGeneratedScript(t *testing.T) {
 		t.Fatal(err)
 	}
 	generated := script.String()
-	expected := "const regExp = new RegExp(" + quotedSearchTerm + ", 'i');"
+	expected := "regExp = new RegExp(" + quotedSearchTerm + ", 'i');"
 	if !strings.Contains(generated, expected) {
 		t.Fatalf("generated script does not contain %q:\n%s", expected, generated)
 	}
 	if strings.Contains(generated, "String.raw`") {
 		t.Fatalf("generated script still uses an unsafe template literal:\n%s", generated)
+	}
+}
+
+func TestFindHandlesInvalidRegularExpression(t *testing.T) {
+	params := ScriptParams{
+		SearchTerm:  "[invalid",
+		SearchField: "caption",
+	}
+	tmpl, err := template.New("test").Funcs(template.FuncMap{
+		"jsString": jsString,
+	}).Parse(JS_FIND)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var script strings.Builder
+	if err := tmpl.Execute(&script, params); err != nil {
+		t.Fatal(err)
+	}
+
+	generated := script.String()
+	quotedSearchTerm, err := jsString(params.SearchTerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, expected := range []string{
+		"let regExp;",
+		"try {",
+		"regExp = new RegExp(" + quotedSearchTerm + ", 'i');",
+		"catch (error)",
+		`returnError("Invalid regular expression: " + error.message);`,
+		"if (regExp)",
+	} {
+		if !strings.Contains(generated, expected) {
+			t.Errorf("generated script does not contain %q:\n%s", expected, generated)
+		}
+	}
+
+	errorHandler := strings.Index(generated, `returnError("Invalid regular expression: " + error.message);`)
+	searchGuard := strings.Index(generated, "if (regExp)")
+	windowSearch := strings.Index(generated, ".search(regExp)")
+	if errorHandler < 0 || searchGuard < errorHandler || windowSearch < searchGuard {
+		t.Errorf("window search is not protected by the regular-expression guard:\n%s", generated)
 	}
 }
 
