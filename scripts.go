@@ -226,7 +226,11 @@ for (let i = 0; i < workspace.stackingOrder.length; i++) {
     windowStack.push(w);
 }
 
-workspace.activeWindow = windowStack[windowStack.length - 2];
+if (windowStack.length < 2) {
+    returnError("No previous window available");
+} else {
+    workspace.activeWindow = windowStack[windowStack.length - 2];
+}
 
 `
 
