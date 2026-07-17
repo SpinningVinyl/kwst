@@ -4,6 +4,8 @@ PREFIX ?= /usr/local
 DESTDIR ?=
 BUILD_DIR := build
 
+.PHONY: integration-test
+
 build: *.go *.scd
 	mkdir -p $(BUILD_DIR)
 	go build -a -o $(BUILD_DIR)/kwst -v -ldflags="-X 'main.Version=$$(git describe --always)' -X 'main.BuildTime=$$(date)'"
@@ -21,3 +23,6 @@ install: build
 		install -d "$(DESTDIR)$(PREFIX)/share/man/man1"; \
 		install -m 0644 $(BUILD_DIR)/kwst.1.gz "$(DESTDIR)$(PREFIX)/share/man/man1/kwst.1.gz"; \
 	fi
+
+integration-test:
+	KWST_INTEGRATION=1 go test -tags=integration -count=1 -timeout=2m ./integration
