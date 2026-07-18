@@ -15,14 +15,21 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/godbus/dbus/v5"
 )
 
 const (
-	integrationEnvironment = "KWST_INTEGRATION"
-	commandTimeout         = 10 * time.Second
-	stateTimeout           = 10 * time.Second
-	pollInterval           = 100 * time.Millisecond
-	customScriptMarker     = "// your code goes here"
+	integrationEnvironment    = "KWST_INTEGRATION"
+	commandTimeout            = 10 * time.Second
+	stateTimeout              = 10 * time.Second
+	pollInterval              = 100 * time.Millisecond
+	customScriptMarker        = "// your code goes here"
+	previousWindowPackageID   = "net.prsv.kwst.previouswindow"
+	previousWindowShortcut    = "[KWST] Switch to previously active window"
+	globalAccelService        = "org.kde.kglobalaccel"
+	globalAccelComponentPath  = dbus.ObjectPath("/component/kwin")
+	globalAccelComponentIFace = "org.kde.kglobalaccel.Component"
 )
 
 const createWorkspaceScript = `const desktopName = {{jsString .P1}};
@@ -78,20 +85,7 @@ type fixtureWindow struct {
 }
 
 func TestKWinWorkflow(t *testing.T) {
-	if os.Getenv(integrationEnvironment) != "1" {
-		t.Skipf("set %s=1 to run tests against the current KWin session", integrationEnvironment)
-	}
-	if os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
-		t.Fatal("DBUS_SESSION_BUS_ADDRESS is not set")
-	}
-	if os.Getenv("WAYLAND_DISPLAY") == "" && os.Getenv("DISPLAY") == "" {
-		t.Fatal("neither WAYLAND_DISPLAY nor DISPLAY is set")
-	}
-
-	kdialog, err := exec.LookPath("kdialog")
-	if err != nil {
-		t.Fatal("KDialog is not installed or is not available in PATH")
-	}
+	kdialog := requireIntegrationEnvironment(t)
 
 	kwst := buildKWST(t)
 	t.Run("find rejects invalid regular expression", func(t *testing.T) {
@@ -110,15 +104,7 @@ func TestKWinWorkflow(t *testing.T) {
 	first := startFixtureWindow(t, kdialog, "kwst-integration-"+runID+"-one")
 	second := startFixtureWindow(t, kdialog, "kwst-integration-"+runID+"-two")
 
-	eventually(t, "both KDialog fixtures to appear in kwst list", func() (bool, string) {
-		result := runKWST(t, kwst, "list", "--show-captions")
-		if result.exitCode != 0 {
-			return false, result.String()
-		}
-		first.uuid = windowUUID(result.stdout, first.title)
-		second.uuid = windowUUID(result.stdout, second.title)
-		return first.uuid != "" && second.uuid != "", result.stdout
-	})
+	waitForFixtureWindows(t, kwst, first, second)
 
 	activateAndVerify(t, kwst, first)
 	activateAndVerify(t, kwst, second)
@@ -169,6 +155,122 @@ func TestKWinWorkflow(t *testing.T) {
 			removeTemporaryWorkspace = false
 		}
 	})
+
+	closeFixtureWindows(t, kwst, first, second)
+}
+
+func TestPreviousWindowScript(t *testing.T) {
+	kdialog := requireIntegrationEnvironment(t)
+
+	if !kwinPackageInstalled(t, previousWindowPackageID) {
+		t.Skipf("optional KWin package %q is not installed", previousWindowPackageID)
+	}
+
+	connection, err := dbus.ConnectSessionBus()
+	if err != nil {
+		t.Fatalf("connect to session D-Bus: %v", err)
+	}
+	defer connection.Close()
+
+	component := connection.Object(globalAccelService, globalAccelComponentPath)
+	if !shortcutRegistered(t, component, previousWindowShortcut) {
+		t.Skipf("optional KWin shortcut %q is not registered", previousWindowShortcut)
+	}
+
+	kwst := buildKWST(t)
+	runID := fmt.Sprintf("%d-%d", os.Getpid(), time.Now().UnixNano())
+	first := startFixtureWindow(t, kdialog, "kwst-previous-window-"+runID+"-one")
+	second := startFixtureWindow(t, kdialog, "kwst-previous-window-"+runID+"-two")
+
+	waitForFixtureWindows(t, kwst, first, second)
+	activateAndVerify(t, kwst, first)
+	activateAndVerify(t, kwst, second)
+
+	if call := component.Call(globalAccelComponentIFace+".invokeShortcut", 0, previousWindowShortcut); call.Err != nil {
+		t.Fatalf("invoke optional previous-window shortcut: %v", call.Err)
+	}
+	eventually(t, "the first fixture to become active through the previous-window shortcut", func() (bool, string) {
+		result := runKWST(t, kwst, "get-active-window")
+		return result.exitCode == 0 && result.stdout == first.uuid, result.String()
+	})
+
+	closeFixtureWindows(t, kwst, first, second)
+}
+
+func requireIntegrationEnvironment(t *testing.T) string {
+	t.Helper()
+
+	if os.Getenv(integrationEnvironment) != "1" {
+		t.Skipf("set %s=1 to run tests against the current KWin session", integrationEnvironment)
+	}
+	if os.Getenv("DBUS_SESSION_BUS_ADDRESS") == "" {
+		t.Fatal("DBUS_SESSION_BUS_ADDRESS is not set")
+	}
+	if os.Getenv("WAYLAND_DISPLAY") == "" && os.Getenv("DISPLAY") == "" {
+		t.Fatal("neither WAYLAND_DISPLAY nor DISPLAY is set")
+	}
+
+	kdialog, err := exec.LookPath("kdialog")
+	if err != nil {
+		t.Fatal("KDialog is not installed or is not available in PATH")
+	}
+	return kdialog
+}
+
+func kwinPackageInstalled(t *testing.T, packageID string) bool {
+	t.Helper()
+
+	kpackageTool, err := exec.LookPath("kpackagetool6")
+	if err != nil {
+		t.Log("cannot verify optional KWin package: kpackagetool6 is not available in PATH")
+		return false
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), commandTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, kpackageTool, "--type=KWin/Script", "--show", packageID)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			t.Fatalf("checking optional KWin package exceeded %s", commandTimeout)
+		}
+		t.Logf("optional KWin package check failed: %v: %s", err, strings.TrimSpace(string(output)))
+		return false
+	}
+	return true
+}
+
+func shortcutRegistered(t *testing.T, component dbus.BusObject, shortcutName string) bool {
+	t.Helper()
+
+	var shortcutNames []string
+	if call := component.Call(globalAccelComponentIFace+".shortcutNames", 0); call.Err != nil {
+		t.Fatalf("list KGlobalAccel shortcuts: %v", call.Err)
+	} else if err := call.Store(&shortcutNames); err != nil {
+		t.Fatalf("decode KGlobalAccel shortcut names: %v", err)
+	}
+	for _, registeredName := range shortcutNames {
+		if registeredName == shortcutName {
+			return true
+		}
+	}
+	return false
+}
+
+func waitForFixtureWindows(t *testing.T, kwst string, first, second *fixtureWindow) {
+	t.Helper()
+
+	eventually(t, "both KDialog fixtures to appear in kwst list", func() (bool, string) {
+		result := runKWST(t, kwst, "list", "--show-captions")
+		if result.exitCode != 0 {
+			return false, result.String()
+		}
+		first.uuid = windowUUID(result.stdout, first.title)
+		second.uuid = windowUUID(result.stdout, second.title)
+		return first.uuid != "" && second.uuid != "", result.stdout
+	})
+}
+
+func closeFixtureWindows(t *testing.T, kwst string, first, second *fixtureWindow) {
+	t.Helper()
 
 	requireSuccess(t, runKWST(t, kwst, "close-window", first.uuid), "close first fixture")
 	requireSuccess(t, runKWST(t, kwst, "close-window", second.uuid), "close second fixture")

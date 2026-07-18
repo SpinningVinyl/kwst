@@ -10,6 +10,10 @@ virtual desktops, it is advised not to run them during important interactive wor
 - KDialog available in `PATH`.
 - Go 1.23 or later.
 
+The optional previous-window test also requires `kpackagetool6`, the
+`net.prsv.kwst.previouswindow` package, and its registered KGlobalAccel
+shortcut. The test is skipped when either the package or shortcut is absent.
+
 ## Running
 
 From the repository root:
