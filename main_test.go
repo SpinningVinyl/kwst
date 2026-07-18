@@ -56,8 +56,8 @@ func TestUUIDIsEscapedInGeneratedScript(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if occurrences := strings.Count(script.String(), quotedUUID); occurrences != 2 {
-		t.Fatalf("quoted UUID occurs %d times in generated script, want 2:\n%s", occurrences, script.String())
+	if occurrences := strings.Count(script.String(), quotedUUID); occurrences != 3 {
+		t.Fatalf("quoted UUID occurs %d times in generated script, want 3:\n%s", occurrences, script.String())
 	}
 }
 
@@ -148,41 +148,69 @@ func TestGetActiveWindowRejectsSpecialWindow(t *testing.T) {
 	}
 }
 
-func TestSetWindowWorkspaceGuardsMissingWindow(t *testing.T) {
+func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 	params := ScriptParams{
-		Uuid:        `missing\"; malicious(); //`,
-		WorkspaceId: 3,
+		Uuid:           `missing\"; malicious(); //`,
+		WorkspaceId:    3,
+		X:              10,
+		Y:              20,
+		Width:          640,
+		Height:         480,
+		WindowProperty: "keepAbove",
+		PropertyValue:  "toggle",
 	}
-	tmpl, err := template.New("test").Funcs(template.FuncMap{
-		"jsString": jsString,
-	}).Parse(JS_SET_WINDOW_WORKSPACE)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var script strings.Builder
-	if err := tmpl.Execute(&script, params); err != nil {
-		t.Fatal(err)
-	}
-
 	quotedUUID, err := jsString(params.Uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	generated := script.String()
-	for _, expected := range []string{
-		"const targetWindow = workspace.windowList().find(",
-		"window.internalId == " + quotedUUID,
-		"if (!targetWindow)",
-		`returnError("Window not found: " + ` + quotedUUID + `);`,
-		"targetWindow.desktops = [targetWorkspace];",
-	} {
-		if !strings.Contains(generated, expected) {
-			t.Errorf("generated script does not contain %q:\n%s", expected, generated)
-		}
+
+	tests := []struct {
+		name           string
+		scriptTemplate string
+		action         string
+	}{
+		{name: "get geometry", scriptTemplate: JS_GET_WINDOW_GEOMETRY, action: "returnResult(result);"},
+		{name: "activate", scriptTemplate: JS_ACTIVATE_WINDOW, action: "workspace.activeWindow = targetWindow;"},
+		{name: "set size", scriptTemplate: JS_SET_WINDOW_SIZE, action: "targetWindow.frameGeometry = newGeometry;"},
+		{name: "set position", scriptTemplate: JS_SET_WINDOW_POSITION, action: "targetWindow.frameGeometry = newGeometry;"},
+		{name: "set geometry", scriptTemplate: JS_SET_WINDOW_GEOMETRY, action: "targetWindow.frameGeometry = newGeometry;"},
+		{name: "set workspace", scriptTemplate: JS_SET_WINDOW_WORKSPACE, action: "targetWindow.desktops = [targetWorkspace];"},
+		{name: "set property", scriptTemplate: JS_SET_WINDOW_PROPERTY, action: "targetWindow.keepAbove = !targetWindow.keepAbove;"},
+		{name: "close", scriptTemplate: JS_CLOSE_WINDOW, action: "targetWindow.closeWindow();"},
 	}
-	if strings.Contains(generated, "var w = allWindows[i]") {
-		t.Errorf("generated script still uses the unsafe fall-through window lookup:\n%s", generated)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tmpl, err := template.New("test").Funcs(template.FuncMap{
+				"jsString": jsString,
+			}).Parse(test.scriptTemplate)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var script strings.Builder
+			if err := tmpl.Execute(&script, params); err != nil {
+				t.Fatal(err)
+			}
+			generated := script.String()
+			for _, expected := range []string{
+				"const targetWindow = workspace.windowList().find(",
+				"window.internalId == " + quotedUUID,
+				"if (!targetWindow)",
+				`returnError("Window not found: " + ` + quotedUUID + `);`,
+				test.action,
+			} {
+				if !strings.Contains(generated, expected) {
+					t.Errorf("generated script does not contain %q:\n%s", expected, generated)
+				}
+			}
+
+			guard := strings.Index(generated, "if (!targetWindow)")
+			action := strings.Index(generated, test.action)
+			if guard < 0 || action < guard {
+				t.Errorf("window action is not protected by the missing-window guard:\n%s", generated)
+			}
+		})
 	}
 }
 

@@ -34,8 +34,9 @@ Run "kwst <command> --help" for more information on a command.
 # EXIT STATUS
 
 *kwst* exits with status 0 when a command succeeds and a non-zero status when
-setup, DBus, or KWin script execution fails. A timeout waiting for a KWin script
-to finish returns status 124.
+setup, DBus, or KWin script execution fails. Commands that accept a window UUID
+return status 1 when no matching window exists. A timeout waiting for a KWin
+script to finish returns status 124.
 
 # COMMANDS
 

@@ -84,13 +84,14 @@ if (activeWindow.specialWindow) {
 
 var JS_GET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_GET_WINDOW_GEOMETRY");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-         let result = Math.round(w.x) + " " + Math.round(w.y) + " " + w.width + " " + w.height;
-         returnResult(result);
-    }
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    const result = Math.round(targetWindow.x) + " " + Math.round(targetWindow.y) + " " + targetWindow.width + " " + targetWindow.height;
+    returnResult(result);
 }
 
 `
@@ -113,63 +114,67 @@ if (ws) {
 
 var JS_ACTIVATE_WINDOW string = `debugLog(scriptName + " executing JS_ACTIVATE_WINDOW");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-         debugLog("Activating window with UUID=" + {{jsString .Uuid}});
-         workspace.activeWindow = w;
-    }
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("Activating window with UUID=" + {{jsString .Uuid}});
+    workspace.activeWindow = targetWindow;
 }
 
 `
 
 var JS_SET_WINDOW_SIZE string = `debugLog(scriptName + " executing JS_SET_WINDOW_SIZE");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-        debugLog("New size for window with UUID=" + {{jsString .Uuid}} + ": width={{.Width}}, height={{.Height}}");
-        let newGeometry = Object.assign({}, w.frameGeometry);
-        newGeometry.width = {{.Width}}
-        newGeometry.height = {{.Height}}
-        w.frameGeometry = newGeometry;
-    }
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("New size for window with UUID=" + {{jsString .Uuid}} + ": width={{.Width}}, height={{.Height}}");
+    const newGeometry = Object.assign({}, targetWindow.frameGeometry);
+    newGeometry.width = {{.Width}};
+    newGeometry.height = {{.Height}};
+    targetWindow.frameGeometry = newGeometry;
 }
 
 `
 
 var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-        debugLog("New position for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}");
-        let newGeometry = Object.assign({}, w.frameGeometry);
-        newGeometry.x = {{.X}}
-        newGeometry.y = {{.Y}}
-        w.frameGeometry = newGeometry;
-    }
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("New position for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}");
+    const newGeometry = Object.assign({}, targetWindow.frameGeometry);
+    newGeometry.x = {{.X}};
+    newGeometry.y = {{.Y}};
+    targetWindow.frameGeometry = newGeometry;
 }
 
 `
 
 var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-        debugLog("New geometry for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
-        let newGeometry = Object.assign({}, w.frameGeometry);
-        newGeometry.width = {{.Width}}
-        newGeometry.height = {{.Height}}
-        newGeometry.x = {{.X}}
-        newGeometry.y = {{.Y}}
-        w.frameGeometry = newGeometry;
-    }
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("New geometry for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
+    const newGeometry = Object.assign({}, targetWindow.frameGeometry);
+    newGeometry.width = {{.Width}};
+    newGeometry.height = {{.Height}};
+    newGeometry.x = {{.X}};
+    newGeometry.y = {{.Y}};
+    targetWindow.frameGeometry = newGeometry;
 }
 
 `
@@ -195,26 +200,28 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_PROPERTY string = `debugLog(scriptName + " executing JS_SET_WINDOW_PROPERTY");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-        debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID=" + {{jsString .Uuid}});
-        w.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!w.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}}
-    }
-} 
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID=" + {{jsString .Uuid}});
+    targetWindow.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!targetWindow.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}};
+}
 
 `
 
-var JS_CLOSE_WINDOW string = `debugLog(scriptName + " executing JS_SET_WINDOW_PROPERTY");
+var JS_CLOSE_WINDOW string = `debugLog(scriptName + " executing JS_CLOSE_WINDOW");
 
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.internalId == {{jsString .Uuid}}) {
-        debugLog("Closing window with UUID=" + {{jsString .Uuid}});
-        w.closeWindow();
-    }
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("Closing window with UUID=" + {{jsString .Uuid}});
+    targetWindow.closeWindow();
 }
 
 `

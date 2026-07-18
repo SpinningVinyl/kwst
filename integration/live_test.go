@@ -97,6 +97,35 @@ func TestKWinWorkflow(t *testing.T) {
 			t.Fatalf("find with an invalid regular expression did not report the error:\n%s", result.String())
 		}
 	})
+	t.Run("UUID commands reject missing windows", func(t *testing.T) {
+		missingUUID := fmt.Sprintf("kwst-missing-window-%d-%d", os.Getpid(), time.Now().UnixNano())
+		tests := []struct {
+			name      string
+			arguments []string
+		}{
+			{name: "get-window-geometry", arguments: []string{"get-window-geometry", missingUUID}},
+			{name: "activate-window", arguments: []string{"activate-window", missingUUID}},
+			{name: "set-window-size", arguments: []string{"set-window-size", missingUUID, "640", "480"}},
+			{name: "set-window-position", arguments: []string{"set-window-position", missingUUID, "10", "20"}},
+			{name: "set-window-geometry", arguments: []string{"set-window-geometry", missingUUID, "10", "20", "640", "480"}},
+			{name: "set-window-workspace", arguments: []string{"set-window-workspace", missingUUID, "1"}},
+			{name: "set-window-property", arguments: []string{"set-window-property", "--property=keepAbove", "--value=true", missingUUID}},
+			{name: "close-window", arguments: []string{"close-window", missingUUID}},
+		}
+
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				result := runKWST(t, kwst, test.arguments...)
+				if result.exitCode != 1 {
+					t.Fatalf("command returned exit code %d, want 1:\n%s", result.exitCode, result.String())
+				}
+				expectedError := "Window not found: " + missingUUID
+				if !strings.Contains(result.stderr, expectedError) {
+					t.Fatalf("command did not report %q:\n%s", expectedError, result.String())
+				}
+			})
+		}
+	})
 
 	originalWorkspace := getWorkspace(t, kwst)
 

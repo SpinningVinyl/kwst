@@ -40,7 +40,7 @@ window. It is installed separately and is not required for any **kwst** command.
 
 ## Exit status
 
-**kwst** exits with status 0 when a command succeeds and a non-zero status when setup, D-Bus, or KWin script execution fails. A timeout waiting for a KWin script to finish returns status 124.
+**kwst** exits with status 0 when a command succeeds and a non-zero status when setup, D-Bus, or KWin script execution fails. Commands that accept a window UUID return status 1 when no matching window exists. A timeout waiting for a KWin script to finish returns status 124.
 
 ## Running custom scripts
 
