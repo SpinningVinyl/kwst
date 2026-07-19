@@ -23,7 +23,7 @@ Here is the list of things that you can currently do with **kwst**:
 
 ## Wayland/X11
 
-I personally use (and extensively test) **kwst** in Wayland, but as far as I understand, it should also be fully functional in KWin under X11 (since the scripting API remains the same). That said, I haven't tried it in X11 and presently I don't plan to fix any X11-only bugs, if such bugs exist.
+`kwst` is tested against KWin Wayland. While it *should* work with KWin X11, explicit support for X11 is deliberately out of scope. `kwst` functionality is easy to replicate under X11 with other tools, e.g. `wmctrl` and `xdotool`.
 
 ## Usage
 
