@@ -31,6 +31,30 @@ managers implementing NET_WM and EWMH specifications.
 
 Run "kwst <command> --help" for more information on a command.
 
+# QUICK START
+
+List regular windows and include their captions:
+
+	*kwst list --show-captions*
+
+Get the active window and inspect or change its geometry:
+
+	window_id=$(*kwst get-active-window*)
+	*kwst get-window-geometry "$window_id"*
+	*kwst set-window-geometry "$window_id" 100 100 1200 800*
+
+Toggle the active window's always-on-top state:
+
+	window_id=$(*kwst get-active-window*)
+	*kwst set-window-property --property=keepAbove --value=toggle "$window_id"*
+
+Find the first window whose caption begins with "Konsole" and activate it:
+
+	window_id=$(*kwst find --search-field=caption '^Konsole'* | head -n 1)
+	if [ -n "$window_id" ]; then
+		*kwst activate-window "$window_id"*
+	fi
+
 # EXIT STATUS
 
 *kwst* exits with status 0 when a command succeeds and a non-zero status when
@@ -58,13 +82,21 @@ script to finish returns status 124.
 			not guaranteed to be correct for X11 windows).
 
 	*find* <search-term> [_flags_]
-		Search for windows using the specified search term.
+		Search for windows using the specified case-insensitive JavaScript regular
+		expression. Invalid regular expressions are reported on standard error and
+		return exit status 1.
 
 		The currently supported flags are:
 
 		*-f*, *--search-field*="_resourceClass_"
 			Specify the field to search in. Possible values: 'resourceClass'
 			(default), 'resourceName', 'caption'.
+
+		Quote the regular expression to prevent the shell from expanding it. For
+		example:
+
+			*kwst find --search-field=caption 'terminal|konsole'*
+			*kwst find --search-field=resourceClass '^org\\.kde\\.konsole$'*
 			
 	*get-active-window*
 		Get the UUID of the active window.
@@ -143,10 +175,21 @@ Custom scripts are parsed using Go's built-in 'text/template' package.
 kwst supports passing up to six parameters to your custom scripts:
 
 	*kwst* run-custom-script [[_--parameter-1="value1"_] ... [_--parameter-6="value6"_]]
-	</path/to/script/file.js>
+	/path/to/script/file.js
 
 Inside your custom scripts, *{{.P1}}* will be replaced with the value of parameter 1,
 *{{.P2}}* will be replaced with the value of parameter 2, etc.
+
+When inserting a parameter as a JavaScript string, pass it through the
+*jsString* template function:
+
+	const value = {{jsString .P1}};
+	const regExp = new RegExp({{jsString .P2}}, "i");
+
+*jsString* returns a complete quoted JavaScript string literal and escapes
+quotes, backslashes, control characters, and line separators. Do not add quotes
+around the template expression: use *{{jsString .P1}}*, not
+*"{{jsString .P1}}"*.
 
 You can also use comparisons:
 

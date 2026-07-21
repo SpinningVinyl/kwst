@@ -21,7 +21,7 @@ func (lc *ListCmd) Run(sp *ScriptPackage) error {
 type FindCmd struct {
 	SearchField string `enum:"resourceClass,resourceName,caption" help:"Specify the field to search in. Possible values: resourceClass, resourceName, caption" short:"f" default:"resourceClass"`
 
-	SearchTerm string `arg:"" required:"" help:"String to search for"`
+	SearchTerm string `arg:"" required:"" help:"Case-insensitive JavaScript regular expression to search for"`
 }
 
 func (fc *FindCmd) Run(sp *ScriptPackage) error {

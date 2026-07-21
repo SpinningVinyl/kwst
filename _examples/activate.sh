@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
-# This script first checks if there is a window that matches the search criteria.
-# If such a window is found, the script activates the window.
-# If the window is not found, the script runs the program.
+# This script first checks if there is a window that matches the regular
+# expression. If such a window is found, the script activates it. Otherwise,
+# the script runs the provided program.
 
-if [ $# -eq 0 ]; then
-	echo "USAGE: activate PROGRAM_NAME"
+if [ "$#" -lt 2 ]; then
+	echo "USAGE: activate SEARCH_REGEX PROGRAM [ARGUMENT ...]" >&2
+	exit 2
 fi
 
-window_id=$(kwst find "$1" | head -n 1)
-if [ "$window_id" = "" ]; then
-	$1
+search_regex=$1
+shift
+
+matches=$(kwst find --search-field=resourceClass "$search_regex") || exit
+window_id=${matches%%$'\n'*}
+if [ -z "$window_id" ]; then
+	"$@"
 else
 	kwst activate-window "$window_id"
 fi
-

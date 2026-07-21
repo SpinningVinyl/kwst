@@ -30,7 +30,7 @@ type CLI struct {
 	Globals
 
 	List               ListCmd               `cmd:"" help:"List all windows. The data is returned as tab-separated rows containing the window's UUID, resourceClass and resourceName. Each window is represented by a separate row."`
-	Find               FindCmd               `cmd:"" help:"Search for windows using the specified search term."`
+	Find               FindCmd               `cmd:"" help:"Search for windows using a case-insensitive regular expression."`
 	GetActiveWindow    GetActiveWindowCmd    `cmd:"" help:"Get the UUID of the active window."`
 	GetWindowGeometry  GetWindowGeometryCmd  `cmd:"" help:"Get the geometry (size and position) of the window with the specified UUID. The data is returned in the format required for the set-window-geometry command (x y width height)."`
 	GetWorkspace       GetWorkspaceCmd       `cmd:"" help:"Get the ID of the active workspace."`

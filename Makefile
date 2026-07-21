@@ -1,5 +1,6 @@
 .DEFAULT_GOAL := build
 SCDOC := $(shell command -v scdoc 2> /dev/null)
+SCD2HTML := $(shell command -v scd2html 2> /dev/null)
 PREFIX ?= /usr/local
 DESTDIR ?=
 BUILD_DIR := build
@@ -14,6 +15,11 @@ ifdef SCDOC
 	gzip -f $(BUILD_DIR)/kwst.1
 else
 	$(info "scdoc not installed, skipping man page generation")
+endif
+ifdef SCD2HTML
+	scd2html < kwst.1.scd > usage.html
+else
+	$(info "scd2html not installed, skipping HTML documentation generation")
 endif
 
 install: build

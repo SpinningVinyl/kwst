@@ -31,17 +31,25 @@ const returnError = (msgBody) => {
 
 debugLog(scriptName + " START");
 
-// return "true" if there is a window with caption that matches parameter 1 
+// return "true" if a window caption matches the case-insensitive regular
+// expression supplied as parameter 1
 const allWindows = workspace.windowList();
-const regExp = new RegExp({{jsString .P1}}, 'i');
-let result = false;
-for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.caption.search(regExp) >= 0) {
-        result = true;
-    }
+let regExp;
+try {
+    regExp = new RegExp({{jsString .P1}}, 'i');
+} catch (error) {
+    returnError("Invalid regular expression: " + error.message);
 }
-returnResult(result);
+let result = false;
+if (regExp) {
+    for (let i = 0; i < allWindows.length; i++) {
+        const w = allWindows[i];
+        if (w.caption.search(regExp) >= 0) {
+            result = true;
+        }
+    }
+    returnResult(result);
+}
 
 close();
 debugLog(scriptName + " END");

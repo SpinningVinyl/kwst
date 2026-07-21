@@ -45,6 +45,8 @@ const returnError = (msgBody) => {
 debugLog(scriptName + " START");
 
 // your code goes here
+// When inserting a parameter as a JavaScript string, use {{jsString .P1}}.
+// jsString includes the surrounding quotes, so do not add another pair.
 
 close();
 debugLog(scriptName + " END");
