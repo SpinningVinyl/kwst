@@ -88,6 +88,20 @@ func jsString(value string) (string, error) {
 	return string(quoted), nil
 }
 
+func prepareScript(w io.Writer, sp ScriptPackage) error {
+	sp.ScriptTemplate += JS_FOOTER
+	tmpl, err := template.New("kwin_script").Funcs(template.FuncMap{
+		"jsString": jsString,
+	}).Parse(sp.ScriptTemplate)
+	if err != nil {
+		return fmt.Errorf("Error parsing script template: %w", err)
+	}
+	if err := tmpl.Execute(w, sp.Params); err != nil {
+		return fmt.Errorf("Error executing script template: %w", err)
+	}
+	return nil
+}
+
 // define the DBus object for exporting
 type Server struct {
 	done   chan int
@@ -242,16 +256,8 @@ func run() int {
 		return 1
 	}
 
-	sp.ScriptTemplate += JS_FOOTER
-	tmpl, err := template.New("kwin_script").Funcs(template.FuncMap{
-		"jsString": jsString,
-	}).Parse(sp.ScriptTemplate)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error parsing script template:", err)
-		return 1
-	}
-	if err := tmpl.Execute(scriptFile, sp.Params); err != nil {
-		fmt.Fprintln(os.Stderr, "Error executing script template:", err)
+	if err := prepareScript(scriptFile, sp); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
 	if err := scriptFile.Close(); err != nil {
