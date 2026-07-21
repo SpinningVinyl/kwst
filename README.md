@@ -31,6 +31,53 @@ Run `kwst --help` to get context-sensitive help. Run `kwst <command> --help` for
 
 Also check shell scripts in the `_examples` directory to get an idea of what you can use **kwst** for.
 
+## Quick start
+
+List regular windows, including their captions:
+
+```sh
+kwst list --show-captions
+```
+
+Get the active window and inspect or change its geometry:
+
+```sh
+window_id=$(kwst get-active-window)
+kwst get-window-geometry "$window_id"
+kwst set-window-geometry "$window_id" 100 100 1200 800
+```
+
+Toggle the active window's always-on-top state:
+
+```sh
+window_id=$(kwst get-active-window)
+kwst set-window-property --property=keepAbove --value=toggle "$window_id"
+```
+
+Find the first window whose caption begins with “Konsole” and activate it:
+
+```sh
+window_id=$(kwst find --search-field=caption '^Konsole' | head -n 1)
+if [ -n "$window_id" ]; then
+    kwst activate-window "$window_id"
+fi
+```
+
+## Finding windows
+
+The search term accepted by `find` is a case-insensitive JavaScript regular
+expression, not a literal string. Quote it to prevent the shell from expanding
+regular-expression characters:
+
+```sh
+kwst find --search-field=caption 'terminal|konsole'
+kwst find --search-field=resourceClass '^org\.kde\.konsole$'
+```
+
+The searchable fields are `resourceClass` (the default), `resourceName`, and
+`caption`. Invalid regular expressions are reported on standard error and
+return exit status 1.
+
 ## Optional previous-window shortcut
 
 The [`kwin-previous-window-script`](kwin-previous-window-script/README.md)
@@ -51,10 +98,22 @@ The custom scripts are parsed using Go's built-in `text/template` package.
 **kwst** supports passing up to six parameters to your custom scripts: 
 
 ```
-kwst run-custom-script --parameter-1="value1" --parameter-2="value2" ... --parameter-6="value6" </path/to/script/file.js>
+kwst run-custom-script --parameter-1="value1" --parameter-2="value2" ... --parameter-6="value6" /path/to/script/file.js
 ```
 
 Inside your custom scripts, `{{.P1}}` will be replaced with the value of parameter 1, `{{.P2}}` will be replaced with the value of parameter 2, etc.
+
+When inserting a parameter as a JavaScript string, pass it through `jsString`:
+
+```javascript
+const value = {{jsString .P1}};
+const regExp = new RegExp({{jsString .P2}}, "i");
+```
+
+`jsString` returns a complete quoted JavaScript string literal and escapes
+quotes, backslashes, control characters, and line separators. Do not add quotes
+around the template expression: use `{{jsString .P1}}`, not
+`"{{jsString .P1}}"`.
 
 You can also use comparisons:
 

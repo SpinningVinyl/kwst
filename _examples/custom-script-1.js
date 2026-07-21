@@ -34,9 +34,9 @@ debugLog(scriptName + " START");
 // return UUIDs of all fullscreen windows
 const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
-    let w = allWindows[i];
-    if (w.fullScreen == true) {
-         returnResult(w.internalId);
+    const w = allWindows[i];
+    if (w.fullScreen) {
+        returnResult(w.internalId);
     }
 }
 

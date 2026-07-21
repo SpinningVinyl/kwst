@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-07-16</p>
+<p class="header-date">2026-07-21</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -180,6 +180,47 @@ managers implementing NET_WM and EWMH specifications.
 
 <p>Run "kwst &lt;command&gt; --help" for more information on a command.
 </p>
+</section>
+<section>
+<h2 id="QUICK_START">QUICK START <a aria-hidden="true" href="#QUICK_START">¶</a></h2>
+
+<p>List regular windows and include their captions:
+</p>
+
+<blockquote><b>kwst list --show-captions</b>
+</blockquote>
+
+<p>Get the active window and inspect or change its geometry:
+</p>
+
+<blockquote>window_id=$(<b>kwst get-active-window</b>)
+<b>kwst get-window-geometry "$window_id"</b>
+<b>kwst set-window-geometry "$window_id" 100 100 1200 800</b>
+</blockquote>
+
+<p>Toggle the active window's always-on-top state:
+</p>
+
+<blockquote>window_id=$(<b>kwst get-active-window</b>)
+<b>kwst set-window-property --property=keepAbove --value=toggle "$window_id"</b>
+</blockquote>
+
+<p>Find the first window whose caption begins with "Konsole" and activate it:
+</p>
+
+<blockquote>window_id=$(<b>kwst find --search-field=caption '^Konsole'</b> | head -n 1)
+if [ -n "$window_id" ]; then
+</blockquote>
+
+<blockquote>
+<blockquote><b>kwst activate-window "$window_id"</b>
+</blockquote>
+</blockquote>
+
+<blockquote>fi
+</blockquote>
+
+<p></p>
 </section>
 <section>
 <h2 id="EXIT_STATUS">EXIT STATUS <a aria-hidden="true" href="#EXIT_STATUS">¶</a></h2>
@@ -251,7 +292,9 @@ not guaranteed to be correct for X11 windows).
 </blockquote>
 
 <blockquote>
-<blockquote>Search for windows using the specified search term.
+<blockquote>Search for windows using the specified case-insensitive JavaScript regular
+expression. Invalid regular expressions are reported on standard error and
+return exit status 1.
 </blockquote>
 </blockquote>
 
@@ -269,6 +312,20 @@ not guaranteed to be correct for X11 windows).
 <blockquote>
 <blockquote>Specify the field to search in. Possible values: 'resourceClass'
 (default), 'resourceName', 'caption'.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Quote the regular expression to prevent the shell from expanding it. For
+example:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst find --search-field=caption 'terminal|konsole'</b>
+<b>kwst find --search-field=resourceClass '^org\.kde\.konsole$'</b>
 </blockquote>
 </blockquote>
 </blockquote>
@@ -451,11 +508,25 @@ the recommended script template supplied with the program for further details.
 </p>
 
 <blockquote><b>kwst</b> run-custom-script [[<u>--parameter-1="value1"</u>] ... [<u>--parameter-6="value6"</u>]]
-&lt;/path/to/script/file.js&gt;
+/path/to/script/file.js
 </blockquote>
 
 <p>Inside your custom scripts, <b>{{.P1}}</b> will be replaced with the value of parameter 1,
 <b>{{.P2}}</b> will be replaced with the value of parameter 2, etc.
+</p>
+
+<p>When inserting a parameter as a JavaScript string, pass it through the
+<b>jsString</b> template function:
+</p>
+
+<blockquote>const value = {{jsString .P1}};
+const regExp = new RegExp({{jsString .P2}}, "i");
+</blockquote>
+
+<p><b>jsString</b> returns a complete quoted JavaScript string literal and escapes
+quotes, backslashes, control characters, and line separators. Do not add quotes
+around the template expression: use <b>{{jsString .P1}}</b>, not
+<b>"{{jsString .P1}}"</b>.
 </p>
 
 <p>You can also use comparisons:
