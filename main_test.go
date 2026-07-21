@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"io"
+	"os"
 	"strings"
 	"testing"
 	"text/template"
@@ -10,6 +12,183 @@ import (
 
 	"github.com/godbus/dbus/v5/introspect"
 )
+
+type errorWriter struct{}
+
+func (errorWriter) Write([]byte) (int, error) {
+	return 0, io.ErrClosedPipe
+}
+
+type scriptCommand interface {
+	Run(*ScriptPackage) error
+}
+
+func TestCommandRunMethods(t *testing.T) {
+	customScript := "custom script body"
+	customScriptFile, err := os.CreateTemp(t.TempDir(), "custom-script-*.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		customScriptFile.Close()
+	})
+	if _, err := customScriptFile.WriteString(customScript); err != nil {
+		t.Fatal(err)
+	}
+
+	const initialTemplate = "initial template\n"
+	tests := []struct {
+		name         string
+		command      scriptCommand
+		wantTemplate string
+		wantParams   ScriptParams
+	}{
+		{
+			name:         "list",
+			command:      &ListCmd{IncludeSpecialWindows: true, ShowCaptions: true, ShowPids: true},
+			wantTemplate: initialTemplate + JS_LIST,
+			wantParams: ScriptParams{
+				IncludeSpecialWindows: true,
+				ShowCaptions:          true,
+				ShowPids:              true,
+			},
+		},
+		{
+			name:         "find",
+			command:      &FindCmd{SearchField: "caption", SearchTerm: "terminal"},
+			wantTemplate: initialTemplate + JS_FIND,
+			wantParams:   ScriptParams{SearchField: "caption", SearchTerm: "terminal"},
+		},
+		{
+			name:         "get active window",
+			command:      &GetActiveWindowCmd{},
+			wantTemplate: initialTemplate + JS_GET_ACTIVE_WINDOW,
+		},
+		{
+			name:         "get window geometry",
+			command:      &GetWindowGeometryCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_GET_WINDOW_GEOMETRY,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name:         "get workspace",
+			command:      &GetWorkspaceCmd{},
+			wantTemplate: initialTemplate + JS_GET_WORKSPACE,
+		},
+		{
+			name:         "set workspace",
+			command:      &SetWorkspaceCmd{WorkspaceId: 3},
+			wantTemplate: initialTemplate + JS_SET_WORKSPACE,
+			wantParams:   ScriptParams{WorkspaceId: 3},
+		},
+		{
+			name:         "activate window",
+			command:      &ActivateWindowCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_ACTIVATE_WINDOW,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name:         "set window size",
+			command:      &SetWindowSizeCmd{Uuid: "window-id", Width: 640, Height: 480},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_SIZE,
+			wantParams:   ScriptParams{Uuid: "window-id", Width: 640, Height: 480},
+		},
+		{
+			name:         "set window position",
+			command:      &SetWindowPosCmd{Uuid: "window-id", X: 10, Y: 20},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_POSITION,
+			wantParams:   ScriptParams{Uuid: "window-id", X: 10, Y: 20},
+		},
+		{
+			name:         "set window geometry",
+			command:      &SetWindowGeometryCmd{Uuid: "window-id", X: 10, Y: 20, Width: 640, Height: 480},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_GEOMETRY,
+			wantParams:   ScriptParams{Uuid: "window-id", X: 10, Y: 20, Width: 640, Height: 480},
+		},
+		{
+			name:         "set window workspace",
+			command:      &SetWindowWorkspaceCmd{Uuid: "window-id", WorkspaceId: 3},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_WORKSPACE,
+			wantParams:   ScriptParams{Uuid: "window-id", WorkspaceId: 3},
+		},
+		{
+			name:         "set window property",
+			command:      &SetWindowPropertyCmd{Uuid: "window-id", Property: "keepAbove", Value: "toggle"},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_PROPERTY,
+			wantParams: ScriptParams{
+				Uuid:           "window-id",
+				WindowProperty: "keepAbove",
+				PropertyValue:  "toggle",
+			},
+		},
+		{
+			name:         "close window",
+			command:      &CloseWindowCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_CLOSE_WINDOW,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name: "run custom script",
+			command: &RunCustomScriptCmd{
+				Parameter1: "one",
+				Parameter2: "two",
+				Parameter3: "three",
+				Parameter4: "four",
+				Parameter5: "five",
+				Parameter6: "six",
+				ScriptFile: customScriptFile,
+			},
+			wantTemplate: customScript,
+			wantParams: ScriptParams{
+				P1: "one",
+				P2: "two",
+				P3: "three",
+				P4: "four",
+				P5: "five",
+				P6: "six",
+			},
+		},
+		{
+			name:         "get mouse position",
+			command:      &MousePosCmd{},
+			wantTemplate: initialTemplate + JS_MOUSE_POS,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sp := ScriptPackage{ScriptTemplate: initialTemplate}
+			if err := test.command.Run(&sp); err != nil {
+				t.Fatalf("Run returned an error: %v", err)
+			}
+			if sp.ScriptTemplate != test.wantTemplate {
+				t.Errorf("ScriptTemplate does not match template for %s", test.name)
+			}
+			if sp.Params != test.wantParams {
+				t.Errorf("Params = %+v, want %+v", sp.Params, test.wantParams)
+			}
+		})
+	}
+}
+
+func TestRunCustomScriptReportsReadError(t *testing.T) {
+	scriptFile, err := os.CreateTemp(t.TempDir(), "missing-script-*.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scriptPath := scriptFile.Name()
+	if err := scriptFile.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(scriptPath); err != nil {
+		t.Fatal(err)
+	}
+
+	command := RunCustomScriptCmd{ScriptFile: scriptFile}
+	if err := command.Run(&ScriptPackage{}); err == nil {
+		t.Fatal("Run returned nil for an unreadable custom script")
+	}
+}
 
 func TestJSString(t *testing.T) {
 	tests := []struct {
@@ -35,6 +214,44 @@ func TestJSString(t *testing.T) {
 				t.Errorf("jsString(%q) = %q, want %q", test.input, got, test.want)
 			}
 		})
+	}
+}
+
+func TestPrepareScript(t *testing.T) {
+	sp := ScriptPackage{
+		ScriptTemplate: `const uuid = {{jsString .Uuid}};
+`,
+		Params: ScriptParams{Uuid: `uuid"with\characters`},
+	}
+
+	var script strings.Builder
+	if err := prepareScript(&script, sp); err != nil {
+		t.Fatalf("prepareScript returned an error: %v", err)
+	}
+
+	quotedUUID, err := jsString(sp.Params.Uuid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(script.String(), "const uuid = "+quotedUUID+";") {
+		t.Fatalf("prepared script does not contain escaped UUID:\n%s", script.String())
+	}
+	if !strings.HasSuffix(script.String(), JS_FOOTER) {
+		t.Fatalf("prepared script does not end with JS_FOOTER:\n%s", script.String())
+	}
+}
+
+func TestPrepareScriptReportsTemplateErrors(t *testing.T) {
+	err := prepareScript(io.Discard, ScriptPackage{ScriptTemplate: "{{"})
+	if err == nil || !strings.Contains(err.Error(), "Error parsing script template:") {
+		t.Fatalf("prepareScript error = %v, want template parsing error", err)
+	}
+}
+
+func TestPrepareScriptReportsWriterErrors(t *testing.T) {
+	err := prepareScript(errorWriter{}, ScriptPackage{ScriptTemplate: "content"})
+	if !errors.Is(err, io.ErrClosedPipe) {
+		t.Fatalf("prepareScript error = %v, want %v", err, io.ErrClosedPipe)
 	}
 }
 
