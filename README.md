@@ -24,6 +24,7 @@ Here is the list of things that you can currently do with **kwst**:
 - Get the active output as defined by KWin.
 - Get the output containing the mouse cursor.
 - Get the output containing the centre of the active window.
+- Get output geometry, optionally excluding panels and other reserved areas.
 
 ## Wayland/X11
 
