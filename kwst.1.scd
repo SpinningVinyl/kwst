@@ -164,6 +164,9 @@ script to finish returns status 124.
 	*get-mouse-position*
 		Get the absolute position of the mouse cursor.
 
+	*list-outputs*
+		List enabled outputs. Each output name is returned on a separate line.
+
 
 # RUNNING CUSTOM SCRIPTS
 

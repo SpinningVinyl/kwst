@@ -20,6 +20,7 @@ Here is the list of things that you can currently do with **kwst**:
 - Switch to a workspace.
 - Send a window to a workspace.
 - Get the absolute position of the mouse cursor.
+- List enabled outputs.
 
 ## Wayland/X11
 
