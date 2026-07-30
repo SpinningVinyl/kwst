@@ -173,6 +173,9 @@ script to finish returns status 124.
 		the active window if that window was activated after the most recent
 		cursor movement.
 
+	*get-cursor-output*
+		Get the output containing the mouse cursor.
+
 
 # RUNNING CUSTOM SCRIPTS
 

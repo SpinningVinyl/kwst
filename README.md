@@ -22,6 +22,7 @@ Here is the list of things that you can currently do with **kwst**:
 - Get the absolute position of the mouse cursor.
 - List enabled outputs.
 - Get the active output as defined by KWin.
+- Get the output containing the mouse cursor.
 
 ## Wayland/X11
 
