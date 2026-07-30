@@ -252,6 +252,17 @@ returnResult(workspace.activeScreen.name);
 
 `
 
+var JS_GET_CURSOR_OUTPUT string = `debugLog(scriptName + " executing JS_GET_CURSOR_OUTPUT");
+
+const output = workspace.screenAt(workspace.cursorPos);
+if (output != null) {
+    returnResult(output.name);
+} else {
+    returnError("Unable to determine the output with the mouse cursor.");
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

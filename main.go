@@ -46,6 +46,7 @@ type CLI struct {
 	GetMousePosition   MousePosCmd           `cmd:"" help:"Return the absolute position of the mouse cursor."`
 	ListOutputs        ListOutputsCmd        `cmd:"" help:"Return the list of enabled outputs."`
 	GetActiveOutput    GetActiveOutputCmd    `cmd:"" help:"Return the active output (as defined by KWin)."`
+	GetCursorOutput    GetCursorOutputCmd    `cmd:"" help:"Return the output containing the mouse cursor."`
 }
 
 // parameters that are passed to the script template

@@ -207,3 +207,10 @@ func (gaoc GetActiveOutputCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_GET_ACTIVE_OUTPUT
 	return nil
 }
+
+type GetCursorOutputCmd struct{}
+
+func (gcoc GetCursorOutputCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_CURSOR_OUTPUT
+	return nil
+}
