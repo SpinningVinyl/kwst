@@ -167,6 +167,12 @@ script to finish returns status 124.
 	*list-outputs*
 		List enabled outputs. Each output name is returned on a separate line.
 
+	*get-active-output*
+		Get the active output as defined by KWin. Usually, it's the output with
+		the mouse cursor, but it can also be an output containing the center of
+		the active window if that window was activated after the most recent
+		cursor movement.
+
 
 # RUNNING CUSTOM SCRIPTS
 
