@@ -44,6 +44,7 @@ type CLI struct {
 	CloseWindow        CloseWindowCmd        `cmd:"" help:"Close the window with the provided UUID."`
 	RunCustomScript    RunCustomScriptCmd    `cmd:"" help:"Run a custom script. Supports up to six optional parameters."`
 	GetMousePosition   MousePosCmd           `cmd:"" help:"Return the absolute position of the mouse cursor."`
+	ListOutputs        ListOutputsCmd        `cmd:"" help:"Return the list of enabled outputs."`
 }
 
 // parameters that are passed to the script template

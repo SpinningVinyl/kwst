@@ -193,3 +193,10 @@ func (mpc *MousePosCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_MOUSE_POS
 	return nil
 }
+
+type ListOutputsCmd struct{}
+
+func (loc ListOutputsCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_LIST_OUTPUTS
+	return nil
+}

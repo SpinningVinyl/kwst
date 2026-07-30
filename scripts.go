@@ -235,6 +235,17 @@ returnResult(x + " " + y);
 
 `
 
+var JS_LIST_OUTPUTS string = `debugLog(scriptName + " executing JS_LIST_OUTPUTS");
+
+const outputs = workspace.screens;
+
+for (let i = 0; i < outputs.length; i++) {
+    const output = outputs[i];
+    returnResult(output.name);
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `
