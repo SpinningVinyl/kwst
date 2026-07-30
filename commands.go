@@ -193,3 +193,43 @@ func (mpc *MousePosCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_MOUSE_POS
 	return nil
 }
+
+type ListOutputsCmd struct{}
+
+func (loc ListOutputsCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_LIST_OUTPUTS
+	return nil
+}
+
+type GetActiveOutputCmd struct{}
+
+func (gaoc GetActiveOutputCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_ACTIVE_OUTPUT
+	return nil
+}
+
+type GetCursorOutputCmd struct{}
+
+func (gcoc GetCursorOutputCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_CURSOR_OUTPUT
+	return nil
+}
+
+type GetActiveWindowOutputCmd struct{}
+
+func (gawoc GetActiveWindowOutputCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_ACTIVE_WINDOW_OUTPUT
+	return nil
+}
+
+type GetOutputGeometryCmd struct {
+	ClientArea bool   `default:"false" short:"c" help:"Return the maximum client area which excludes panels and other surfaces that reserve space through KWin's strut mechanism."`
+	OutputName string `arg:"" required:"" help:"Name of the output to return the geometry of."`
+}
+
+func (gogc GetOutputGeometryCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_OUTPUT_GEOMETRY
+	sp.Params.ClientArea = gogc.ClientArea
+	sp.Params.OutputName = gogc.OutputName
+	return nil
+}

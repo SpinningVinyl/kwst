@@ -164,6 +164,31 @@ script to finish returns status 124.
 	*get-mouse-position*
 		Get the absolute position of the mouse cursor.
 
+	*list-outputs*
+		List enabled outputs. Each output name is returned on a separate line.
+
+	*get-active-output*
+		Get the active output as defined by KWin. Usually, it's the output with
+		the mouse cursor, but it can also be an output containing the centre of
+		the active window if that window was activated after the most recent
+		cursor movement.
+
+	*get-cursor-output*
+		Get the output containing the mouse cursor.
+
+	*get-active-window-output*
+		Get the output containing the centre of the active window.
+
+	*get-output-geometry* <output-name> [_flags_]
+		Get the geometry of the specified output as _x y width height_. By
+		default, the full output geometry is returned.
+
+		The currently supported flags are:
+
+		*-c*, *--client-area*
+			Return the maximum client area, excluding panels and other surfaces
+			that reserve space through KWin's strut mechanism.
+
 
 # RUNNING CUSTOM SCRIPTS
 

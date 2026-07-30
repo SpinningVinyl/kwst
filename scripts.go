@@ -235,6 +235,72 @@ returnResult(x + " " + y);
 
 `
 
+var JS_LIST_OUTPUTS string = `debugLog(scriptName + " executing JS_LIST_OUTPUTS");
+
+const outputs = workspace.screens;
+
+for (let i = 0; i < outputs.length; i++) {
+    const output = outputs[i];
+    returnResult(output.name);
+}
+
+`
+
+var JS_GET_ACTIVE_OUTPUT string = `debugLog(scriptName + " executing JS_GET_ACTIVE_OUTPUT");
+
+returnResult(workspace.activeScreen.name);
+
+`
+
+var JS_GET_CURSOR_OUTPUT string = `debugLog(scriptName + " executing JS_GET_CURSOR_OUTPUT");
+
+const output = workspace.screenAt(workspace.cursorPos);
+if (output != null) {
+    returnResult(output.name);
+} else {
+    returnError("Unable to determine the output with the mouse cursor.");
+}
+
+`
+
+var JS_GET_ACTIVE_WINDOW_OUTPUT string = `debugLog(scriptName + " executing JS_GET_ACTIVE_WINDOW_OUTPUT");
+
+const window = workspace.activeWindow;
+
+if (window != null) {
+    returnResult(window.output.name);
+} else {
+    returnError("Unable to determine the active window");
+}
+
+`
+
+var JS_GET_OUTPUT_GEOMETRY string = `debugLog(scriptName + " executing JS_OUTPUT_GEOMETRY");
+
+const output = workspace.screens.find(
+    (candidate) => candidate.name === {{jsString .OutputName}}
+);
+
+if (!output) {
+    returnError("Output not found: " + {{jsString .OutputName}});
+} else {
+    let area;
+    {{if .ClientArea}}
+        const desktop = workspace.currentDesktopForScreen(output);
+        area = workspace.clientArea(KWin.MaximizeArea, output, desktop);
+    {{else}}
+        area = output.geometry;
+    {{end}}
+    returnResult(
+        Math.round(area.x) + " " +
+        Math.round(area.y) + " " +
+        Math.round(area.width) + " " +
+        Math.round(area.height)
+    );
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

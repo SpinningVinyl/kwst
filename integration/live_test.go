@@ -60,6 +60,13 @@ if (!temporaryDesktop) {
     }
 }`
 
+const activeWindowOutputScript = `const activeWindow = workspace.activeWindow;
+if (activeWindow) {
+    returnResult(activeWindow.output.name);
+} else {
+    returnError("No active window");
+}`
+
 type commandResult struct {
 	stdout   string
 	stderr   string
@@ -137,6 +144,8 @@ func TestKWinWorkflow(t *testing.T) {
 
 	activateAndVerify(t, kwst, first)
 	activateAndVerify(t, kwst, second)
+
+	testOutputCommands(t, kwst)
 
 	resizeAndMoveFixture(t, kwst, first)
 
@@ -424,6 +433,78 @@ func activateAndVerify(t *testing.T, kwst string, fixture *fixtureWindow) {
 	})
 }
 
+func testOutputCommands(t *testing.T, kwst string) {
+	t.Helper()
+
+	var outputNames []string
+	if !t.Run("list outputs", func(t *testing.T) {
+		result := runKWST(t, kwst, "list-outputs")
+		requireSuccess(t, result, "list outputs")
+
+		var err error
+		outputNames, err = parseOutputNames(result.stdout)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}) {
+		t.FailNow()
+	}
+
+	knownOutputs := make(map[string]struct{}, len(outputNames))
+	for _, name := range outputNames {
+		knownOutputs[name] = struct{}{}
+	}
+
+	for _, command := range []string{"get-active-output", "get-cursor-output"} {
+		t.Run(command+" returns one output", func(t *testing.T) {
+			result := runKWST(t, kwst, command)
+			name := requireSingleOutputName(t, result, command)
+			if _, exists := knownOutputs[name]; !exists {
+				t.Fatalf("%s returned output %q, which was not reported by list-outputs", command, name)
+			}
+		})
+	}
+
+	t.Run("get active window output", func(t *testing.T) {
+		result := runKWST(t, kwst, "get-active-window-output")
+		actual := requireSingleOutputName(t, result, "get active window output")
+
+		script := writeCustomScript(t, activeWindowOutputScript)
+		expectedResult := runKWST(t, kwst, "run-custom-script", script)
+		expected := requireSingleOutputName(t, expectedResult, "get active window output through KWin")
+
+		if actual != expected {
+			t.Fatalf("get-active-window-output returned %q, want %q", actual, expected)
+		}
+	})
+
+	for _, test := range []struct {
+		name      string
+		arguments []string
+	}{
+		{
+			name:      "get full output geometry",
+			arguments: []string{"get-output-geometry", outputNames[0]},
+		},
+		{
+			name:      "get client output geometry",
+			arguments: []string{"get-output-geometry", "--client-area", outputNames[0]},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			result := runKWST(t, kwst, test.arguments...)
+			requireSuccess(t, result, test.name)
+			value, err := parseGeometry(result.stdout)
+			if err != nil {
+				t.Fatalf("%s returned invalid geometry: %v", test.name, err)
+			}
+			if value.width <= 0 || value.height <= 0 {
+				t.Fatalf("%s returned non-positive dimensions: %+v", test.name, value)
+			}
+		})
+	}
+}
+
 func resizeAndMoveFixture(t *testing.T, kwst string, fixture *fixtureWindow) {
 	t.Helper()
 
@@ -483,6 +564,37 @@ func parseGeometry(value string) (geometry, error) {
 		parts[index] = part
 	}
 	return geometry{x: parts[0], y: parts[1], width: parts[2], height: parts[3]}, nil
+}
+
+func parseOutputNames(value string) ([]string, error) {
+	if value == "" {
+		return nil, errors.New("list-outputs returned no output names")
+	}
+
+	lines := strings.Split(value, "\n")
+	names := make([]string, 0, len(lines))
+	for _, line := range lines {
+		name := strings.TrimSpace(line)
+		if name == "" {
+			return nil, fmt.Errorf("list-outputs returned an empty output name in %q", value)
+		}
+		names = append(names, name)
+	}
+	return names, nil
+}
+
+func requireSingleOutputName(t *testing.T, result commandResult, action string) string {
+	t.Helper()
+	requireSuccess(t, result, action)
+
+	names, err := parseOutputNames(result.stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(names) != 1 {
+		t.Fatalf("%s returned %d output names, want 1: %q", action, len(names), result.stdout)
+	}
+	return names[0]
 }
 
 func getWorkspace(t *testing.T, kwst string) int {

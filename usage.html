@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-07-21</p>
+<p class="header-date">2026-07-30</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -489,6 +489,68 @@ about optional parameters.
 
 <blockquote>
 <blockquote>Get the absolute position of the mouse cursor.
+</blockquote>
+</blockquote>
+
+<blockquote><b>list-outputs</b>
+</blockquote>
+
+<blockquote>
+<blockquote>List enabled outputs. Each output name is returned on a separate line.
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-active-output</b>
+</blockquote>
+
+<blockquote>
+<blockquote>Get the active output as defined by KWin. Usually, it's the output with
+the mouse cursor, but it can also be an output containing the centre of
+the active window if that window was activated after the most recent
+cursor movement.
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-cursor-output</b>
+</blockquote>
+
+<blockquote>
+<blockquote>Get the output containing the mouse cursor.
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-active-window-output</b>
+</blockquote>
+
+<blockquote>
+<blockquote>Get the output containing the centre of the active window.
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-output-geometry</b> &lt;output-name&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Get the geometry of the specified output as <u>x y width height</u>. By
+default, the full output geometry is returned.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-c</b>, <b>--client-area</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Return the maximum client area, excluding panels and other surfaces
+that reserve space through KWin's strut mechanism.
+</blockquote>
 </blockquote>
 </blockquote>
 

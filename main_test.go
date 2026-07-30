@@ -153,6 +153,32 @@ func TestCommandRunMethods(t *testing.T) {
 			command:      &MousePosCmd{},
 			wantTemplate: initialTemplate + JS_MOUSE_POS,
 		},
+		{
+			name:         "list outputs",
+			command:      &ListOutputsCmd{},
+			wantTemplate: initialTemplate + JS_LIST_OUTPUTS,
+		},
+		{
+			name:         "get active output",
+			command:      &GetActiveOutputCmd{},
+			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
+		},
+		{
+			name:         "get cursor output",
+			command:      &GetCursorOutputCmd{},
+			wantTemplate: initialTemplate + JS_GET_CURSOR_OUTPUT,
+		},
+		{
+			name:         "get active window output",
+			command:      &GetActiveWindowOutputCmd{},
+			wantTemplate: initialTemplate + JS_GET_ACTIVE_WINDOW_OUTPUT,
+		},
+		{
+			name:         "get output geometry",
+			command:      &GetOutputGeometryCmd{ClientArea: true, OutputName: "DP-1"},
+			wantTemplate: initialTemplate + JS_GET_OUTPUT_GEOMETRY,
+			wantParams:   ScriptParams{ClientArea: true, OutputName: "DP-1"},
+		},
 	}
 
 	for _, test := range tests {
