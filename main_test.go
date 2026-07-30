@@ -153,6 +153,11 @@ func TestCommandRunMethods(t *testing.T) {
 			command:      &MousePosCmd{},
 			wantTemplate: initialTemplate + JS_MOUSE_POS,
 		},
+		{
+			name:         "list outputs",
+			command:      &ListOutputsCmd{},
+			wantTemplate: initialTemplate + JS_LIST_OUTPUTS,
+		},
 	}
 
 	for _, test := range tests {
