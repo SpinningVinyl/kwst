@@ -169,12 +169,15 @@ script to finish returns status 124.
 
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
-		the mouse cursor, but it can also be an output containing the center of
+		the mouse cursor, but it can also be an output containing the centre of
 		the active window if that window was activated after the most recent
 		cursor movement.
 
 	*get-cursor-output*
 		Get the output containing the mouse cursor.
+
+	*get-active-window-output*
+		Get the output containing the centre of the active window.
 
 
 # RUNNING CUSTOM SCRIPTS
