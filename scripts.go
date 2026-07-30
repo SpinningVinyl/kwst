@@ -263,6 +263,18 @@ if (output != null) {
 
 `
 
+var JS_GET_ACTIVE_WINDOW_OUTPUT string = `debugLog(scriptName + " executing JS_GET_ACTIVE_WINDOW_OUTPUT");
+
+const window = workspace.activeWindow;
+
+if (window != null) {
+    returnResult(window.output.name);
+} else {
+    returnError("Unable to determine the active window");
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `
