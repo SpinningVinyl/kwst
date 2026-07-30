@@ -158,6 +158,11 @@ func TestCommandRunMethods(t *testing.T) {
 			command:      &ListOutputsCmd{},
 			wantTemplate: initialTemplate + JS_LIST_OUTPUTS,
 		},
+		{
+			name:         "get active output",
+			command:      &GetActiveOutputCmd{},
+			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
+		},
 	}
 
 	for _, test := range tests {
