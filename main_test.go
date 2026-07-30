@@ -173,6 +173,12 @@ func TestCommandRunMethods(t *testing.T) {
 			command:      &GetActiveWindowOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_WINDOW_OUTPUT,
 		},
+		{
+			name:         "get output geometry",
+			command:      &GetOutputGeometryCmd{ClientArea: true, OutputName: "DP-1"},
+			wantTemplate: initialTemplate + JS_GET_OUTPUT_GEOMETRY,
+			wantParams:   ScriptParams{ClientArea: true, OutputName: "DP-1"},
+		},
 	}
 
 	for _, test := range tests {
