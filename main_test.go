@@ -163,6 +163,11 @@ func TestCommandRunMethods(t *testing.T) {
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
 		},
+		{
+			name:         "get cursor output",
+			command:      &GetCursorOutputCmd{},
+			wantTemplate: initialTemplate + JS_GET_CURSOR_OUTPUT,
+		},
 	}
 
 	for _, test := range tests {
