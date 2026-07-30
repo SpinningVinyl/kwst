@@ -275,6 +275,32 @@ if (window != null) {
 
 `
 
+var JS_GET_OUTPUT_GEOMETRY string = `debugLog(scriptName + " executing JS_OUTPUT_GEOMETRY");
+
+const output = workspace.screens.find(
+    (candidate) => candidate.name === {{jsString .OutputName}}
+);
+
+if (!output) {
+    returnError("Output not found: " + {{jsString .OutputName}});
+} else {
+    let area;
+    {{if .ClientArea}}
+        const desktop = workspace.currentDesktopForScreen(output);
+        area = workspace.clientArea(KWin.MaximizeArea, output, desktop);
+    {{else}}
+        area = output.geometry;
+    {{end}}
+    returnResult(
+        Math.round(area.x) + " " +
+        Math.round(area.y) + " " +
+        Math.round(area.width) + " " +
+        Math.round(area.height)
+    );
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

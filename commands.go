@@ -221,3 +221,15 @@ func (gawoc GetActiveWindowOutputCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_GET_ACTIVE_WINDOW_OUTPUT
 	return nil
 }
+
+type GetOutputGeometryCmd struct {
+	ClientArea bool   `default:"false" short:"c" help:"Return the maximum client area which excludes panels and other surfaces that reserve space through KWin's strut mechanism."`
+	OutputName string `arg:"" required:"" help:"Name of the output to return the geometry of."`
+}
+
+func (gogc GetOutputGeometryCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_OUTPUT_GEOMETRY
+	sp.Params.ClientArea = gogc.ClientArea
+	sp.Params.OutputName = gogc.OutputName
+	return nil
+}

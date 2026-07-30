@@ -48,6 +48,7 @@ type CLI struct {
 	GetActiveOutput       GetActiveOutputCmd       `cmd:"" help:"Return the active output (as defined by KWin)."`
 	GetCursorOutput       GetCursorOutputCmd       `cmd:"" help:"Return the output containing the mouse cursor."`
 	GetActiveWindowOutput GetActiveWindowOutputCmd `cmd:"" help:"Return the output containing the geometric centre of the active window."`
+	GetOutputGeometry     GetOutputGeometryCmd     `cmd:"" help:"Return the geometry (size and position) of the specified output. The data is returned in the following format: x y width height."`
 }
 
 // parameters that are passed to the script template
@@ -74,6 +75,8 @@ type ScriptParams struct {
 	P4                    string
 	P5                    string
 	P6                    string
+	ClientArea            bool
+	OutputName            string
 }
 
 type ScriptPackage struct {
