@@ -200,3 +200,10 @@ func (loc ListOutputsCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_LIST_OUTPUTS
 	return nil
 }
+
+type GetActiveOutputCmd struct{}
+
+func (gaoc GetActiveOutputCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_ACTIVE_OUTPUT
+	return nil
+}

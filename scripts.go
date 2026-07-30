@@ -246,6 +246,12 @@ for (let i = 0; i < outputs.length; i++) {
 
 `
 
+var JS_GET_ACTIVE_OUTPUT string = `debugLog(scriptName + " executing JS_GET_ACTIVE_OUTPUT");
+
+returnResult(workspace.activeScreen.name);
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

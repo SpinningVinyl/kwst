@@ -45,6 +45,7 @@ type CLI struct {
 	RunCustomScript    RunCustomScriptCmd    `cmd:"" help:"Run a custom script. Supports up to six optional parameters."`
 	GetMousePosition   MousePosCmd           `cmd:"" help:"Return the absolute position of the mouse cursor."`
 	ListOutputs        ListOutputsCmd        `cmd:"" help:"Return the list of enabled outputs."`
+	GetActiveOutput    GetActiveOutputCmd    `cmd:"" help:"Return the active output (as defined by KWin)."`
 }
 
 // parameters that are passed to the script template
