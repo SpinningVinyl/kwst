@@ -106,6 +106,22 @@ script to finish returns status 124.
 		The data is returned in the format required for the set-window-geometry
 		command (x y width height).
 
+	*get-window-opacity* <uuid>
+		Get the opacity of the window with the specified UUID. The returned value
+		ranges from 0.0 (fully transparent) to 1.0 (fully opaque).
+
+	*set-window-opacity* <uuid> <opacity>
+		Set the opacity of the window with the specified UUID. The opacity must be
+		between 0.1 and 1.0, inclusive.
+
+	*increase-window-opacity* <uuid>
+		Increase the opacity of the window with the specified UUID by 0.05. The
+		opacity cannot be increased above 1.0.
+
+	*decrease-window-opacity* <uuid>
+		Decrease the opacity of the window with the specified UUID by 0.05. The
+		opacity cannot be decreased below 0.1.
+
 	*get-workspace*
 		Get the ID of the active workspace.
 

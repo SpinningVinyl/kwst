@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-07-30</p>
+<p class="header-date">2026-07-31</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -345,6 +345,42 @@ example:
 <blockquote>Get the geometry (size and position) of the window with the specified UUID.
 The data is returned in the format required for the set-window-geometry
 command (x y width height).
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-window-opacity</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Get the opacity of the window with the specified UUID. The returned value
+ranges from 0.0 (fully transparent) to 1.0 (fully opaque).
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-opacity</b> &lt;uuid&gt; &lt;opacity&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Set the opacity of the window with the specified UUID. The opacity must be
+between 0.1 and 1.0, inclusive.
+</blockquote>
+</blockquote>
+
+<blockquote><b>increase-window-opacity</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Increase the opacity of the window with the specified UUID by 0.05. The
+opacity cannot be increased above 1.0.
+</blockquote>
+</blockquote>
+
+<blockquote><b>decrease-window-opacity</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Decrease the opacity of the window with the specified UUID by 0.05. The
+opacity cannot be decreased below 0.1.
 </blockquote>
 </blockquote>
 
