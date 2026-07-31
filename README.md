@@ -14,6 +14,8 @@ Here is the list of things that you can currently do with **kwst**:
 - Activate a window.
 - Close a window.
 - Get window geometry (size and position).
+- Get window opacity.
+- Change window opacity by setting it directly or using increase/decrease commands.
 - Set window geometry (size and position).
 - Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
 - Get the number of the active workspace.
@@ -44,12 +46,14 @@ List regular windows, including their captions:
 kwst list --show-captions
 ```
 
-Get the active window and inspect or change its geometry:
+Get the active window and inspect or change its geometry or opacity:
 
 ```sh
 window_id=$(kwst get-active-window)
 kwst get-window-geometry "$window_id"
 kwst set-window-geometry "$window_id" 100 100 1200 800
+kwst get-window-opacity "$window_id"
+kwst set-window-opacity "$window_id" 0.8
 ```
 
 Toggle the active window's always-on-top state:

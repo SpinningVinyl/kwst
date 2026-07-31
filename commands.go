@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"math"
 	"os"
 )
 
@@ -231,5 +233,57 @@ func (gogc GetOutputGeometryCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_GET_OUTPUT_GEOMETRY
 	sp.Params.ClientArea = gogc.ClientArea
 	sp.Params.OutputName = gogc.OutputName
+	return nil
+}
+
+type GetWindowOpacityCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to get the opacity of."`
+}
+
+func (gwoc GetWindowOpacityCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_WINDOW_OPACITY
+	sp.Params.Uuid = gwoc.Uuid
+	return nil
+}
+
+type SetWindowOpacityCmd struct {
+	Uuid    string  `arg:"" required:"" help:"UUID of the window to change the opacity of."`
+	Opacity float64 `arg:"" required:"" help:"Opacity from 0.1 to 1.0 (inclusive)."`
+}
+
+func (swoc SetWindowOpacityCmd) Validate() error {
+	if math.IsNaN(swoc.Opacity) ||
+		math.IsInf(swoc.Opacity, 0) ||
+		swoc.Opacity < 0.1 ||
+		swoc.Opacity > 1.0 {
+		return fmt.Errorf("opacity must be between 0.1 and 1.0")
+	}
+	return nil
+}
+
+func (swoc SetWindowOpacityCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_OPACITY
+	sp.Params.Opacity = swoc.Opacity
+	sp.Params.Uuid = swoc.Uuid
+	return nil
+}
+
+type IncreaseWindowOpacityCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to increase the opacity of."`
+}
+
+func (iwoc IncreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_INCREASE_WINDOW_OPACITY
+	sp.Params.Uuid = iwoc.Uuid
+	return nil
+}
+
+type DecreaseWindowOpacityCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to decrease the opacity of."`
+}
+
+func (dwoc DecreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_DECREASE_WINDOW_OPACITY
+	sp.Params.Uuid = dwoc.Uuid
 	return nil
 }
