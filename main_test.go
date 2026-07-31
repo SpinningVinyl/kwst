@@ -179,6 +179,30 @@ func TestCommandRunMethods(t *testing.T) {
 			wantTemplate: initialTemplate + JS_GET_OUTPUT_GEOMETRY,
 			wantParams:   ScriptParams{ClientArea: true, OutputName: "DP-1"},
 		},
+		{
+			name:         "get window opacity",
+			command:      &GetWindowOpacityCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_GET_WINDOW_OPACITY,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name:         "set window opacity",
+			command:      &SetWindowOpacityCmd{Uuid: "window-id", Opacity: 0.5},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_OPACITY,
+			wantParams:   ScriptParams{Uuid: "window-id", Opacity: 0.5},
+		},
+		{
+			name:         "increase window opacity",
+			command:      &IncreaseWindowOpacityCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_INCREASE_WINDOW_OPACITY,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name:         "decrease window opacity",
+			command:      &DecreaseWindowOpacityCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_DECREASE_WINDOW_OPACITY,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
 	}
 
 	for _, test := range tests {
