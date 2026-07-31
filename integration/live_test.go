@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -118,6 +119,10 @@ func TestKWinWorkflow(t *testing.T) {
 			{name: "set-window-workspace", arguments: []string{"set-window-workspace", missingUUID, "1"}},
 			{name: "set-window-property", arguments: []string{"set-window-property", "--property=keepAbove", "--value=true", missingUUID}},
 			{name: "close-window", arguments: []string{"close-window", missingUUID}},
+			{name: "get-window-opacity", arguments: []string{"get-window-opacity", missingUUID}},
+			{name: "set-window-opacity", arguments: []string{"set-window-opacity", missingUUID, "0.5"}},
+			{name: "increase-window-opacity", arguments: []string{"increase-window-opacity", missingUUID}},
+			{name: "decrease-window-opacity", arguments: []string{"decrease-window-opacity", missingUUID}},
 		}
 
 		for _, test := range tests {
@@ -146,6 +151,9 @@ func TestKWinWorkflow(t *testing.T) {
 	activateAndVerify(t, kwst, second)
 
 	testOutputCommands(t, kwst)
+	t.Run("window opacity commands", func(t *testing.T) {
+		testWindowOpacityCommands(t, kwst, first)
+	})
 
 	resizeAndMoveFixture(t, kwst, first)
 
@@ -505,6 +513,82 @@ func testOutputCommands(t *testing.T, kwst string) {
 	}
 }
 
+func testWindowOpacityCommands(t *testing.T, kwst string, fixture *fixtureWindow) {
+	t.Helper()
+
+	original := getOpacity(t, kwst, fixture.uuid)
+	if math.IsNaN(original) || math.IsInf(original, 0) || original < 0.0 || original > 1.0 {
+		t.Fatalf("get-window-opacity returned %g, want a value between 0.0 and 1.0", original)
+	}
+	if original < 0.1 {
+		t.Fatalf("fixture opacity %g cannot be restored with set-window-opacity", original)
+	}
+	t.Cleanup(func() {
+		setOpacityAndWait(t, kwst, fixture.uuid, original)
+	})
+
+	t.Run("set rejects invalid values", func(t *testing.T) {
+		tests := []struct {
+			name      string
+			arguments []string
+		}{
+			{name: "missing value", arguments: []string{"set-window-opacity", fixture.uuid}},
+			{name: "not a number", arguments: []string{"set-window-opacity", fixture.uuid, "not-a-number"}},
+			{name: "zero", arguments: []string{"set-window-opacity", fixture.uuid, "0.0"}},
+			{name: "below minimum", arguments: []string{"set-window-opacity", fixture.uuid, "0.099"}},
+			{name: "negative", arguments: []string{"set-window-opacity", fixture.uuid, "-0.5"}},
+			{name: "above maximum", arguments: []string{"set-window-opacity", fixture.uuid, "1.001"}},
+			{name: "NaN", arguments: []string{"set-window-opacity", fixture.uuid, "NaN"}},
+			{name: "positive infinity", arguments: []string{"set-window-opacity", fixture.uuid, "+Inf"}},
+			{name: "negative infinity", arguments: []string{"set-window-opacity", fixture.uuid, "-Inf"}},
+		}
+
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				result := runKWST(t, kwst, test.arguments...)
+				if result.exitCode == 0 {
+					t.Fatalf("set-window-opacity accepted invalid input:\n%s", result.String())
+				}
+				if actual := getOpacity(t, kwst, fixture.uuid); !opacityEqual(actual, original) {
+					t.Fatalf("invalid input changed opacity to %g, want %g", actual, original)
+				}
+			})
+		}
+	})
+
+	t.Run("set changes opacity", func(t *testing.T) {
+		target := 0.5
+		if opacityEqual(original, target) {
+			target = 0.6
+		}
+		setOpacityAndWait(t, kwst, fixture.uuid, target)
+		actual := getOpacity(t, kwst, fixture.uuid)
+		if opacityEqual(original, actual) {
+			t.Fatalf("set-window-opacity did not change opacity from %g", original)
+		}
+	})
+
+	t.Run("increase and decrease change opacity", func(t *testing.T) {
+		setOpacityAndWait(t, kwst, fixture.uuid, 0.5)
+
+		requireSuccess(t, runKWST(t, kwst, "increase-window-opacity", fixture.uuid), "increase window opacity")
+		waitForOpacity(t, kwst, fixture.uuid, 0.55)
+
+		requireSuccess(t, runKWST(t, kwst, "decrease-window-opacity", fixture.uuid), "decrease window opacity")
+		waitForOpacity(t, kwst, fixture.uuid, 0.5)
+	})
+
+	t.Run("increase and decrease respect limits", func(t *testing.T) {
+		setOpacityAndWait(t, kwst, fixture.uuid, 1.0)
+		requireSuccess(t, runKWST(t, kwst, "increase-window-opacity", fixture.uuid), "increase opacity at upper limit")
+		waitForOpacity(t, kwst, fixture.uuid, 1.0)
+
+		setOpacityAndWait(t, kwst, fixture.uuid, 0.1)
+		requireSuccess(t, runKWST(t, kwst, "decrease-window-opacity", fixture.uuid), "decrease opacity at lower limit")
+		waitForOpacity(t, kwst, fixture.uuid, 0.1)
+	})
+}
+
 func resizeAndMoveFixture(t *testing.T, kwst string, fixture *fixtureWindow) {
 	t.Helper()
 
@@ -548,6 +632,49 @@ func getGeometry(t *testing.T, kwst, uuid string) geometry {
 		t.Fatalf("parse fixture geometry %q: %v", result.stdout, err)
 	}
 	return value
+}
+
+func getOpacity(t *testing.T, kwst, uuid string) float64 {
+	t.Helper()
+	opacity, result := readOpacity(t, kwst, uuid)
+	requireSuccess(t, result, "get window opacity")
+	return opacity
+}
+
+func readOpacity(t *testing.T, kwst, uuid string) (float64, commandResult) {
+	t.Helper()
+	result := runKWST(t, kwst, "get-window-opacity", uuid)
+	if result.exitCode != 0 {
+		return 0, result
+	}
+	opacity, err := strconv.ParseFloat(result.stdout, 64)
+	if err != nil {
+		result.exitCode = -1
+		result.stderr = fmt.Sprintf("parse window opacity %q: %v", result.stdout, err)
+	}
+	return opacity, result
+}
+
+func setOpacityAndWait(t *testing.T, kwst, uuid string, opacity float64) {
+	t.Helper()
+	value := strconv.FormatFloat(opacity, 'f', -1, 64)
+	requireSuccess(t, runKWST(t, kwst, "set-window-opacity", uuid, value), "set window opacity")
+	waitForOpacity(t, kwst, uuid, opacity)
+}
+
+func waitForOpacity(t *testing.T, kwst, uuid string, expected float64) {
+	t.Helper()
+	eventually(t, fmt.Sprintf("window opacity to become %g", expected), func() (bool, string) {
+		actual, result := readOpacity(t, kwst, uuid)
+		if result.exitCode != 0 {
+			return false, result.String()
+		}
+		return opacityEqual(actual, expected), fmt.Sprintf("got %g, want %g", actual, expected)
+	})
+}
+
+func opacityEqual(left, right float64) bool {
+	return math.Abs(left-right) < 1e-9
 }
 
 func parseGeometry(value string) (geometry, error) {
