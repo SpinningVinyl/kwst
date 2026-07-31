@@ -301,6 +301,71 @@ if (!output) {
 
 `
 
+var JS_GET_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_GET_WINDOW_OPACITY");
+
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    returnResult(targetWindow.opacity);
+}
+
+`
+
+var JS_SET_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_SET_WINDOW_OPACITY");
+
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    debugLog("Setting opacity of window with UUID=" + {{jsString .Uuid}} + " to {{.Opacity}}");
+    targetWindow.opacity = {{.Opacity}};
+}
+
+`
+
+var JS_INCREASE_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_INCREASE_WINDOW_OPACITY");
+
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    let newOpacity = targetWindow.opacity;
+    newOpacity += 0.05;
+    if (newOpacity > 1.0) {
+        newOpacity = 1.0;
+    }
+    debugLog("Setting opacity of window with UUID=" + {{jsString .Uuid}} + " to " + newOpacity);
+    targetWindow.opacity = newOpacity;
+}
+
+`
+
+var JS_DECREASE_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_DECREASE_WINDOW_OPACITY");
+
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    let newOpacity = targetWindow.opacity;
+    newOpacity -= 0.05;
+    if (newOpacity < 0.1) {
+        newOpacity = 0.1;
+    }
+    debugLog("Setting opacity of window with UUID=" + {{jsString .Uuid}} + " to " + newOpacity);
+    targetWindow.opacity = newOpacity;
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `

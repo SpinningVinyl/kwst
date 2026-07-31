@@ -49,6 +49,10 @@ type CLI struct {
 	GetCursorOutput       GetCursorOutputCmd       `cmd:"" help:"Return the output containing the mouse cursor."`
 	GetActiveWindowOutput GetActiveWindowOutputCmd `cmd:"" help:"Return the output containing the geometric centre of the active window."`
 	GetOutputGeometry     GetOutputGeometryCmd     `cmd:"" help:"Return the geometry (size and position) of the specified output. The data is returned in the following format: x y width height."`
+	GetWindowOpacity      GetWindowOpacityCmd      `cmd:"" help:"Return the opacity of the specified window (from 0.0 to 1.0)."`
+	SetWindowOpacity      SetWindowOpacityCmd      `cmd:"" help:"Set the opacity of the window with the provided UUID, if such a window exists."`
+	IncreaseWindowOpacity IncreaseWindowOpacityCmd `cmd:"" help:"Increase the opacity of the window with the provided UUID by 0.05. Opacity can't be set higher than 1.0."`
+	DecreaseWindowOpacity DecreaseWindowOpacityCmd `cmd:"" help:"Decrease the opacity of the window with the provided UUID by 0.05. Opacity can't be set lower than 0.1."`
 }
 
 // parameters that are passed to the script template
@@ -77,6 +81,7 @@ type ScriptParams struct {
 	P6                    string
 	ClientArea            bool
 	OutputName            string
+	Opacity               float64
 }
 
 type ScriptPackage struct {
