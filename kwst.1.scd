@@ -42,6 +42,9 @@ Get the active window and inspect or change its geometry:
 	window_id=$(*kwst get-active-window*)
 	*kwst get-window-geometry "$window_id"*
 	*kwst set-window-geometry "$window_id" 100 100 1200 800*
+	*kwst set-window-geometry-relative "$window_id" 0 0 50 100*
+	*kwst set-window-size-relative "$window_id" 50 100*
+	*kwst set-window-position-relative "$window_id" 25 25*
 
 Toggle the active window's always-on-top state:
 
@@ -135,13 +138,29 @@ script to finish returns status 124.
 		Set the size of the window with the provided UUID, provided that
 		such a window exists.		
 
+	*set-window-size-relative* <uuid> <relative-width> <relative-height>
+		Set the size of the window with the provided UUID using percentages of the
+		client area of the output containing the window. Relative width and height
+		are clamped between 10 and 100 percent. Fractional percentages are accepted.
+
 	*set-window-position* <uuid> <x> <y>
 		Set the position of the window with the provided UUID, provided
 		that such a window exists.
 
+	*set-window-position-relative* <uuid> <relative-x> <relative-y>
+		Set the position of the window with the provided UUID using percentages of
+		the client area of the output containing the window. Relative X and Y are
+		clamped between 0 and 100 percent. Fractional percentages are accepted.
+
 	*set-window-geometry* <uuid> <x> <y> <width> <height>
 		Change geometry of the window with the provided UUID, provided
 		that such a window exists.
+
+	*set-window-geometry-relative* <uuid> <relative-x> <relative-y> <relative-width> <relative-height>
+		Change the geometry of the window with the provided UUID using percentages
+		of the client area of the output containing the window. Relative X and Y are
+		clamped between 0 and 100 percent. Relative width and height are clamped
+		between 10 and 100 percent. Fractional percentages are accepted.
 
 	*set-window-workspace* <uuid> <workspace-id>
 		Send the window with the specified UUID to the workspace with the specified

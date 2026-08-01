@@ -116,6 +116,9 @@ func TestKWinWorkflow(t *testing.T) {
 			{name: "set-window-size", arguments: []string{"set-window-size", missingUUID, "640", "480"}},
 			{name: "set-window-position", arguments: []string{"set-window-position", missingUUID, "10", "20"}},
 			{name: "set-window-geometry", arguments: []string{"set-window-geometry", missingUUID, "10", "20", "640", "480"}},
+			{name: "set-window-geometry-relative", arguments: []string{"set-window-geometry-relative", missingUUID, "10", "20", "50", "50"}},
+			{name: "set-window-size-relative", arguments: []string{"set-window-size-relative", missingUUID, "50", "50"}},
+			{name: "set-window-position-relative", arguments: []string{"set-window-position-relative", missingUUID, "10", "20"}},
 			{name: "set-window-workspace", arguments: []string{"set-window-workspace", missingUUID, "1"}},
 			{name: "set-window-property", arguments: []string{"set-window-property", "--property=keepAbove", "--value=true", missingUUID}},
 			{name: "close-window", arguments: []string{"close-window", missingUUID}},
@@ -153,6 +156,9 @@ func TestKWinWorkflow(t *testing.T) {
 	testOutputCommands(t, kwst)
 	t.Run("window opacity commands", func(t *testing.T) {
 		testWindowOpacityCommands(t, kwst, first)
+	})
+	t.Run("relative geometry commands", func(t *testing.T) {
+		testRelativeGeometryCommands(t, kwst, first)
 	})
 
 	resizeAndMoveFixture(t, kwst, first)
@@ -589,6 +595,151 @@ func testWindowOpacityCommands(t *testing.T, kwst string, fixture *fixtureWindow
 	})
 }
 
+func testRelativeGeometryCommands(t *testing.T, kwst string, fixture *fixtureWindow) {
+	t.Helper()
+
+	activateAndVerify(t, kwst, fixture)
+	outputResult := runKWST(t, kwst, "get-active-window-output")
+	outputName := requireSingleOutputName(t, outputResult, "get fixture output")
+	areaResult := runKWST(t, kwst, "get-output-geometry", "--client-area", outputName)
+	requireSuccess(t, areaResult, "get fixture output client area")
+	clientArea, err := parseGeometry(areaResult.stdout)
+	if err != nil {
+		t.Fatalf("parse fixture output client area %q: %v", areaResult.stdout, err)
+	}
+	if clientArea.width <= 0 || clientArea.height <= 0 {
+		t.Fatalf("fixture output has non-positive client area dimensions: %+v", clientArea)
+	}
+
+	original := getGeometry(t, kwst, fixture.uuid)
+	t.Cleanup(func() {
+		setGeometryAndWait(t, kwst, fixture.uuid, original)
+	})
+
+	baseline := relativeGeometry(clientArea, 20, 20, 60, 60)
+
+	t.Run("set relative position", func(t *testing.T) {
+		setGeometryAndWait(t, kwst, fixture.uuid, baseline)
+		expected := baseline
+		expected.x = relativeCoordinate(clientArea.x, clientArea.width, 10)
+		expected.y = relativeCoordinate(clientArea.y, clientArea.height, 10)
+
+		requireSuccess(t, runKWST(t, kwst, "set-window-position-relative", fixture.uuid, "10", "10"), "set relative fixture position")
+		waitForGeometry(t, kwst, fixture.uuid, expected)
+	})
+
+	t.Run("set relative size", func(t *testing.T) {
+		setGeometryAndWait(t, kwst, fixture.uuid, baseline)
+		expected := baseline
+		expected.width = relativeLength(clientArea.width, 50)
+		expected.height = relativeLength(clientArea.height, 50)
+
+		requireSuccess(t, runKWST(t, kwst, "set-window-size-relative", fixture.uuid, "50", "50"), "set relative fixture size")
+		waitForGeometry(t, kwst, fixture.uuid, expected)
+	})
+
+	t.Run("set relative geometry", func(t *testing.T) {
+		setGeometryAndWait(t, kwst, fixture.uuid, baseline)
+		expected := relativeGeometry(clientArea, 10, 10, 50, 50)
+
+		requireSuccess(t, runKWST(t, kwst, "set-window-geometry-relative", fixture.uuid, "10", "10", "50", "50"), "set relative fixture geometry")
+		waitForGeometry(t, kwst, fixture.uuid, expected)
+	})
+
+	positionClampTests := []struct {
+		name         string
+		boundaryArgs []string
+		clampedArgs  []string
+	}{
+		{
+			name:         "geometry lower position limit",
+			boundaryArgs: []string{"set-window-geometry-relative", fixture.uuid, "0", "0", "50", "50"},
+			clampedArgs:  []string{"set-window-geometry-relative", "--", fixture.uuid, "-10", "-20", "50", "50"},
+		},
+		{
+			name:         "geometry upper position limit",
+			boundaryArgs: []string{"set-window-geometry-relative", fixture.uuid, "100", "100", "50", "50"},
+			clampedArgs:  []string{"set-window-geometry-relative", fixture.uuid, "110", "120", "50", "50"},
+		},
+		{
+			name:         "position lower limit",
+			boundaryArgs: []string{"set-window-position-relative", fixture.uuid, "0", "0"},
+			clampedArgs:  []string{"set-window-position-relative", "--", fixture.uuid, "-10", "-20"},
+		},
+		{
+			name:         "position upper limit",
+			boundaryArgs: []string{"set-window-position-relative", fixture.uuid, "100", "100"},
+			clampedArgs:  []string{"set-window-position-relative", fixture.uuid, "110", "120"},
+		},
+	}
+	for _, test := range positionClampTests {
+		t.Run("clamp "+test.name, func(t *testing.T) {
+			verifyRelativeClamp(t, kwst, fixture.uuid, baseline, test.boundaryArgs, test.clampedArgs)
+		})
+	}
+
+	dimensionClampTests := []struct {
+		name         string
+		boundaryArgs []string
+		clampedArgs  []string
+	}{
+		{
+			name:         "geometry lower dimension limit",
+			boundaryArgs: []string{"set-window-geometry-relative", fixture.uuid, "10", "10", "10", "10"},
+			clampedArgs:  []string{"set-window-geometry-relative", fixture.uuid, "10", "10", "0", "9"},
+		},
+		{
+			name:         "geometry upper dimension limit",
+			boundaryArgs: []string{"set-window-geometry-relative", fixture.uuid, "10", "10", "100", "100"},
+			clampedArgs:  []string{"set-window-geometry-relative", fixture.uuid, "10", "10", "110", "120"},
+		},
+		{
+			name:         "size lower limit",
+			boundaryArgs: []string{"set-window-size-relative", fixture.uuid, "10", "10"},
+			clampedArgs:  []string{"set-window-size-relative", fixture.uuid, "0", "9"},
+		},
+		{
+			name:         "size upper limit",
+			boundaryArgs: []string{"set-window-size-relative", fixture.uuid, "100", "100"},
+			clampedArgs:  []string{"set-window-size-relative", fixture.uuid, "110", "120"},
+		},
+	}
+	for _, test := range dimensionClampTests {
+		t.Run("clamp "+test.name, func(t *testing.T) {
+			verifyRelativeClamp(t, kwst, fixture.uuid, baseline, test.boundaryArgs, test.clampedArgs)
+		})
+	}
+}
+
+func relativeGeometry(area geometry, xPercent, yPercent, widthPercent, heightPercent float64) geometry {
+	return geometry{
+		x:      relativeCoordinate(area.x, area.width, xPercent),
+		y:      relativeCoordinate(area.y, area.height, yPercent),
+		width:  relativeLength(area.width, widthPercent),
+		height: relativeLength(area.height, heightPercent),
+	}
+}
+
+func relativeCoordinate(origin, length int, percent float64) int {
+	return origin + relativeLength(length, percent)
+}
+
+func relativeLength(length int, percent float64) int {
+	return int(math.Round(float64(length) * percent / 100))
+}
+
+func verifyRelativeClamp(t *testing.T, kwst, uuid string, baseline geometry, boundaryArgs, clampedArgs []string) {
+	t.Helper()
+
+	setGeometryAndWait(t, kwst, uuid, baseline)
+	requireSuccess(t, runKWST(t, kwst, boundaryArgs...), "set relative boundary value")
+	boundary := waitForGeometryChange(t, kwst, uuid, baseline)
+
+	setGeometryAndWait(t, kwst, uuid, baseline)
+	requireSuccess(t, runKWST(t, kwst, clampedArgs...), "set out-of-range relative value")
+	waitForGeometry(t, kwst, uuid, boundary)
+}
+
 func resizeAndMoveFixture(t *testing.T, kwst string, fixture *fixtureWindow) {
 	t.Helper()
 
@@ -632,6 +783,50 @@ func getGeometry(t *testing.T, kwst, uuid string) geometry {
 		t.Fatalf("parse fixture geometry %q: %v", result.stdout, err)
 	}
 	return value
+}
+
+func setGeometryAndWait(t *testing.T, kwst, uuid string, expected geometry) {
+	t.Helper()
+	requireSuccess(t, runKWST(t, kwst, "set-window-geometry", uuid,
+		strconv.Itoa(expected.x),
+		strconv.Itoa(expected.y),
+		strconv.Itoa(expected.width),
+		strconv.Itoa(expected.height),
+	), "set fixture geometry")
+	waitForGeometry(t, kwst, uuid, expected)
+}
+
+func waitForGeometry(t *testing.T, kwst, uuid string, expected geometry) {
+	t.Helper()
+	eventually(t, fmt.Sprintf("window geometry to become %+v", expected), func() (bool, string) {
+		result := runKWST(t, kwst, "get-window-geometry", uuid)
+		if result.exitCode != 0 {
+			return false, result.String()
+		}
+		actual, err := parseGeometry(result.stdout)
+		if err != nil {
+			return false, err.Error()
+		}
+		return actual == expected, fmt.Sprintf("got %+v, want %+v", actual, expected)
+	})
+}
+
+func waitForGeometryChange(t *testing.T, kwst, uuid string, original geometry) geometry {
+	t.Helper()
+	var actual geometry
+	eventually(t, fmt.Sprintf("window geometry to change from %+v", original), func() (bool, string) {
+		result := runKWST(t, kwst, "get-window-geometry", uuid)
+		if result.exitCode != 0 {
+			return false, result.String()
+		}
+		var err error
+		actual, err = parseGeometry(result.stdout)
+		if err != nil {
+			return false, err.Error()
+		}
+		return actual != original, fmt.Sprintf("geometry is still %+v", actual)
+	})
+	return actual
 }
 
 func getOpacity(t *testing.T, kwst, uuid string) float64 {
@@ -684,11 +879,11 @@ func parseGeometry(value string) (geometry, error) {
 	}
 	parts := make([]int, 4)
 	for index, field := range fields {
-		part, err := strconv.Atoi(field)
+		part, err := strconv.ParseFloat(field, 64)
 		if err != nil {
 			return geometry{}, fmt.Errorf("invalid geometry %q: %w", value, err)
 		}
-		parts[index] = part
+		parts[index] = int(math.Round(part))
 	}
 	return geometry{x: parts[0], y: parts[1], width: parts[2], height: parts[3]}, nil
 }
