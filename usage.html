@@ -197,6 +197,8 @@ managers implementing NET_WM and EWMH specifications.
 <b>kwst get-window-geometry "$window_id"</b>
 <b>kwst set-window-geometry "$window_id" 100 100 1200 800</b>
 <b>kwst set-window-geometry-relative "$window_id" 0 0 50 100</b>
+<b>kwst set-window-size-relative "$window_id" 50 100</b>
+<b>kwst set-window-position-relative "$window_id" 25 25</b>
 </blockquote>
 
 <p>Toggle the active window's always-on-top state:
@@ -418,12 +420,32 @@ such a window exists.
 </blockquote>
 </blockquote>
 
+<blockquote><b>set-window-size-relative</b> &lt;uuid&gt; &lt;relative-width&gt; &lt;relative-height&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Set the size of the window with the provided UUID using percentages of the
+client area of the output containing the window. Relative width and height
+are clamped between 10 and 100 percent. Fractional percentages are accepted.
+</blockquote>
+</blockquote>
+
 <blockquote><b>set-window-position</b> &lt;uuid&gt; &lt;x&gt; &lt;y&gt;
 </blockquote>
 
 <blockquote>
 <blockquote>Set the position of the window with the provided UUID, provided
 that such a window exists.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-position-relative</b> &lt;uuid&gt; &lt;relative-x&gt; &lt;relative-y&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Set the position of the window with the provided UUID using percentages of
+the client area of the output containing the window. Relative X and Y are
+clamped between 0 and 100 percent. Fractional percentages are accepted.
 </blockquote>
 </blockquote>
 
