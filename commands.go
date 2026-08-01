@@ -312,30 +312,10 @@ func (cmd *SetWindowGeometryRelativeCmd) Validate() error {
 		math.IsInf(cmd.RelativeHeight, 0) {
 		return fmt.Errorf("relative X, Y, width and height must be valid numbers")
 	}
-	if cmd.RelativeX < 0 {
-		cmd.RelativeX = 0
-	}
-	if cmd.RelativeX > maxRelativePercent {
-		cmd.RelativeX = maxRelativePercent
-	}
-	if cmd.RelativeY < 0 {
-		cmd.RelativeY = 0
-	}
-	if cmd.RelativeY > maxRelativePercent {
-		cmd.RelativeY = maxRelativePercent
-	}
-	if cmd.RelativeWidth < minRelativeSizePercent {
-		cmd.RelativeWidth = minRelativeSizePercent
-	}
-	if cmd.RelativeWidth > maxRelativePercent {
-		cmd.RelativeWidth = maxRelativePercent
-	}
-	if cmd.RelativeHeight < minRelativeSizePercent {
-		cmd.RelativeHeight = minRelativeSizePercent
-	}
-	if cmd.RelativeHeight > maxRelativePercent {
-		cmd.RelativeHeight = maxRelativePercent
-	}
+	cmd.RelativeX = min(max(cmd.RelativeX, 0), maxRelativePercent)
+	cmd.RelativeY = min(max(cmd.RelativeY, 0), maxRelativePercent)
+	cmd.RelativeWidth = min(max(cmd.RelativeWidth, minRelativeSizePercent), maxRelativePercent)
+	cmd.RelativeHeight = min(max(cmd.RelativeHeight, minRelativeSizePercent), maxRelativePercent)
 	return nil
 }
 
@@ -362,18 +342,8 @@ func (cmd *SetWindowSizeRelativeCmd) Validate() error {
 		math.IsInf(cmd.RelativeHeight, 0) {
 		return fmt.Errorf("relative width and height must be valid numbers")
 	}
-	if cmd.RelativeWidth < minRelativeSizePercent {
-		cmd.RelativeWidth = minRelativeSizePercent
-	}
-	if cmd.RelativeWidth > maxRelativePercent {
-		cmd.RelativeWidth = maxRelativePercent
-	}
-	if cmd.RelativeHeight < minRelativeSizePercent {
-		cmd.RelativeHeight = minRelativeSizePercent
-	}
-	if cmd.RelativeHeight > maxRelativePercent {
-		cmd.RelativeHeight = maxRelativePercent
-	}
+	cmd.RelativeWidth = min(max(cmd.RelativeWidth, minRelativeSizePercent), maxRelativePercent)
+	cmd.RelativeHeight = min(max(cmd.RelativeHeight, minRelativeSizePercent), maxRelativePercent)
 	return nil
 }
 
@@ -398,18 +368,8 @@ func (cmd *SetWindowPositionRelativeCmd) Validate() error {
 		math.IsInf(cmd.RelativeY, 0) {
 		return fmt.Errorf("relative X and Y must be valid numbers")
 	}
-	if cmd.RelativeX < 0 {
-		cmd.RelativeX = 0
-	}
-	if cmd.RelativeX > maxRelativePercent {
-		cmd.RelativeX = maxRelativePercent
-	}
-	if cmd.RelativeY < 0 {
-		cmd.RelativeY = 0
-	}
-	if cmd.RelativeY > maxRelativePercent {
-		cmd.RelativeY = maxRelativePercent
-	}
+	cmd.RelativeX = min(max(cmd.RelativeX, 0), maxRelativePercent)
+	cmd.RelativeY = min(max(cmd.RelativeY, 0), maxRelativePercent)
 	return nil
 }
 
