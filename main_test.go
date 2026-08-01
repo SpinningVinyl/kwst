@@ -124,6 +124,34 @@ func TestCommandRunMethods(t *testing.T) {
 			},
 		},
 		{
+			name: "set window size relative",
+			command: &SetWindowSizeRelativeCmd{
+				Uuid:           "window-id",
+				RelativeWidth:  66.7,
+				RelativeHeight: 50,
+			},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_SIZE_RELATIVE,
+			wantParams: ScriptParams{
+				Uuid:           "window-id",
+				RelativeWidth:  66.7,
+				RelativeHeight: 50,
+			},
+		},
+		{
+			name: "set window position relative",
+			command: &SetWindowPositionRelativeCmd{
+				Uuid:      "window-id",
+				RelativeX: 10.5,
+				RelativeY: 20.25,
+			},
+			wantTemplate: initialTemplate + JS_SET_WINDOW_POSITION_RELATIVE,
+			wantParams: ScriptParams{
+				Uuid:      "window-id",
+				RelativeX: 10.5,
+				RelativeY: 20.25,
+			},
+		},
+		{
 			name:         "set window workspace",
 			command:      &SetWindowWorkspaceCmd{Uuid: "window-id", WorkspaceId: 3},
 			wantTemplate: initialTemplate + JS_SET_WINDOW_WORKSPACE,
