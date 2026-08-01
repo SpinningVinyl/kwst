@@ -287,3 +287,59 @@ func (dwoc DecreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
 	sp.Params.Uuid = dwoc.Uuid
 	return nil
 }
+
+type SetWindowGeometryRelativeCmd struct {
+	Uuid           string  `arg:"" required:"" help:"UUID of the window to change the geometry of."`
+	RelativeX      float64 `arg:"" required:""`
+	RelativeY      float64 `arg:"" required:""`
+	RelativeWidth  float64 `arg:"" required:""`
+	RelativeHeight float64 `arg:"" required:""`
+}
+
+func (cmd *SetWindowGeometryRelativeCmd) Validate() error {
+	if math.IsNaN(cmd.RelativeX) ||
+		math.IsNaN(cmd.RelativeY) ||
+		math.IsNaN(cmd.RelativeWidth) ||
+		math.IsNaN(cmd.RelativeHeight) ||
+		math.IsInf(cmd.RelativeX, 0) ||
+		math.IsInf(cmd.RelativeY, 0) ||
+		math.IsInf(cmd.RelativeWidth, 0) ||
+		math.IsInf(cmd.RelativeHeight, 0) {
+		return fmt.Errorf("relative X, Y, width and height must be valid numbers")
+	}
+	if cmd.RelativeX < 0 {
+		cmd.RelativeX = 0
+	}
+	if cmd.RelativeX > 100 {
+		cmd.RelativeX = 100
+	}
+	if cmd.RelativeY < 0 {
+		cmd.RelativeY = 0
+	}
+	if cmd.RelativeY > 100 {
+		cmd.RelativeY = 100
+	}
+	if cmd.RelativeWidth < 10 {
+		cmd.RelativeWidth = 10
+	}
+	if cmd.RelativeWidth > 100 {
+		cmd.RelativeWidth = 100
+	}
+	if cmd.RelativeHeight < 10 {
+		cmd.RelativeHeight = 10
+	}
+	if cmd.RelativeHeight > 100 {
+		cmd.RelativeHeight = 100
+	}
+	return nil
+}
+
+func (cmd SetWindowGeometryRelativeCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_GEOMETRY_RELATIVE
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.RelativeX = cmd.RelativeX
+	sp.Params.RelativeY = cmd.RelativeY
+	sp.Params.RelativeWidth = cmd.RelativeWidth
+	sp.Params.RelativeHeight = cmd.RelativeHeight
+	return nil
+}

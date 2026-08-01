@@ -366,6 +366,35 @@ if (!targetWindow) {
 
 `
 
+var JS_SET_WINDOW_GEOMETRY_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY_RELATIVE");
+
+let area;
+const targetWindow = workspace.windowList().find(
+    (window) => window.internalId == {{jsString .Uuid}}
+);
+if (targetWindow) {
+    const output = targetWindow.output;
+    const desktop = workspace.currentDesktopForScreen(output);
+    area = workspace.clientArea(KWin.MaximizeArea, output, desktop);
+
+    const newGeometry = Object.assign({}, targetWindow.frameGeometry);
+    newGeometry.width = Math.round(area.width * {{.RelativeWidth}} / 100);
+    newGeometry.height = Math.round(area.height * {{.RelativeHeight}} / 100);
+    newGeometry.x = area.x + Math.round(area.width * {{.RelativeX}} / 100);
+    newGeometry.y = area.y + Math.round(area.height * {{.RelativeY}} / 100);
+
+    debugLog("Setting geometry of window with UUID=" + {{jsString .Uuid}} +
+        " to: X=" + newGeometry.x +
+        " Y=" + newGeometry.y +
+        " width=" + newGeometry.width +
+        " height=" + newGeometry.height);
+    targetWindow.frameGeometry = newGeometry;
+} else {
+    returnError("Window not found: " + {{jsString .Uuid}})
+}
+
+`
+
 var JS_FOOTER string = `close();
 debugLog(scriptName + " END");
 `
