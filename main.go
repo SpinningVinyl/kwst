@@ -53,7 +53,9 @@ type CLI struct {
 	SetWindowOpacity          SetWindowOpacityCmd          `cmd:"" help:"Set the opacity of the window with the provided UUID, if such a window exists."`
 	IncreaseWindowOpacity     IncreaseWindowOpacityCmd     `cmd:"" help:"Increase the opacity of the window with the provided UUID by 0.05. Opacity can't be set higher than 1.0."`
 	DecreaseWindowOpacity     DecreaseWindowOpacityCmd     `cmd:"" help:"Decrease the opacity of the window with the provided UUID by 0.05. Opacity can't be set lower than 0.1."`
-	SetWindowGeometryRelative SetWindowGeometryRelativeCmd `cmd:"" help:"Change the geometry of the window with the provided UUID relative to the screen dimensions (in percent)."`
+	SetWindowGeometryRelative SetWindowGeometryRelativeCmd `cmd:"" help:"Change the geometry of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
+	SetWindowSizeRelative     SetWindowSizeRelativeCmd     `cmd:"" help:"Change the size of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
+	SetWindowPositionRelative SetWindowPositionRelativeCmd `cmd:"" help:"Change the position of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 }
 
 // parameters that are passed to the script template

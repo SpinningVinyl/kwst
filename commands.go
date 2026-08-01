@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+const (
+	minRelativeSizePercent = 10
+	maxRelativePercent     = 100
+)
+
 type ListCmd struct {
 	IncludeSpecialWindows bool `default:"false" short:"s" help:"Include special windows that are not meant to be manipulated, e.g. plasmashell panels, desktop, etc. Such windows are not listed by default."`
 	ShowCaptions          bool `default:"false" short:"c" help:"Show window captions in the list."`
@@ -310,26 +315,26 @@ func (cmd *SetWindowGeometryRelativeCmd) Validate() error {
 	if cmd.RelativeX < 0 {
 		cmd.RelativeX = 0
 	}
-	if cmd.RelativeX > 100 {
-		cmd.RelativeX = 100
+	if cmd.RelativeX > maxRelativePercent {
+		cmd.RelativeX = maxRelativePercent
 	}
 	if cmd.RelativeY < 0 {
 		cmd.RelativeY = 0
 	}
-	if cmd.RelativeY > 100 {
-		cmd.RelativeY = 100
+	if cmd.RelativeY > maxRelativePercent {
+		cmd.RelativeY = maxRelativePercent
 	}
-	if cmd.RelativeWidth < 10 {
-		cmd.RelativeWidth = 10
+	if cmd.RelativeWidth < minRelativeSizePercent {
+		cmd.RelativeWidth = minRelativeSizePercent
 	}
-	if cmd.RelativeWidth > 100 {
-		cmd.RelativeWidth = 100
+	if cmd.RelativeWidth > maxRelativePercent {
+		cmd.RelativeWidth = maxRelativePercent
 	}
-	if cmd.RelativeHeight < 10 {
-		cmd.RelativeHeight = 10
+	if cmd.RelativeHeight < minRelativeSizePercent {
+		cmd.RelativeHeight = minRelativeSizePercent
 	}
-	if cmd.RelativeHeight > 100 {
-		cmd.RelativeHeight = 100
+	if cmd.RelativeHeight > maxRelativePercent {
+		cmd.RelativeHeight = maxRelativePercent
 	}
 	return nil
 }
@@ -341,5 +346,77 @@ func (cmd SetWindowGeometryRelativeCmd) Run(sp *ScriptPackage) error {
 	sp.Params.RelativeY = cmd.RelativeY
 	sp.Params.RelativeWidth = cmd.RelativeWidth
 	sp.Params.RelativeHeight = cmd.RelativeHeight
+	return nil
+}
+
+type SetWindowSizeRelativeCmd struct {
+	Uuid           string  `arg:"" required:"" help:"UUID of the window to change the size of."`
+	RelativeWidth  float64 `arg:"" required:""`
+	RelativeHeight float64 `arg:"" required:""`
+}
+
+func (cmd *SetWindowSizeRelativeCmd) Validate() error {
+	if math.IsNaN(cmd.RelativeWidth) ||
+		math.IsNaN(cmd.RelativeHeight) ||
+		math.IsInf(cmd.RelativeWidth, 0) ||
+		math.IsInf(cmd.RelativeHeight, 0) {
+		return fmt.Errorf("relative width and height must be valid numbers")
+	}
+	if cmd.RelativeWidth < minRelativeSizePercent {
+		cmd.RelativeWidth = minRelativeSizePercent
+	}
+	if cmd.RelativeWidth > maxRelativePercent {
+		cmd.RelativeWidth = maxRelativePercent
+	}
+	if cmd.RelativeHeight < minRelativeSizePercent {
+		cmd.RelativeHeight = minRelativeSizePercent
+	}
+	if cmd.RelativeHeight > maxRelativePercent {
+		cmd.RelativeHeight = maxRelativePercent
+	}
+	return nil
+}
+
+func (cmd SetWindowSizeRelativeCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_SIZE_RELATIVE
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.RelativeWidth = cmd.RelativeWidth
+	sp.Params.RelativeHeight = cmd.RelativeHeight
+	return nil
+}
+
+type SetWindowPositionRelativeCmd struct {
+	Uuid      string  `arg:"" required:"" help:"UUID of the window to change the geometry of."`
+	RelativeX float64 `arg:"" required:""`
+	RelativeY float64 `arg:"" required:""`
+}
+
+func (cmd *SetWindowPositionRelativeCmd) Validate() error {
+	if math.IsNaN(cmd.RelativeX) ||
+		math.IsNaN(cmd.RelativeY) ||
+		math.IsInf(cmd.RelativeX, 0) ||
+		math.IsInf(cmd.RelativeY, 0) {
+		return fmt.Errorf("relative X and Y must be valid numbers")
+	}
+	if cmd.RelativeX < 0 {
+		cmd.RelativeX = 0
+	}
+	if cmd.RelativeX > maxRelativePercent {
+		cmd.RelativeX = maxRelativePercent
+	}
+	if cmd.RelativeY < 0 {
+		cmd.RelativeY = 0
+	}
+	if cmd.RelativeY > maxRelativePercent {
+		cmd.RelativeY = maxRelativePercent
+	}
+	return nil
+}
+
+func (cmd SetWindowPositionRelativeCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_POSITION_RELATIVE
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.RelativeX = cmd.RelativeX
+	sp.Params.RelativeY = cmd.RelativeY
 	return nil
 }
