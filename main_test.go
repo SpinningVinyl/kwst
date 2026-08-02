@@ -462,6 +462,17 @@ func TestGetActiveWindowRejectsSpecialWindow(t *testing.T) {
 }
 
 func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
+	for _, expected := range []string{
+		"const findWindow = (uuid) => {",
+		"const window = workspace.windowList().find(",
+		"candidate => candidate.internalId == uuid",
+		"return window;",
+	} {
+		if !strings.Contains(JS_HEADER, expected) {
+			t.Errorf("JS_HEADER does not contain %q", expected)
+		}
+	}
+
 	params := ScriptParams{
 		Uuid:           `missing\"; malicious(); //`,
 		WorkspaceId:    3,
@@ -484,9 +495,9 @@ func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 	}{
 		{name: "get geometry", scriptTemplate: JS_GET_WINDOW_GEOMETRY, action: "returnResult(result);"},
 		{name: "activate", scriptTemplate: JS_ACTIVATE_WINDOW, action: "workspace.activeWindow = targetWindow;"},
-		{name: "set size", scriptTemplate: JS_SET_WINDOW_SIZE, action: "targetWindow.frameGeometry = newGeometry;"},
-		{name: "set position", scriptTemplate: JS_SET_WINDOW_POSITION, action: "targetWindow.frameGeometry = newGeometry;"},
-		{name: "set geometry", scriptTemplate: JS_SET_WINDOW_GEOMETRY, action: "targetWindow.frameGeometry = newGeometry;"},
+		{name: "set size", scriptTemplate: JS_SET_WINDOW_SIZE, action: "updateWindowGeometry(targetWindow, {"},
+		{name: "set position", scriptTemplate: JS_SET_WINDOW_POSITION, action: "updateWindowGeometry(targetWindow, {"},
+		{name: "set geometry", scriptTemplate: JS_SET_WINDOW_GEOMETRY, action: "updateWindowGeometry(targetWindow, {"},
 		{name: "set workspace", scriptTemplate: JS_SET_WINDOW_WORKSPACE, action: "targetWindow.desktops = [targetWorkspace];"},
 		{name: "set property", scriptTemplate: JS_SET_WINDOW_PROPERTY, action: "targetWindow.keepAbove = !targetWindow.keepAbove;"},
 		{name: "close", scriptTemplate: JS_CLOSE_WINDOW, action: "targetWindow.closeWindow();"},
@@ -507,8 +518,7 @@ func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 			}
 			generated := script.String()
 			for _, expected := range []string{
-				"const targetWindow = workspace.windowList().find(",
-				"window.internalId == " + quotedUUID,
+				"const targetWindow = findWindow(" + quotedUUID + ");",
 				"if (!targetWindow)",
 				`returnError("Window not found: " + ` + quotedUUID + `);`,
 				test.action,
