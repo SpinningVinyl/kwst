@@ -30,6 +30,13 @@ const returnError = (msgBody) => {
     callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "Msg", "error", msgBody.toString());
 }
 
+const findWindow = (uuid) => {
+    const window = workspace.windowList().find(
+        candidate => candidate.internalId == uuid
+    );
+
+    return window;
+}
 
 debugLog(scriptName + " START");
 
@@ -84,9 +91,8 @@ if (activeWindow.specialWindow) {
 
 var JS_GET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_GET_WINDOW_GEOMETRY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
+
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -114,9 +120,7 @@ if (ws) {
 
 var JS_ACTIVATE_WINDOW string = `debugLog(scriptName + " executing JS_ACTIVATE_WINDOW");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -128,9 +132,7 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_SIZE string = `debugLog(scriptName + " executing JS_SET_WINDOW_SIZE");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -145,9 +147,7 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -162,9 +162,7 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -181,9 +179,7 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_WORKSPACE string = `debugLog(scriptName + " executing JS_SET_WINDOW_WORKSPACE");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 const targetWorkspace = workspace.desktops.find(
     (desktop) => desktop.x11DesktopNumber == {{.WorkspaceId}}
 );
@@ -200,9 +196,7 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_PROPERTY string = `debugLog(scriptName + " executing JS_SET_WINDOW_PROPERTY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -214,9 +208,7 @@ if (!targetWindow) {
 
 var JS_CLOSE_WINDOW string = `debugLog(scriptName + " executing JS_CLOSE_WINDOW");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -303,9 +295,7 @@ if (!output) {
 
 var JS_GET_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_GET_WINDOW_OPACITY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -316,9 +306,7 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_SET_WINDOW_OPACITY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -330,9 +318,7 @@ if (!targetWindow) {
 
 var JS_INCREASE_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_INCREASE_WINDOW_OPACITY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -349,9 +335,7 @@ if (!targetWindow) {
 
 var JS_DECREASE_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_DECREASE_WINDOW_OPACITY");
 
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
     returnError("Window not found: " + {{jsString .Uuid}});
 } else {
@@ -369,9 +353,7 @@ if (!targetWindow) {
 var JS_SET_WINDOW_GEOMETRY_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY_RELATIVE");
 
 let area;
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (targetWindow) {
     const output = targetWindow.output;
     const desktop = workspace.currentDesktopForScreen(output);
@@ -398,9 +380,7 @@ if (targetWindow) {
 var JS_SET_WINDOW_SIZE_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_SIZE_RELATIVE");
 
 let area;
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (targetWindow) {
     const output = targetWindow.output;
     const desktop = workspace.currentDesktopForScreen(output);
@@ -423,9 +403,7 @@ if (targetWindow) {
 var JS_SET_WINDOW_POSITION_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION_RELATIVE");
 
 let area;
-const targetWindow = workspace.windowList().find(
-    (window) => window.internalId == {{jsString .Uuid}}
-);
+const targetWindow = findWindow({{jsString .Uuid}});
 if (targetWindow) {
     const output = targetWindow.output;
     const desktop = workspace.currentDesktopForScreen(output);
