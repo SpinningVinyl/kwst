@@ -158,6 +158,16 @@ An opt-in integration suite exercises the compiled program against a live KWin
 session using KDialog fixture windows. See [`integration/README.md`](integration/README.md)
 for prerequisites, safety notes, and execution instructions.
 
+## AI use disclosure
+
+Since version 1.4.0, kwst has been developed with AI assistance. AI is primarily used for targeted edits and test development under maintainer review.
+
+The KWin-facing JavaScript and the majority of the Go client are written and maintained manually. JavaScript changes are tested using KWin’s scripting console and the live integration suite.
+
+The live integration suite was designed and initially implemented manually. AI assistance is used for many additional integration and unit test cases.
+
+AI is also used for code reviews and figuring out edge cases.
+
 ## License
 
 The project is licensed under the terms of GNU GPLv2 or later license.
