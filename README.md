@@ -47,6 +47,12 @@ List regular windows, including their captions:
 kwst list --show-captions
 ```
 
+If you have `column` installed, you can use it to format the output nicely to improve readability:
+
+```sh
+kwst list | column -t -s $'\t'
+```
+
 Get the active window and inspect or change its geometry or opacity:
 
 ```sh
