@@ -219,6 +219,16 @@ script to finish returns status 124.
 		*--leaves-only*
 			List only leaf tiles, omitting layout tiles.
 
+	*get-window-tile* <uuid>
+		Get the native KWin tile associated with the window identified by _uuid_.
+		The data is returned as tab-separated rows containing the output name,
+		virtual desktop number, tile path, relative geometry, and absolute geometry
+		within the output.
+
+		The command returns an error if the window does not exist, is not tiled, is
+		assigned to a quick tile rather than a native tile, or the virtual desktop
+		or tile path cannot be determined.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of

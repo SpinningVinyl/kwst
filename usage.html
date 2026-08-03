@@ -617,6 +617,24 @@ by KWin is used.
 </blockquote>
 </blockquote>
 
+<blockquote><b>get-window-tile</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Get the native KWin tile associated with the window identified by <u>uuid</u>.
+The data is returned as tab-separated rows containing the output name,
+virtual desktop number, tile path, relative geometry, and absolute geometry
+within the output.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the window does not exist, is not tiled, is
+assigned to a quick tile rather than a native tile, or the virtual desktop
+or tile path cannot be determined.
+</blockquote>
+</blockquote>
+
 <blockquote><b>get-active-output</b>
 </blockquote>
 
