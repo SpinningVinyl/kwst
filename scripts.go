@@ -88,6 +88,26 @@ const enumerateTiles = (rootTile, leavesOnly, callback) => {
     visit(rootTile, ".");
 }
 
+const resolveTile = (root, path) => {
+    if (path === ".") {
+        return root;
+    }
+    let tile = root;
+    for (const component of path.split(".")) {
+        if (!/^(0|[1-9]\d*)$/.test(component)) {
+            return null;
+        }
+        const index = Number(component);
+        const children = tile.tiles;
+
+        if (index >= children.length) {
+            return null;
+        }
+        tile = children[index];
+    }
+    return tile;
+}
+
 const pathForTile = (tile) => {
     if (tile === null) {
         return null;
@@ -113,6 +133,40 @@ const pathForTile = (tile) => {
         path: components.length === 0 ? "." : components.join("."),
         root: current,
     };
+}
+
+const assignToTile = (targetWindow, tile) => {
+    if (typeof tile.manage === "function") {
+        return tile.manage(targetWindow);
+    } else {
+        targetWindow.tile = tile;
+        return targetWindow.tile === tile;
+    }
+}
+
+const unassignFromTile = (targetWindow) => {
+    const tile = targetWindow.tile;
+
+    if (!tile) {
+        return true;
+    }
+
+    if (typeof tile.unmanage === "function") {
+        return tile.unmanage(targetWindow);
+    }
+
+    targetWindow.tile = null;
+    return targetWindow.tile === null;
+}
+
+const isOnCurrentDesktop = (targetWindow, targetOutput) => {
+    const currentDesktop = workspace.currentDesktopForScreen(targetOutput);
+    const windowDesktops = targetWindow.desktops;
+
+    return (
+        windowDesktops.length === 0 || // window is on all desktops
+        windowDesktops.includes(currentDesktop)
+    );
 }
 
 debugLog(scriptName + " START");
@@ -625,6 +679,43 @@ if (!targetWindow) {
                     ].join(" "),
                 ].join("\t"));
                 returnResult(rows.join("\n"));
+            }
+        }
+    }
+}
+
+`
+
+var JS_SET_WINDOW_TILE string = `debugLog(scriptName + " executing JS_SET_WINDOW_TILE");
+
+const windowId = {{jsString .Uuid}};
+const outputName = {{jsString .OutputName}};
+const targetWindow = findWindow(windowId);
+const tilePath = {{jsString .TilePath}};
+
+if (!targetWindow) {
+    returnError("Window not found: " + windowId);
+} else {
+    let targetOutput;
+    if (outputName === "") {
+        targetOutput = targetWindow.output;
+    } else {
+        targetOutput = findOutput(outputName);
+    }
+    if (!targetOutput) {
+        returnError("Output not found: " + outputName);
+    } else {
+        const targetDesktop = workspace.currentDesktopForScreen(targetOutput);
+        const rootTile = workspace.tilingForScreen(targetOutput).rootTile;
+        const targetTile = resolveTile(rootTile, tilePath);
+        if (!targetTile) {
+            returnError("Unable to find target tile: " + tilePath);
+        } else {
+            if (!isOnCurrentDesktop(targetWindow, targetOutput)) {
+                targetWindow.desktops = [targetDesktop];
+            }
+            if (!assignToTile(targetWindow, targetTile)) {
+                returnError("Unable to tile window " + windowId + " to tile " + tilePath);
             }
         }
     }

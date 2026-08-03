@@ -382,7 +382,7 @@ func (cmd SetWindowPositionRelativeCmd) Run(sp *ScriptPackage) error {
 }
 
 type ListTilesCmd struct {
-	OutputName string `name:"output" help:"Name of the output to list tiles on."`
+	OutputName string `name:"output" help:"Name of the output containing the root tile."`
 	LeavesOnly bool   `default:"false" help:"List only leaf tiles, omitting layout tiles."`
 }
 
@@ -400,5 +400,19 @@ type GetWindowTileCmd struct {
 func (cmd GetWindowTileCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_GET_WINDOW_TILE
 	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
+
+type SetWindowTileCmd struct {
+	OutputName string `name:"output" help:"Name of the output containing the root tile."`
+	Uuid       string `arg:"" required:"" help:"UUID of the window to be assigned to the specified tile."`
+	TilePath   string `arg:"" required:"" help:"Locator path of the tile to assign the window to."`
+}
+
+func (cmd SetWindowTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_TILE
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.TilePath = cmd.TilePath
 	return nil
 }
