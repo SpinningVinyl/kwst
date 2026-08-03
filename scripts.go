@@ -151,8 +151,8 @@ const unassignFromTile = (targetWindow) => {
         return true;
     }
 
-    if (typeof tile.unmanage === "function") {
-        return tile.unmanage(targetWindow);
+    if (typeof tile.unmanage === "function" && tile.unmanage(targetWindow))  {
+        return true;
     }
 
     targetWindow.tile = null;
@@ -719,6 +719,19 @@ if (!targetWindow) {
             }
         }
     }
+}
+
+`
+
+var JS_UNSET_WINDOW_TILE string = `debugLog(scriptName + " executing JS_UNSET_WINDOW_TILE");
+
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
+
+if (!targetWindow) {
+    returnError("Window not found: " + windowId);
+} else if (!unassignFromTile(targetWindow)) {
+    returnError("Window " + windowId + " could not be removed from tile");
 }
 
 `

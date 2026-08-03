@@ -59,6 +59,7 @@ type CLI struct {
 	ListTiles                 ListTilesCmd                 `cmd:"" help:"List tiles configured in KWin's tile manager."`
 	GetWindowTile             GetWindowTileCmd             `cmd:"" help:"Get the tile that the window with the provided UUID belongs to, provided such a window and such a tile exist."`
 	SetWindowTile             SetWindowTileCmd             `cmd:"" help:"Assign the window with the provided UUID to the tile with the provided locator path (optionally on the specified output)."`
+	UnsetWindowTile           UnsetWindowTileCmd           `cmd:"" help:"Unassign the window with the provided UUID from its current tile, if such a tile exists."`
 }
 
 // parameters that are passed to the script template

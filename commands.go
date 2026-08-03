@@ -416,3 +416,13 @@ func (cmd SetWindowTileCmd) Run(sp *ScriptPackage) error {
 	sp.Params.TilePath = cmd.TilePath
 	return nil
 }
+
+type UnsetWindowTileCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to unassign from its current tile."`
+}
+
+func (cmd UnsetWindowTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_UNSET_WINDOW_TILE
+	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
