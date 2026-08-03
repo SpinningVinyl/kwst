@@ -26,6 +26,7 @@ endif
 install: build
 	install -d "$(DESTDIR)$(PREFIX)/bin"
 	install -m 0755 $(BUILD_DIR)/kwst "$(DESTDIR)$(PREFIX)/bin/kwst"
+	install -m 0755 $(BUILD_DIR)/kwst-debug-listener "$(DESTDIR)$(PREFIX)/bin/kwst-debug-listener"
 	if [ -f $(BUILD_DIR)/kwst.1.gz ]; then \
 		install -d "$(DESTDIR)$(PREFIX)/share/man/man1"; \
 		install -m 0644 $(BUILD_DIR)/kwst.1.gz "$(DESTDIR)$(PREFIX)/share/man/man1/kwst.1.gz"; \
