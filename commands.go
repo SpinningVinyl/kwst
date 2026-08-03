@@ -380,3 +380,15 @@ func (cmd SetWindowPositionRelativeCmd) Run(sp *ScriptPackage) error {
 	sp.Params.RelativeY = cmd.RelativeY
 	return nil
 }
+
+type ListTilesCmd struct {
+	OutputName string `name:"output" help:"Name of the output to list tiles on."`
+	LeavesOnly bool   `default:"false" help:"List only leaf tiles, omitting layout tiles."`
+}
+
+func (cmd ListTilesCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_LIST_TILES
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.LeavesOnly = cmd.LeavesOnly
+	return nil
+}

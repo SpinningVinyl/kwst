@@ -62,6 +62,32 @@ const findOutput = (outputName) => {
     return output;
 }
 
+const formatFloat = (num) => {
+    const rounded = Number(num.toFixed(6));
+    return Object.is(rounded, -0) ? "0" : String(rounded);
+};
+
+const enumerateTiles = (rootTile, leavesOnly, callback) => {
+    function visit(tile, path) {
+        const children = tile.tiles;
+        const isLeaf = !tile.isLayout;
+
+        if (!leavesOnly || isLeaf) {
+            callback(tile, path, isLeaf);
+        }
+
+        for (let i = 0; i < children.length; i++) {
+            const childPath = path === "."
+            ? String(i)
+            : path + "." + i;
+
+            visit(children[i], childPath);
+        }
+    }
+
+    visit(rootTile, ".");
+}
+
 debugLog(scriptName + " START");
 
 `
@@ -442,6 +468,63 @@ if (targetWindow) {
     });
 } else {
     returnError("Window not found: " + {{jsString .Uuid}})
+}
+
+`
+
+var JS_LIST_TILES string = `debugLog(scriptName + " executing JS_LIST_TILES");
+
+let output;
+const outputName = {{jsString .OutputName}};
+
+if (outputName === "") {
+    output = workspace.activeScreen;
+} else {
+    output = findOutput(outputName);
+}
+
+if (!output) {
+    returnError("Output not found: " + outputName);
+} else {
+    const tileManager = workspace.tilingForScreen(output);
+    const rootTile = tileManager.rootTile;
+    const rows = [];
+
+    rows.push([
+        "OUTPUT",
+        "PATH",
+        "TYPE",
+        "RELATIVE",
+        "ABSOLUTE",
+        "WINDOWS"
+    ].join("\t"));
+
+    enumerateTiles(rootTile, {{.LeavesOnly}}, (tile, path, isLeaf) => {
+        const relative = tile.relativeGeometry;
+        const absolute = tile.absoluteGeometryInScreen;
+
+        rows.push([
+            output.name,
+            path,
+            isLeaf ? "Leaf" : "Layout",
+            [
+                formatFloat(relative.x),
+                formatFloat(relative.y),
+                formatFloat(relative.width),
+                formatFloat(relative.height),
+            ].join(" "),
+            [
+                absolute.x,
+                absolute.y,
+                absolute.width,
+                absolute.height,
+            ].join(" "),
+            tile.windows.length,
+        ].join("\t"));
+    });
+    if (rows.length > 1) {
+        returnResult(rows.join("\n"));
+    }
 }
 
 `

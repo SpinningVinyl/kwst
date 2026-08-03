@@ -56,6 +56,7 @@ type CLI struct {
 	SetWindowGeometryRelative SetWindowGeometryRelativeCmd `cmd:"" help:"Change the geometry of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 	SetWindowSizeRelative     SetWindowSizeRelativeCmd     `cmd:"" help:"Change the size of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 	SetWindowPositionRelative SetWindowPositionRelativeCmd `cmd:"" help:"Change the position of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
+	ListTiles                 ListTilesCmd                 `cmd:"" help:"List tiles configured in KWin's tile manager."`
 }
 
 // parameters that are passed to the script template
@@ -89,6 +90,7 @@ type ScriptParams struct {
 	RelativeY             float64
 	RelativeWidth         float64
 	RelativeHeight        float64
+	LeavesOnly            bool
 }
 
 type ScriptPackage struct {
