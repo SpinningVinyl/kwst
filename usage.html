@@ -635,6 +635,47 @@ or tile path cannot be determined.
 </blockquote>
 </blockquote>
 
+<blockquote><b>set-window-tile</b> &lt;uuid&gt; &lt;tile-path&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Assign the window identified by <u>uuid</u> to the native KWin tile identified by
+<u>tile-path</u>. Layout tiles, including the root tile '.', can be assigned as
+well as leaf tiles.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The tile layout for the output's current virtual desktop is used. If the
+window is not on that desktop, it is moved there before being assigned to the
+tile. If no output is specified, the output containing the window is used.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Assign the window to a tile on the named output.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the window or output does not exist, the tile
+path is malformed or does not exist, or the window cannot be assigned to the
+tile.
+</blockquote>
+</blockquote>
+
 <blockquote><b>get-active-output</b>
 </blockquote>
 

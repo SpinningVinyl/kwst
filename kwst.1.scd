@@ -229,6 +229,24 @@ script to finish returns status 124.
 		assigned to a quick tile rather than a native tile, or the virtual desktop
 		or tile path cannot be determined.
 
+	*set-window-tile* <uuid> <tile-path> [_flags_]
+		Assign the window identified by _uuid_ to the native KWin tile identified by
+		_tile-path_. Layout tiles, including the root tile '.', can be assigned as
+		well as leaf tiles.
+
+		The tile layout for the output's current virtual desktop is used. If the
+		window is not on that desktop, it is moved there before being assigned to the
+		tile. If no output is specified, the output containing the window is used.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			Assign the window to a tile on the named output.
+
+		The command returns an error if the window or output does not exist, the tile
+		path is malformed or does not exist, or the window cannot be assigned to the
+		tile.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of
