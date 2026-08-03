@@ -202,6 +202,23 @@ script to finish returns status 124.
 	*list-outputs*
 		List enabled outputs. Each output name is returned on a separate line.
 
+	*list-tiles* [_flags_]
+		List the native KWin tiles configured for an output on the current virtual
+		desktop. The data is returned as tab-separated rows containing the output
+		name, tile path, tile type, relative geometry, absolute geometry within the
+		output, and number of windows assigned to the tile.
+
+		The root tile uses the path '.', and child components are represented by
+		zero-based indexes separated by periods. Tile types are 'Layout' and 'Leaf'.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			List tiles on the named output. If omitted, the active output as defined
+			by KWin is used.
+		*--leaves-only*
+			List only leaf tiles, omitting layout tiles.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of

@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-08-01</p>
+<p class="header-date">2026-08-03</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -567,6 +567,53 @@ about optional parameters.
 
 <blockquote>
 <blockquote>List enabled outputs. Each output name is returned on a separate line.
+</blockquote>
+</blockquote>
+
+<blockquote><b>list-tiles</b> [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>List the native KWin tiles configured for an output on the current virtual
+desktop. The data is returned as tab-separated rows containing the output
+name, tile path, tile type, relative geometry, absolute geometry within the
+output, and number of windows assigned to the tile.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The root tile uses the path '.', and child components are represented by
+zero-based indexes separated by periods. Tile types are 'Layout' and 'Leaf'.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List tiles on the named output. If omitted, the active output as defined
+by KWin is used.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--leaves-only</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List only leaf tiles, omitting layout tiles.
+</blockquote>
 </blockquote>
 </blockquote>
 
