@@ -88,6 +88,33 @@ const enumerateTiles = (rootTile, leavesOnly, callback) => {
     visit(rootTile, ".");
 }
 
+const pathForTile = (tile) => {
+    if (tile === null) {
+        return null;
+    }
+
+    const components = [];
+    let current = tile;
+
+    while (current.parent !== null) {
+        const index = current.positionInLayout;
+
+        if (!Number.isInteger(index) || index < 0) {
+            return null;
+        }
+
+        components.push(String(index));
+        current = current.parent;
+    }
+
+    components.reverse();
+
+    return {
+        path: components.length === 0 ? "." : components.join("."),
+        root: current,
+    };
+}
+
 debugLog(scriptName + " START");
 
 `
@@ -524,6 +551,82 @@ if (!output) {
     });
     if (rows.length > 1) {
         returnResult(rows.join("\n"));
+    }
+}
+
+`
+
+var JS_GET_WINDOW_TILE string = `debugLog(scriptName + " executing JS_GET_WINDOW_TILE");
+
+const targetWindow = findWindow({{jsString .Uuid}});
+
+if (!targetWindow) {
+    returnError("Window not found: " + {{jsString .Uuid}});
+} else {
+    const output = targetWindow.output;
+    const currentDesktop = workspace.currentDesktopForScreen(output);
+    const windowDesktops = targetWindow.desktops;
+
+    let tileDesktop;
+
+    if (windowDesktops.length === 1) {
+        // window.tile can retain this desktop's association while it is inactive
+        tileDesktop = windowDesktops[0];
+    } else if (
+        windowDesktops.length === 0 || // window is on all desktops
+        windowDesktops.includes(currentDesktop)
+    ) {
+        // KWin selects this desktop's association when it becomes active
+        tileDesktop = currentDesktop;
+    } else {
+        // Multi-desktop window is hidden on the current desktop.
+        // window.tile may contain a retained association, but its desktop
+        // cannot be identified through the public scripting API.
+        returnError("Cannot determine the virtual desktop for the window's tile");
+    }
+
+    if (tileDesktop) {
+        const windowTile = targetWindow.tile;
+        if (windowTile === null) {
+            returnError("It appears that window " + {{jsString .Uuid}} + " is not tiled");
+        } else if (typeof targetWindow.tile.layoutDirection === "undefined") {
+            returnError("Window " + {{jsString .Uuid}} + " is assigned to a quick tile");
+        } else {
+            const pathInfo = pathForTile(windowTile);
+            if (pathInfo === null) {
+                returnError("Unable to determine tile path");
+            } else {
+                const { path } = pathInfo;
+                const relative = windowTile.relativeGeometry;
+                const absolute = windowTile.absoluteGeometryInScreen;
+                const rows = [];
+                rows.push([
+                    "OUTPUT",
+                    "DESKTOP",
+                    "PATH",
+                    "RELATIVE",
+                    "ABSOLUTE",
+                ].join("\t"));
+                rows.push([
+                    output.name,
+                    tileDesktop.x11DesktopNumber,
+                    path,
+                    [
+                        formatFloat(relative.x),
+                        formatFloat(relative.y),
+                        formatFloat(relative.width),
+                        formatFloat(relative.height),
+                    ].join(" "),
+                    [
+                        absolute.x,
+                        absolute.y,
+                        absolute.width,
+                        absolute.height,
+                    ].join(" "),
+                ].join("\t"));
+                returnResult(rows.join("\n"));
+            }
+        }
     }
 }
 

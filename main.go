@@ -57,6 +57,7 @@ type CLI struct {
 	SetWindowSizeRelative     SetWindowSizeRelativeCmd     `cmd:"" help:"Change the size of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 	SetWindowPositionRelative SetWindowPositionRelativeCmd `cmd:"" help:"Change the position of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 	ListTiles                 ListTilesCmd                 `cmd:"" help:"List tiles configured in KWin's tile manager."`
+	GetWindowTile             GetWindowTileCmd             `cmd:"" help:"Get the tile that the window with the provided UUID belongs to, provided such a window and such a tile exist."`
 }
 
 // parameters that are passed to the script template

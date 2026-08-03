@@ -392,3 +392,13 @@ func (cmd ListTilesCmd) Run(sp *ScriptPackage) error {
 	sp.Params.LeavesOnly = cmd.LeavesOnly
 	return nil
 }
+
+type GetWindowTileCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to get the tile association of."`
+}
+
+func (cmd GetWindowTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_WINDOW_TILE
+	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
