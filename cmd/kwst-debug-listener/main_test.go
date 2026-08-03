@@ -24,7 +24,7 @@ func TestDebugListenerPrintsCalls(t *testing.T) {
 	}
 
 	want := regexp.MustCompile(
-		`^\[\d{2}:\d{2}:\d{2}\] Msg\(\) was called, type: result, message: window-id\n` +
+		`^\[\d{2}:\d{2}:\d{2}\] Msg\(\) was called, type: result, message:\nwindow-id\n` +
 			`\[\d{2}:\d{2}:\d{2}\] Close\(\) was called\n` +
 			`\[\d{2}:\d{2}:\d{2}\] CloseWithStatus\(\) was called, reported status: 23\n$`,
 	)
