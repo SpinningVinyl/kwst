@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
-	"golang.org/x/term"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -27,7 +27,7 @@ func newDebugListener(stdout io.Writer) *debugListener {
 }
 
 func (l *debugListener) Msg(msgType, message string) *dbus.Error {
-	l.printf("Msg() was called, type: %s, message: %s\n", msgType, message)
+	l.printf("Msg() was called, type: %s, message:\n%s\n", msgType, message)
 	return nil
 }
 
@@ -63,17 +63,24 @@ func waitForQuit(input io.Reader) error {
 
 func makeInputImmediate(input *os.File) (func(), error) {
 	fd := int(input.Fd())
-	if !term.IsTerminal(fd) {
+	state, err := unix.IoctlGetTermios(fd, unix.TCGETS)
+	if errors.Is(err, unix.ENOTTY) {
 		return func() {}, nil
 	}
-
-	state, err := term.MakeRaw(fd)
 	if err != nil {
 		return nil, err
 	}
 
+	immediate := *state
+	immediate.Lflag &^= unix.ICANON | unix.ECHO
+	immediate.Cc[unix.VMIN] = 1
+	immediate.Cc[unix.VTIME] = 0
+	if err := unix.IoctlSetTermios(fd, unix.TCSETS, &immediate); err != nil {
+		return nil, err
+	}
+
 	return func() {
-		_ = term.Restore(fd, state)
+		_ = unix.IoctlSetTermios(fd, unix.TCSETS, state)
 	}, nil
 }
 
