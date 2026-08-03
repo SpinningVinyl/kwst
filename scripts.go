@@ -55,6 +55,13 @@ const clientAreaForWindow = (window) => {
     return workspace.clientArea(KWin.MaximizeArea, output, desktop);
 }
 
+const findOutput = (outputName) => {
+    const output = workspace.screens.find(
+        (candidate) => candidate.name === outputName
+    );
+    return output;
+}
+
 debugLog(scriptName + " START");
 
 `
@@ -286,12 +293,12 @@ if (window != null) {
 
 var JS_GET_OUTPUT_GEOMETRY string = `debugLog(scriptName + " executing JS_OUTPUT_GEOMETRY");
 
-const output = workspace.screens.find(
-    (candidate) => candidate.name === {{jsString .OutputName}}
-);
+const outputName = {{jsString .OutputName}};
+
+const output = findOutput(outputName);
 
 if (!output) {
-    returnError("Output not found: " + {{jsString .OutputName}});
+    returnError("Output not found: " + outputName);
 } else {
     let area;
     {{if .ClientArea}}
