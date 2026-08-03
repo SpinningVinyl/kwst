@@ -231,6 +231,12 @@ func TestCommandRunMethods(t *testing.T) {
 			},
 		},
 		{
+			name:         "unset window tile",
+			command:      &UnsetWindowTileCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_UNSET_WINDOW_TILE,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
