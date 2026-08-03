@@ -205,6 +205,12 @@ func TestCommandRunMethods(t *testing.T) {
 			wantTemplate: initialTemplate + JS_LIST_OUTPUTS,
 		},
 		{
+			name:         "list tiles",
+			command:      &ListTilesCmd{OutputName: "DP-1", LeavesOnly: true},
+			wantTemplate: initialTemplate + JS_LIST_TILES,
+			wantParams:   ScriptParams{OutputName: "DP-1", LeavesOnly: true},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
