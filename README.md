@@ -134,6 +134,33 @@ You can also use comparisons:
 
 You can find the full documentation of the Go text templating engine [here](https://pkg.go.dev/text/template).
 
+## Debugging KWin scripts
+
+The `kwst-debug-listener` executable implements the same D-Bus callback methods
+as **kwst** (`Msg`, `Close`, and `CloseWithStatus`), but prints every call it
+receives instead of processing the result or exiting. This makes it possible to
+debug scripts interactively with KWin's scripting console.
+
+Build and start the listener:
+
+```sh
+make
+./build/kwst-debug-listener
+```
+
+The listener prints its D-Bus address when it starts. Open the KWin scripting
+console with:
+
+```sh
+plasma-interactiveconsole --kwin
+```
+
+Use the displayed address as `dbusAddr` in the script being tested, then run the
+script in the console. Calls to the listener's D-Bus methods are printed to its
+standard output with timestamps. `Close()` and `CloseWithStatus()` are logged
+without stopping the listener, so the script can be run repeatedly. Press `q`
+in the listener's terminal to quit.
+
 ## Installation
 
 **kwst** is distributed as a single statically-linked binary. Just copy or symlink it to a directory that is listed in your `PATH` environment variable, e.g. `/usr/local/bin`. If you want to install the manpage, copy `kwst.1.gz` to `/usr/local/share/man/man1`.
@@ -160,7 +187,7 @@ for prerequisites, safety notes, and execution instructions.
 
 ## AI use disclosure
 
-Since version 1.4.0, kwst has been developed with AI assistance. AI is primarily used for targeted edits and test development under maintainer review.
+Since version 1.4.0, **kwst** has been developed with AI assistance. AI is primarily used for targeted edits and test development under maintainer review.
 
 The KWin-facing JavaScript and the majority of the Go client are written and maintained manually. JavaScript changes are tested using KWin’s scripting console and the live integration suite.
 
