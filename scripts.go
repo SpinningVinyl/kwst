@@ -61,8 +61,9 @@ const clientAreaForWindow = (window) => {
 }
 
 const findOutput = (outputName) => {
+    const normalisedName = outputName.toUpperCase();
     const output = workspace.screens.find(
-        (candidate) => candidate.name === outputName
+        (candidate) => candidate.name.toUpperCase() === normalisedName
     );
     return output;
 }
