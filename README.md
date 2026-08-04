@@ -2,7 +2,7 @@
 
 **kwst** is a small utility for controlling KWin-Wayland from the command line. 
 
-It works by generating JS scripts on the fly, registering them with KWin, running them and receiving responses from the scripts over DBus. I know that it sounds a bit convoluted, but as far as I'm aware this is the only way to control KWin programmatically.
+It works by generating JS scripts on the fly, registering them with KWin, running them and receiving responses from the scripts over D-Bus. I know that it sounds a bit convoluted, but as far as I'm aware this is the only way to control KWin programmatically.
 
 ## Currently supported features
 
@@ -50,7 +50,7 @@ kwst list --show-captions
 If you have `column` installed, you can use it to format the output nicely to improve readability:
 
 ```sh
-kwst list | column -t -s $'\t'
+kwst list | column -t -s "$(printf '\t')"
 ```
 
 Get the active window and inspect or change its geometry or opacity:
@@ -91,7 +91,7 @@ kwst find --search-field=caption 'terminal|konsole'
 kwst find --search-field=resourceClass '^org\.kde\.konsole$'
 ```
 
-The searchable fields are `resourceClass` (the default), `resourceName`, and
+The searchable fields are `resourceClass` (used by default), `resourceName`, and
 `caption`. Invalid regular expressions are reported on standard error and
 return exit status 1.
 
@@ -169,7 +169,9 @@ in the listener's terminal to quit.
 
 ## Installation
 
-**kwst** is distributed as a single statically-linked binary. Just copy or symlink it to a directory that is listed in your `PATH` environment variable, e.g. `/usr/local/bin`. If you want to install the manpage, copy `kwst.1.gz` to `/usr/local/share/man/man1`.
+**kwst** itself is a single statically-linked binary. Just copy or symlink it to a directory that is listed in your `PATH` environment variable, e.g. `/usr/local/bin`. If you want to install the manpage, copy `kwst.1.gz` to `/usr/local/share/man/man1`.
+
+Starting with version 3.0.0, the project also includes a debug listener (`kwst-debug-listener`), which is useful for developing custom scripts using KWin's scripting console.
 
 To build from source, you would need GNU make and Go v1.23 or later. First clone the repository:
 

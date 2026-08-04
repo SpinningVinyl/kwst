@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-08-03</p>
+<p class="header-date">2026-08-04</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -673,6 +673,23 @@ tile. If no output is specified, the output containing the window is used.
 <blockquote>The command returns an error if the window or output does not exist, the tile
 path is malformed or does not exist, or the window cannot be assigned to the
 tile.
+</blockquote>
+</blockquote>
+
+<blockquote><b>unset-window-tile</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Remove the current tile association from the window identified by <u>uuid</u>.
+This applies to both native and quick-tile associations, including stale
+associations exposed by KWin through the window's tile property.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command is idempotent: if the window is not tiled, it succeeds without
+making any changes. It returns an error if the window does not exist or its
+tile association cannot be removed.
 </blockquote>
 </blockquote>
 

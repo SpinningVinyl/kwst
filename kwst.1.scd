@@ -247,6 +247,15 @@ script to finish returns status 124.
 		path is malformed or does not exist, or the window cannot be assigned to the
 		tile.
 
+	*unset-window-tile* <uuid>
+		Remove the current tile association from the window identified by _uuid_.
+		This applies to both native and quick-tile associations, including stale
+		associations exposed by KWin through the window's tile property.
+
+		The command is idempotent: if the window is not tiled, it succeeds without
+		making any changes. It returns an error if the window does not exist or its
+		tile association cannot be removed.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of
