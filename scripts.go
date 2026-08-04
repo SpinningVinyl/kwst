@@ -9,6 +9,7 @@ const scriptName = "{{.ScriptName}}";
 const ERROR_WINDOW_NOT_FOUND = "Window not found: ";
 const ERROR_OUTPUT_NOT_FOUND = "Output not found: ";
 const ERROR_TILE_NOT_FOUND = "Tile not found: ";
+const ERROR_TILE_UNASSIGNMENT_FAILED = "Could not unassign window: ";
 
 let exitCode = 0;
 
@@ -89,6 +90,23 @@ var JS_WINDOW_LIST_HELPERS string = `const formatWindowRow = (
     }
 
     return fields.join("\t");
+}
+
+`
+
+var JS_TILE_UNASSIGNMENT_HELPER = `const unassignFromTile = (targetWindow) => {
+    const tile = targetWindow.tile;
+
+    if (!tile) {
+        return true;
+    }
+
+    if (typeof tile.unmanage === "function" && tile.unmanage(targetWindow)) {
+        return true;
+    }
+
+    targetWindow.tile = null;
+    return targetWindow.tile === null;
 }
 
 `
@@ -182,21 +200,6 @@ const assignToTile = (targetWindow, tile) => {
         targetWindow.tile = tile;
         return targetWindow.tile === tile;
     }
-}
-
-const unassignFromTile = (targetWindow) => {
-    const tile = targetWindow.tile;
-
-    if (!tile) {
-        return true;
-    }
-
-    if (typeof tile.unmanage === "function" && tile.unmanage(targetWindow)) {
-        return true;
-    }
-
-    targetWindow.tile = null;
-    return targetWindow.tile === null;
 }
 
 const isOnCurrentDesktop = (targetWindow, targetOutput) => {
@@ -333,47 +336,62 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_SIZE string = `debugLog(scriptName + " executing JS_SET_WINDOW_SIZE");
 
-const targetWindow = findWindow({{jsString .Uuid}});
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
 if (!targetWindow) {
-    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 } else {
-    debugLog("New size for window with UUID=" + {{jsString .Uuid}} + ": width={{.Width}}, height={{.Height}}");
-    updateWindowGeometry(targetWindow, {
-        width: {{.Width}},
-        height: {{.Height}},
-    });
+    debugLog("New size for window with UUID=" + windowId + ": width={{.Width}}, height={{.Height}}");
+    if (!unassignFromTile(targetWindow)) {
+        returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+    } else {
+        updateWindowGeometry(targetWindow, {
+            width: {{.Width}},
+            height: {{.Height}},
+        });
+    }
 }
 
 `
 
 var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION");
 
-const targetWindow = findWindow({{jsString .Uuid}});
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
 if (!targetWindow) {
-    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 } else {
-    debugLog("New position for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}");
-    updateWindowGeometry(targetWindow, {
-        x: {{.X}},
-        y: {{.Y}}
-    });
+    debugLog("New position for window with UUID=" + windowId + ": X={{.X}}, Y={{.Y}}");
+    if (!unassignFromTile(targetWindow)) {
+        returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+    } else {
+        updateWindowGeometry(targetWindow, {
+            x: {{.X}},
+            y: {{.Y}}
+        });
+    }
 }
 
 `
 
 var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY");
 
-const targetWindow = findWindow({{jsString .Uuid}});
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
 if (!targetWindow) {
-    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 } else {
-    debugLog("New geometry for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
-    updateWindowGeometry(targetWindow, {
-        width: {{.Width}},
-        height: {{.Height}},
-        x: {{.X}},
-        y: {{.Y}}
-    });
+    debugLog("New geometry for window with UUID=" + windowId + ": X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
+    if (!unassignFromTile(targetWindow)) {
+        returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+    } else {
+        updateWindowGeometry(targetWindow, {
+            width: {{.Width}},
+            height: {{.Height}},
+            x: {{.X}},
+            y: {{.Y}}
+        });
+    }
 }
 
 `
@@ -553,7 +571,8 @@ if (!targetWindow) {
 
 var JS_SET_WINDOW_GEOMETRY_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY_RELATIVE");
 
-const targetWindow = findWindow({{jsString .Uuid}});
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
 if (targetWindow) {
     const area = clientAreaForWindow(targetWindow);
 
@@ -562,63 +581,77 @@ if (targetWindow) {
     const x = area.x + Math.round(area.width * {{.RelativeX}} / 100);
     const y = area.y + Math.round(area.height * {{.RelativeY}} / 100);
 
-    debugLog("Setting geometry of window with UUID=" + {{jsString .Uuid}} +
+    debugLog("Setting geometry of window with UUID=" + windowId +
         " to: X=" + x +
         " Y=" + y +
         " width=" + width +
         " height=" + height);
-    updateWindowGeometry(targetWindow, {
-        x,
-        y,
-        width,
-        height
-    });
+    if (!unassignFromTile(targetWindow)) {
+        returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+    } else {
+        updateWindowGeometry(targetWindow, {
+            x,
+            y,
+            width,
+            height
+        });
+    }
 } else {
-    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}})
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 }
 
 `
 
 var JS_SET_WINDOW_SIZE_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_SIZE_RELATIVE");
 
-const targetWindow = findWindow({{jsString .Uuid}});
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
 if (targetWindow) {
     const area = clientAreaForWindow(targetWindow);
 
     const width = Math.round(area.width * {{.RelativeWidth}} / 100);
     const height = Math.round(area.height * {{.RelativeHeight}} / 100);
 
-    debugLog("Setting size of window with UUID=" + {{jsString .Uuid}} +
+    debugLog("Setting size of window with UUID=" + windowId +
         " to: width=" + width +
         " height=" + height);
-    updateWindowGeometry(targetWindow, {
-        width,
-        height
-    });
+    if (!unassignFromTile(targetWindow)) {
+        returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+    } else {
+        updateWindowGeometry(targetWindow, {
+            width,
+            height
+        });
+    }
 } else {
-    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}})
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 }
 
 `
 
 var JS_SET_WINDOW_POSITION_RELATIVE string = `debugLog(scriptName + " executing JS_SET_WINDOW_POSITION_RELATIVE");
 
-const targetWindow = findWindow({{jsString .Uuid}});
+const windowId = {{jsString .Uuid}};
+const targetWindow = findWindow(windowId);
 if (targetWindow) {
     const area = clientAreaForWindow(targetWindow);
 
     const x = area.x + Math.round(area.width * {{.RelativeX}} / 100);
     const y = area.y + Math.round(area.height * {{.RelativeY}} / 100);
 
-    debugLog("Setting position of window with UUID=" + {{jsString .Uuid}} +
+    debugLog("Setting position of window with UUID=" + windowId +
         " to: X=" + x +
         " Y=" + y);
-    updateWindowGeometry(targetWindow, {
-        x,
-        y
-    });
+    if (!unassignFromTile(targetWindow)) {
+        returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+    } else {
+        updateWindowGeometry(targetWindow, {
+            x,
+            y
+        });
+    }
 } else {
-    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}})
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 }
 
 `
