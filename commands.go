@@ -89,7 +89,7 @@ type SetWindowSizeCmd struct {
 }
 
 func (swsc *SetWindowSizeCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_SIZE
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_SIZE
 	sp.Params.Uuid = swsc.Uuid
 	sp.Params.Width = swsc.Width
 	sp.Params.Height = swsc.Height
@@ -103,7 +103,7 @@ type SetWindowPosCmd struct {
 }
 
 func (swpc *SetWindowPosCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_POSITION
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_POSITION
 	sp.Params.Uuid = swpc.Uuid
 	sp.Params.X = swpc.X
 	sp.Params.Y = swpc.Y
@@ -119,7 +119,7 @@ type SetWindowGeometryCmd struct {
 }
 
 func (swgc *SetWindowGeometryCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_GEOMETRY
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_GEOMETRY
 	sp.Params.Uuid = swgc.Uuid
 	sp.Params.X = swgc.X
 	sp.Params.Y = swgc.Y
@@ -320,7 +320,7 @@ func (cmd *SetWindowGeometryRelativeCmd) Validate() error {
 }
 
 func (cmd SetWindowGeometryRelativeCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_GEOMETRY_RELATIVE
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_GEOMETRY_RELATIVE
 	sp.Params.Uuid = cmd.Uuid
 	sp.Params.RelativeX = cmd.RelativeX
 	sp.Params.RelativeY = cmd.RelativeY
@@ -348,7 +348,7 @@ func (cmd *SetWindowSizeRelativeCmd) Validate() error {
 }
 
 func (cmd SetWindowSizeRelativeCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_SIZE_RELATIVE
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_SIZE_RELATIVE
 	sp.Params.Uuid = cmd.Uuid
 	sp.Params.RelativeWidth = cmd.RelativeWidth
 	sp.Params.RelativeHeight = cmd.RelativeHeight
@@ -374,7 +374,7 @@ func (cmd *SetWindowPositionRelativeCmd) Validate() error {
 }
 
 func (cmd SetWindowPositionRelativeCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_POSITION_RELATIVE
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_POSITION_RELATIVE
 	sp.Params.Uuid = cmd.Uuid
 	sp.Params.RelativeX = cmd.RelativeX
 	sp.Params.RelativeY = cmd.RelativeY
@@ -422,7 +422,7 @@ type UnsetWindowTileCmd struct {
 }
 
 func (cmd UnsetWindowTileCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_TILE_HELPERS + JS_UNSET_WINDOW_TILE
+	sp.ScriptTemplate += JS_TILE_UNASSIGNMENT_HELPER + JS_UNSET_WINDOW_TILE
 	sp.Params.Uuid = cmd.Uuid
 	return nil
 }

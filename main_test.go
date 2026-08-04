@@ -90,19 +90,19 @@ func TestCommandRunMethods(t *testing.T) {
 		{
 			name:         "set window size",
 			command:      &SetWindowSizeCmd{Uuid: "window-id", Width: 640, Height: 480},
-			wantTemplate: initialTemplate + JS_SET_WINDOW_SIZE,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_SIZE,
 			wantParams:   ScriptParams{Uuid: "window-id", Width: 640, Height: 480},
 		},
 		{
 			name:         "set window position",
 			command:      &SetWindowPosCmd{Uuid: "window-id", X: 10, Y: 20},
-			wantTemplate: initialTemplate + JS_SET_WINDOW_POSITION,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_POSITION,
 			wantParams:   ScriptParams{Uuid: "window-id", X: 10, Y: 20},
 		},
 		{
 			name:         "set window geometry",
 			command:      &SetWindowGeometryCmd{Uuid: "window-id", X: 10, Y: 20, Width: 640, Height: 480},
-			wantTemplate: initialTemplate + JS_SET_WINDOW_GEOMETRY,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_GEOMETRY,
 			wantParams:   ScriptParams{Uuid: "window-id", X: 10, Y: 20, Width: 640, Height: 480},
 		},
 		{
@@ -114,7 +114,7 @@ func TestCommandRunMethods(t *testing.T) {
 				RelativeWidth:  66.7,
 				RelativeHeight: 50,
 			},
-			wantTemplate: initialTemplate + JS_SET_WINDOW_GEOMETRY_RELATIVE,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_GEOMETRY_RELATIVE,
 			wantParams: ScriptParams{
 				Uuid:           "window-id",
 				RelativeX:      10.5,
@@ -130,7 +130,7 @@ func TestCommandRunMethods(t *testing.T) {
 				RelativeWidth:  66.7,
 				RelativeHeight: 50,
 			},
-			wantTemplate: initialTemplate + JS_SET_WINDOW_SIZE_RELATIVE,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_SIZE_RELATIVE,
 			wantParams: ScriptParams{
 				Uuid:           "window-id",
 				RelativeWidth:  66.7,
@@ -144,7 +144,7 @@ func TestCommandRunMethods(t *testing.T) {
 				RelativeX: 10.5,
 				RelativeY: 20.25,
 			},
-			wantTemplate: initialTemplate + JS_SET_WINDOW_POSITION_RELATIVE,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_SET_WINDOW_POSITION_RELATIVE,
 			wantParams: ScriptParams{
 				Uuid:      "window-id",
 				RelativeX: 10.5,
@@ -233,7 +233,7 @@ func TestCommandRunMethods(t *testing.T) {
 		{
 			name:         "unset window tile",
 			command:      &UnsetWindowTileCmd{Uuid: "window-id"},
-			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_UNSET_WINDOW_TILE,
+			wantTemplate: initialTemplate + JS_TILE_UNASSIGNMENT_HELPER + JS_UNSET_WINDOW_TILE,
 			wantParams:   ScriptParams{Uuid: "window-id"},
 		},
 		{
@@ -601,12 +601,13 @@ func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 		name           string
 		scriptTemplate string
 		action         string
+		usesWindowID   bool
 	}{
 		{name: "get geometry", scriptTemplate: JS_GET_WINDOW_GEOMETRY, action: "returnResult(result);"},
 		{name: "activate", scriptTemplate: JS_ACTIVATE_WINDOW, action: "workspace.activeWindow = targetWindow;"},
-		{name: "set size", scriptTemplate: JS_SET_WINDOW_SIZE, action: "updateWindowGeometry(targetWindow, {"},
-		{name: "set position", scriptTemplate: JS_SET_WINDOW_POSITION, action: "updateWindowGeometry(targetWindow, {"},
-		{name: "set geometry", scriptTemplate: JS_SET_WINDOW_GEOMETRY, action: "updateWindowGeometry(targetWindow, {"},
+		{name: "set size", scriptTemplate: JS_SET_WINDOW_SIZE, action: "updateWindowGeometry(targetWindow, {", usesWindowID: true},
+		{name: "set position", scriptTemplate: JS_SET_WINDOW_POSITION, action: "updateWindowGeometry(targetWindow, {", usesWindowID: true},
+		{name: "set geometry", scriptTemplate: JS_SET_WINDOW_GEOMETRY, action: "updateWindowGeometry(targetWindow, {", usesWindowID: true},
 		{name: "set workspace", scriptTemplate: JS_SET_WINDOW_WORKSPACE, action: "targetWindow.desktops = [targetWorkspace];"},
 		{name: "set property", scriptTemplate: JS_SET_WINDOW_PROPERTY, action: "targetWindow.keepAbove = !targetWindow.keepAbove;"},
 		{name: "close", scriptTemplate: JS_CLOSE_WINDOW, action: "targetWindow.closeWindow();"},
@@ -626,12 +627,20 @@ func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 				t.Fatal(err)
 			}
 			generated := script.String()
-			for _, expected := range []string{
-				"const targetWindow = findWindow(" + quotedUUID + ");",
-				"if (!targetWindow)",
-				`returnError(ERROR_WINDOW_NOT_FOUND + ` + quotedUUID + `);`,
-				test.action,
-			} {
+			expectedParts := []string{"if (!targetWindow)", test.action}
+			if test.usesWindowID {
+				expectedParts = append(expectedParts,
+					"const windowId = "+quotedUUID+";",
+					"const targetWindow = findWindow(windowId);",
+					"returnError(ERROR_WINDOW_NOT_FOUND + windowId);",
+				)
+			} else {
+				expectedParts = append(expectedParts,
+					"const targetWindow = findWindow("+quotedUUID+");",
+					`returnError(ERROR_WINDOW_NOT_FOUND + `+quotedUUID+`);`,
+				)
+			}
+			for _, expected := range expectedParts {
 				if !strings.Contains(generated, expected) {
 					t.Errorf("generated script does not contain %q:\n%s", expected, generated)
 				}
