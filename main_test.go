@@ -237,6 +237,22 @@ func TestCommandRunMethods(t *testing.T) {
 			wantParams:   ScriptParams{Uuid: "window-id"},
 		},
 		{
+			name: "list tile windows",
+			command: &ListTileWindowsCmd{
+				OutputName:   "DP-1",
+				ShowCaptions: true,
+				ShowPids:     true,
+				TilePath:     "1.0",
+			},
+			wantTemplate: initialTemplate + JS_LIST_TILE_WINDOWS,
+			wantParams: ScriptParams{
+				OutputName:   "DP-1",
+				ShowCaptions: true,
+				ShowPids:     true,
+				TilePath:     "1.0",
+			},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
