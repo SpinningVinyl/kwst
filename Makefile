@@ -4,13 +4,15 @@ SCD2HTML := $(shell command -v scd2html 2> /dev/null)
 PREFIX ?= /usr/local
 DESTDIR ?=
 BUILD_DIR := build
+VERSION := $(shell git describe --always)
+BUILD_TIME := $(shell date)
 
 .PHONY: integration-test
 
-build: *.go *.scd cmd/kwst-debug-listener/*.go
+build: *.go *.scd cmd/kwst-debug-listener/*.go internal/buildinfo/*.go
 	mkdir -p $(BUILD_DIR)
-	go build -a -o $(BUILD_DIR)/kwst -v -ldflags="-X 'main.Version=$$(git describe --always)' -X 'main.BuildTime=$$(date)'"
-	go build -o $(BUILD_DIR)/kwst-debug-listener ./cmd/kwst-debug-listener
+	go build -a -o $(BUILD_DIR)/kwst -v -ldflags="-X 'kwst/internal/buildinfo.Version=$(VERSION)' -X 'kwst/internal/buildinfo.BuildTime=$(BUILD_TIME)'"
+	go build -o $(BUILD_DIR)/kwst-debug-listener -ldflags="-X 'kwst/internal/buildinfo.Version=$(VERSION)' -X 'kwst/internal/buildinfo.BuildTime=$(BUILD_TIME)'" ./cmd/kwst-debug-listener
 ifdef SCDOC
 	scdoc < kwst.1.scd > $(BUILD_DIR)/kwst.1
 	gzip -f $(BUILD_DIR)/kwst.1

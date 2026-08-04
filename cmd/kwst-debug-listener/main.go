@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/godbus/dbus/v5"
 	"golang.org/x/sys/unix"
+	"kwst/internal/buildinfo"
 )
 
 const (
@@ -61,6 +64,27 @@ func waitForQuit(input io.Reader) error {
 	}
 }
 
+func waitForQuitOrSignal(input io.Reader, signals <-chan os.Signal) (os.Signal, error) {
+	inputDone := make(chan error, 1)
+	go func() {
+		inputDone <- waitForQuit(input)
+	}()
+
+	select {
+	case err := <-inputDone:
+		return nil, err
+	case receivedSignal := <-signals:
+		return receivedSignal, nil
+	}
+}
+
+func signalExitCode(receivedSignal os.Signal) int {
+	if unixSignal, ok := receivedSignal.(syscall.Signal); ok {
+		return 128 + int(unixSignal)
+	}
+	return 1
+}
+
 func makeInputImmediate(input *os.File) (func(), error) {
 	fd := int(input.Fd())
 	state, err := unix.IoctlGetTermios(fd, unix.TCGETS)
@@ -84,7 +108,13 @@ func makeInputImmediate(input *os.File) (func(), error) {
 	}, nil
 }
 
-func run(input *os.File, stdout, stderr io.Writer) int {
+func run(arguments []string, input *os.File, stdout, stderr io.Writer) int {
+	if len(arguments) > 0 && arguments[0] == "--version" {
+		fmt.Fprintln(stdout, buildinfo.Version)
+		fmt.Fprintln(stdout, buildinfo.BuildTime)
+		return 0
+	}
+
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		fmt.Fprintln(stderr, "Failed to connect to session bus:", err)
@@ -106,6 +136,10 @@ func run(input *os.File, stdout, stderr io.Writer) int {
 	fmt.Fprintf(stdout, "*** KWST debug listener ***\n")
 	fmt.Fprintf(stdout, "Listening at address %s, press q to quit.\n", names[0])
 
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(signals)
+
 	restoreInput, err := makeInputImmediate(input)
 	if err != nil {
 		fmt.Fprintln(stderr, "Failed to configure terminal input:", err)
@@ -113,14 +147,18 @@ func run(input *os.File, stdout, stderr io.Writer) int {
 	}
 	defer restoreInput()
 
-	if err := waitForQuit(input); err != nil && !errors.Is(err, io.EOF) {
+	receivedSignal, err := waitForQuitOrSignal(input, signals)
+	if err != nil && !errors.Is(err, io.EOF) {
 		fmt.Fprintln(stderr, "Failed to read keyboard input:", err)
 		return 1
+	}
+	if receivedSignal != nil {
+		return signalExitCode(receivedSignal)
 	}
 
 	return 0
 }
 
 func main() {
-	os.Exit(run(os.Stdin, os.Stdout, os.Stderr))
+	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }

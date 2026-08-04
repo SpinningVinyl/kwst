@@ -14,12 +14,10 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/godbus/dbus/v5"
+	"kwst/internal/buildinfo"
 )
 
 var debug = false
-
-var Version = "v0.0.0"
-var BuildTime = "Thu 01 Jan 1970 00:00:00 UTC"
 
 // define the CLI structure for Kong to parse. See also commands.go
 type Globals struct {
@@ -226,8 +224,8 @@ func main() {
 
 func run() int {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
-		fmt.Println(Version)
-		fmt.Println(BuildTime)
+		fmt.Println(buildinfo.Version)
+		fmt.Println(buildinfo.BuildTime)
 		return 0
 	}
 
