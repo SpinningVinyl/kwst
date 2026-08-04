@@ -202,6 +202,82 @@ script to finish returns status 124.
 	*list-outputs*
 		List enabled outputs. Each output name is returned on a separate line.
 
+	*list-tiles* [_flags_]
+		List the native KWin tiles configured for an output on the current virtual
+		desktop. The data is returned as tab-separated rows containing the output
+		name, tile path, tile type, relative geometry, absolute geometry within the
+		output, and number of windows assigned to the tile.
+
+		The root tile uses the path '.', and child components are represented by
+		zero-based indexes separated by periods. Tile types are 'Layout' and 'Leaf'.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			List tiles on the named output. If omitted, the active output as defined
+			by KWin is used.
+		*--leaves-only*
+			List only leaf tiles, omitting layout tiles.
+
+	*get-window-tile* <uuid>
+		Get the native KWin tile associated with the window identified by _uuid_.
+		The data is returned as tab-separated rows containing the output name,
+		virtual desktop number, tile path, relative geometry, and absolute geometry
+		within the output.
+
+		The command returns an error if the window does not exist, is not tiled, is
+		assigned to a quick tile rather than a native tile, or the virtual desktop
+		or tile path cannot be determined.
+
+	*set-window-tile* <uuid> <tile-path> [_flags_]
+		Assign the window identified by _uuid_ to the native KWin tile identified by
+		_tile-path_. Layout tiles, including the root tile '.', can be assigned as
+		well as leaf tiles.
+
+		The tile layout for the output's current virtual desktop is used. If the
+		window is not on that desktop, it is moved there before being assigned to the
+		tile. If no output is specified, the output containing the window is used.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			Assign the window to a tile on the named output.
+
+		The command returns an error if the window or output does not exist, the tile
+		path is malformed or does not exist, or the window cannot be assigned to the
+		tile.
+
+	*unset-window-tile* <uuid>
+		Remove the current tile association from the window identified by _uuid_.
+		This applies to both native and quick-tile associations, including stale
+		associations exposed by KWin through the window's tile property.
+
+		The command is idempotent: if the window is not tiled, it succeeds without
+		making any changes. It returns an error if the window does not exist or its
+		tile association cannot be removed.
+
+	*list-tile-windows* <tile-path> [_flags_]
+		List windows directly assigned to the tile identified by _tile-path_. Windows
+		assigned to descendant tiles are not included. The output uses the same
+		tab-separated format as the *list* command: UUID, resourceClass, and
+		resourceName, with optional PID and caption fields.
+
+		The tile layout for the output's current virtual desktop is used. If no
+		output is specified, the active output as defined by KWin is used.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			List windows assigned to a tile on the named output.
+		*-c*, *--show-captions*
+			Show window captions in the list.
+		*-p*, *--show-pids*
+			Show the PID of the process that the window belongs to. The PID is not
+			guaranteed to be correct for X11 windows.
+
+		The command returns an error if the output does not exist or the tile path is
+		malformed or does not exist.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of

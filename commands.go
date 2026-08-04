@@ -18,7 +18,7 @@ type ListCmd struct {
 }
 
 func (lc *ListCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_LIST
+	sp.ScriptTemplate += JS_WINDOW_LIST_HELPERS + JS_LIST
 	sp.Params.IncludeSpecialWindows = lc.IncludeSpecialWindows
 	sp.Params.ShowCaptions = lc.ShowCaptions
 	sp.Params.ShowPids = lc.ShowPids
@@ -378,5 +378,67 @@ func (cmd SetWindowPositionRelativeCmd) Run(sp *ScriptPackage) error {
 	sp.Params.Uuid = cmd.Uuid
 	sp.Params.RelativeX = cmd.RelativeX
 	sp.Params.RelativeY = cmd.RelativeY
+	return nil
+}
+
+type ListTilesCmd struct {
+	OutputName string `name:"output" help:"Name of the output containing the root tile."`
+	LeavesOnly bool   `default:"false" help:"List only leaf tiles, omitting layout tiles."`
+}
+
+func (cmd ListTilesCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_LIST_TILES
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.LeavesOnly = cmd.LeavesOnly
+	return nil
+}
+
+type GetWindowTileCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to get the tile association of."`
+}
+
+func (cmd GetWindowTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_GET_WINDOW_TILE
+	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
+
+type SetWindowTileCmd struct {
+	OutputName string `name:"output" help:"Name of the output containing the root tile."`
+	Uuid       string `arg:"" required:"" help:"UUID of the window to be assigned to the specified tile."`
+	TilePath   string `arg:"" required:"" help:"Locator path of the tile to assign the window to."`
+}
+
+func (cmd SetWindowTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_SET_WINDOW_TILE
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.TilePath = cmd.TilePath
+	return nil
+}
+
+type UnsetWindowTileCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to unassign from its current tile."`
+}
+
+func (cmd UnsetWindowTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_UNSET_WINDOW_TILE
+	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
+
+type ListTileWindowsCmd struct {
+	OutputName   string `name:"output" help:"Name of the output containing the root tile."`
+	ShowCaptions bool   `default:"false" short:"c" help:"Show window captions in the list."`
+	ShowPids     bool   `default:"false" short:"p" help:"Show the PID of the process that the window belongs to (the PID is not guaranteed to be correct for X11 windows)."`
+	TilePath     string `arg:"" required:"" help:"Locator path of the tile."`
+}
+
+func (cmd ListTileWindowsCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_WINDOW_LIST_HELPERS + JS_LIST_TILE_WINDOWS
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.ShowCaptions = cmd.ShowCaptions
+	sp.Params.ShowPids = cmd.ShowPids
+	sp.Params.TilePath = cmd.TilePath
 	return nil
 }

@@ -7,9 +7,10 @@ BUILD_DIR := build
 
 .PHONY: integration-test
 
-build: *.go *.scd
+build: *.go *.scd cmd/kwst-debug-listener/*.go
 	mkdir -p $(BUILD_DIR)
 	go build -a -o $(BUILD_DIR)/kwst -v -ldflags="-X 'main.Version=$$(git describe --always)' -X 'main.BuildTime=$$(date)'"
+	go build -o $(BUILD_DIR)/kwst-debug-listener ./cmd/kwst-debug-listener
 ifdef SCDOC
 	scdoc < kwst.1.scd > $(BUILD_DIR)/kwst.1
 	gzip -f $(BUILD_DIR)/kwst.1
@@ -25,6 +26,7 @@ endif
 install: build
 	install -d "$(DESTDIR)$(PREFIX)/bin"
 	install -m 0755 $(BUILD_DIR)/kwst "$(DESTDIR)$(PREFIX)/bin/kwst"
+	install -m 0755 $(BUILD_DIR)/kwst-debug-listener "$(DESTDIR)$(PREFIX)/bin/kwst-debug-listener"
 	if [ -f $(BUILD_DIR)/kwst.1.gz ]; then \
 		install -d "$(DESTDIR)$(PREFIX)/share/man/man1"; \
 		install -m 0644 $(BUILD_DIR)/kwst.1.gz "$(DESTDIR)$(PREFIX)/share/man/man1/kwst.1.gz"; \

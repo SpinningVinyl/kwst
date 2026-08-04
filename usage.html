@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-08-01</p>
+<p class="header-date">2026-08-04</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -567,6 +567,194 @@ about optional parameters.
 
 <blockquote>
 <blockquote>List enabled outputs. Each output name is returned on a separate line.
+</blockquote>
+</blockquote>
+
+<blockquote><b>list-tiles</b> [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>List the native KWin tiles configured for an output on the current virtual
+desktop. The data is returned as tab-separated rows containing the output
+name, tile path, tile type, relative geometry, absolute geometry within the
+output, and number of windows assigned to the tile.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The root tile uses the path '.', and child components are represented by
+zero-based indexes separated by periods. Tile types are 'Layout' and 'Leaf'.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List tiles on the named output. If omitted, the active output as defined
+by KWin is used.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--leaves-only</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List only leaf tiles, omitting layout tiles.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-window-tile</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Get the native KWin tile associated with the window identified by <u>uuid</u>.
+The data is returned as tab-separated rows containing the output name,
+virtual desktop number, tile path, relative geometry, and absolute geometry
+within the output.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the window does not exist, is not tiled, is
+assigned to a quick tile rather than a native tile, or the virtual desktop
+or tile path cannot be determined.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-window-tile</b> &lt;uuid&gt; &lt;tile-path&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Assign the window identified by <u>uuid</u> to the native KWin tile identified by
+<u>tile-path</u>. Layout tiles, including the root tile '.', can be assigned as
+well as leaf tiles.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The tile layout for the output's current virtual desktop is used. If the
+window is not on that desktop, it is moved there before being assigned to the
+tile. If no output is specified, the output containing the window is used.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Assign the window to a tile on the named output.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the window or output does not exist, the tile
+path is malformed or does not exist, or the window cannot be assigned to the
+tile.
+</blockquote>
+</blockquote>
+
+<blockquote><b>unset-window-tile</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Remove the current tile association from the window identified by <u>uuid</u>.
+This applies to both native and quick-tile associations, including stale
+associations exposed by KWin through the window's tile property.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command is idempotent: if the window is not tiled, it succeeds without
+making any changes. It returns an error if the window does not exist or its
+tile association cannot be removed.
+</blockquote>
+</blockquote>
+
+<blockquote><b>list-tile-windows</b> &lt;tile-path&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>List windows directly assigned to the tile identified by <u>tile-path</u>. Windows
+assigned to descendant tiles are not included. The output uses the same
+tab-separated format as the <b>list</b> command: UUID, resourceClass, and
+resourceName, with optional PID and caption fields.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The tile layout for the output's current virtual desktop is used. If no
+output is specified, the active output as defined by KWin is used.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List windows assigned to a tile on the named output.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-c</b>, <b>--show-captions</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Show window captions in the list.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-p</b>, <b>--show-pids</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Show the PID of the process that the window belongs to. The PID is not
+guaranteed to be correct for X11 windows.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the output does not exist or the tile path is
+malformed or does not exist.
 </blockquote>
 </blockquote>
 

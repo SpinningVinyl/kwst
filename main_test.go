@@ -46,7 +46,7 @@ func TestCommandRunMethods(t *testing.T) {
 		{
 			name:         "list",
 			command:      &ListCmd{IncludeSpecialWindows: true, ShowCaptions: true, ShowPids: true},
-			wantTemplate: initialTemplate + JS_LIST,
+			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_LIST,
 			wantParams: ScriptParams{
 				IncludeSpecialWindows: true,
 				ShowCaptions:          true,
@@ -205,6 +205,54 @@ func TestCommandRunMethods(t *testing.T) {
 			wantTemplate: initialTemplate + JS_LIST_OUTPUTS,
 		},
 		{
+			name:         "list tiles",
+			command:      &ListTilesCmd{OutputName: "DP-1", LeavesOnly: true},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_LIST_TILES,
+			wantParams:   ScriptParams{OutputName: "DP-1", LeavesOnly: true},
+		},
+		{
+			name:         "get window tile",
+			command:      &GetWindowTileCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_GET_WINDOW_TILE,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name: "set window tile",
+			command: &SetWindowTileCmd{
+				OutputName: "DP-1",
+				Uuid:       "window-id",
+				TilePath:   "1.0",
+			},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_SET_WINDOW_TILE,
+			wantParams: ScriptParams{
+				OutputName: "DP-1",
+				Uuid:       "window-id",
+				TilePath:   "1.0",
+			},
+		},
+		{
+			name:         "unset window tile",
+			command:      &UnsetWindowTileCmd{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_UNSET_WINDOW_TILE,
+			wantParams:   ScriptParams{Uuid: "window-id"},
+		},
+		{
+			name: "list tile windows",
+			command: &ListTileWindowsCmd{
+				OutputName:   "DP-1",
+				ShowCaptions: true,
+				ShowPids:     true,
+				TilePath:     "1.0",
+			},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_WINDOW_LIST_HELPERS + JS_LIST_TILE_WINDOWS,
+			wantParams: ScriptParams{
+				OutputName:   "DP-1",
+				ShowCaptions: true,
+				ShowPids:     true,
+				TilePath:     "1.0",
+			},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
@@ -262,6 +310,67 @@ func TestCommandRunMethods(t *testing.T) {
 			}
 			if sp.Params != test.wantParams {
 				t.Errorf("Params = %+v, want %+v", sp.Params, test.wantParams)
+			}
+		})
+	}
+}
+
+func TestCommandHelperBundles(t *testing.T) {
+	tests := []struct {
+		name     string
+		command  scriptCommand
+		includes []string
+		excludes []string
+	}{
+		{
+			name:     "workspace command uses only common header",
+			command:  &GetWorkspaceCmd{},
+			excludes: []string{"const formatWindowRow = (", "const enumerateTiles = ("},
+		},
+		{
+			name:     "window list uses row formatter",
+			command:  &ListCmd{},
+			includes: []string{"const formatWindowRow = ("},
+			excludes: []string{"const enumerateTiles = ("},
+		},
+		{
+			name:     "tile list uses tile helpers",
+			command:  &ListTilesCmd{},
+			includes: []string{"const enumerateTiles = (", "const formatRelativeGeometry = ("},
+			excludes: []string{"const formatWindowRow = ("},
+		},
+		{
+			name:    "tile window list uses both helper bundles",
+			command: &ListTileWindowsCmd{TilePath: "."},
+			includes: []string{
+				"const formatWindowRow = (",
+				"const tileForPath = (",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sp := ScriptPackage{ScriptTemplate: JS_HEADER}
+			if err := test.command.Run(&sp); err != nil {
+				t.Fatalf("Run returned an error: %v", err)
+			}
+
+			var script strings.Builder
+			if err := prepareScript(&script, sp); err != nil {
+				t.Fatalf("prepareScript returned an error: %v", err)
+			}
+			generated := script.String()
+
+			for _, expected := range test.includes {
+				if occurrences := strings.Count(generated, expected); occurrences != 1 {
+					t.Errorf("generated script contains %q %d times, want once", expected, occurrences)
+				}
+			}
+			for _, unexpected := range test.excludes {
+				if strings.Contains(generated, unexpected) {
+					t.Errorf("generated script unexpectedly contains %q", unexpected)
+				}
 			}
 		})
 	}
@@ -520,7 +629,7 @@ func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 			for _, expected := range []string{
 				"const targetWindow = findWindow(" + quotedUUID + ");",
 				"if (!targetWindow)",
-				`returnError("Window not found: " + ` + quotedUUID + `);`,
+				`returnError(ERROR_WINDOW_NOT_FOUND + ` + quotedUUID + `);`,
 				test.action,
 			} {
 				if !strings.Contains(generated, expected) {

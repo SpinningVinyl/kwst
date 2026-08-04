@@ -56,6 +56,11 @@ type CLI struct {
 	SetWindowGeometryRelative SetWindowGeometryRelativeCmd `cmd:"" help:"Change the geometry of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 	SetWindowSizeRelative     SetWindowSizeRelativeCmd     `cmd:"" help:"Change the size of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
 	SetWindowPositionRelative SetWindowPositionRelativeCmd `cmd:"" help:"Change the position of the window with the provided UUID relative to the screen's client area dimensions (in percent)."`
+	ListTiles                 ListTilesCmd                 `cmd:"" help:"List tiles configured in KWin's tile manager."`
+	GetWindowTile             GetWindowTileCmd             `cmd:"" help:"Get the tile that the window with the provided UUID belongs to, provided such a window and such a tile exist."`
+	SetWindowTile             SetWindowTileCmd             `cmd:"" help:"Assign the window with the provided UUID to the tile with the provided locator path (optionally on the specified output)."`
+	UnsetWindowTile           UnsetWindowTileCmd           `cmd:"" help:"Unassign the window with the provided UUID from its current tile, if such a tile exists."`
+	ListTileWindows           ListTileWindowsCmd           `cmd:"" help:"List all windows assigned to the tile with the provided locator path."`
 }
 
 // parameters that are passed to the script template
@@ -89,6 +94,8 @@ type ScriptParams struct {
 	RelativeY             float64
 	RelativeWidth         float64
 	RelativeHeight        float64
+	LeavesOnly            bool
+	TilePath              string
 }
 
 type ScriptPackage struct {
