@@ -18,7 +18,7 @@ type ListCmd struct {
 }
 
 func (lc *ListCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_LIST
+	sp.ScriptTemplate += JS_WINDOW_LIST_HELPERS + JS_LIST
 	sp.Params.IncludeSpecialWindows = lc.IncludeSpecialWindows
 	sp.Params.ShowCaptions = lc.ShowCaptions
 	sp.Params.ShowPids = lc.ShowPids
@@ -387,7 +387,7 @@ type ListTilesCmd struct {
 }
 
 func (cmd ListTilesCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_LIST_TILES
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_LIST_TILES
 	sp.Params.OutputName = cmd.OutputName
 	sp.Params.LeavesOnly = cmd.LeavesOnly
 	return nil
@@ -398,7 +398,7 @@ type GetWindowTileCmd struct {
 }
 
 func (cmd GetWindowTileCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_GET_WINDOW_TILE
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_GET_WINDOW_TILE
 	sp.Params.Uuid = cmd.Uuid
 	return nil
 }
@@ -410,7 +410,7 @@ type SetWindowTileCmd struct {
 }
 
 func (cmd SetWindowTileCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_SET_WINDOW_TILE
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_SET_WINDOW_TILE
 	sp.Params.Uuid = cmd.Uuid
 	sp.Params.OutputName = cmd.OutputName
 	sp.Params.TilePath = cmd.TilePath
@@ -422,7 +422,7 @@ type UnsetWindowTileCmd struct {
 }
 
 func (cmd UnsetWindowTileCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_UNSET_WINDOW_TILE
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_UNSET_WINDOW_TILE
 	sp.Params.Uuid = cmd.Uuid
 	return nil
 }
@@ -435,7 +435,7 @@ type ListTileWindowsCmd struct {
 }
 
 func (cmd ListTileWindowsCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_LIST_TILE_WINDOWS
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_WINDOW_LIST_HELPERS + JS_LIST_TILE_WINDOWS
 	sp.Params.OutputName = cmd.OutputName
 	sp.Params.ShowCaptions = cmd.ShowCaptions
 	sp.Params.ShowPids = cmd.ShowPids

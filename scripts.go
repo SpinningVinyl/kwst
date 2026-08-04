@@ -6,6 +6,10 @@ const debug = {{.Debug}};
 
 const scriptName = "{{.ScriptName}}";
 
+const ERROR_WINDOW_NOT_FOUND = "Window not found: ";
+const ERROR_OUTPUT_NOT_FOUND = "Output not found: ";
+const ERROR_TILE_NOT_FOUND = "Tile not found: ";
+
 let exitCode = 0;
 
 const debugLog = (msg) => {
@@ -60,6 +64,42 @@ const findOutput = (outputName) => {
         (candidate) => candidate.name === outputName
     );
     return output;
+}
+
+debugLog(scriptName + " START");
+
+`
+
+var JS_WINDOW_LIST_HELPERS string = `const formatWindowRow = (
+    window,
+    showPids,
+    showCaptions
+) => {
+    const fields = [
+        window.internalId,
+        window.resourceClass,
+        window.resourceName.length === 0 ? "n/a" : window.resourceName,
+    ];
+
+    if (showPids) {
+        fields.push(window.pid);
+    }
+    if (showCaptions) {
+        fields.push(window.caption);
+    }
+
+    return fields.join("\t");
+}
+
+`
+
+var JS_TILE_HELPERS string = `const outputForName = (
+    outputName,
+    fallbackOutput
+) => {
+    return outputName === ""
+        ? fallbackOutput
+        : findOutput(outputName);
 }
 
 const formatFloat = (num) => {
@@ -151,7 +191,7 @@ const unassignFromTile = (targetWindow) => {
         return true;
     }
 
-    if (typeof tile.unmanage === "function" && tile.unmanage(targetWindow))  {
+    if (typeof tile.unmanage === "function" && tile.unmanage(targetWindow)) {
         return true;
     }
 
@@ -169,7 +209,33 @@ const isOnCurrentDesktop = (targetWindow, targetOutput) => {
     );
 }
 
-debugLog(scriptName + " START");
+const rootTileForOutput = (output) => {
+    return workspace.tilingForScreen(output).rootTile;
+}
+
+const tileForPath = (output, tilePath) => {
+    return resolveTile(rootTileForOutput(output), tilePath);
+}
+
+const formatRelativeGeometry = (tile) => {
+    const geometry = tile.relativeGeometry;
+    return [
+        formatFloat(geometry.x),
+        formatFloat(geometry.y),
+        formatFloat(geometry.width),
+        formatFloat(geometry.height),
+    ].join(" ");
+}
+
+const formatAbsoluteGeometry = (tile) => {
+    const geometry = tile.absoluteGeometryInScreen;
+    return [
+        Math.round(geometry.x),
+        Math.round(geometry.y),
+        Math.round(geometry.width),
+        Math.round(geometry.height),
+    ].join(" ");
+}
 
 `
 
@@ -179,7 +245,11 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     if ({{if .IncludeSpecialWindows}}true{{else}}!allWindows[i].specialWindow{{end}}) {
         let w = allWindows[i];
-        returnResult(w.internalId + "\t" + w.resourceClass + "\t" + (w.resourceName.length == 0 ? "n/a" : w.resourceName) {{if .ShowPids}}+ "\t" + w.pid{{end}}{{if .ShowCaptions}}+ "\t" + w.caption{{end}});
+        returnResult(formatWindowRow(
+            w,
+            {{.ShowPids}},
+            {{.ShowCaptions}}
+        ));
     }
 }
 
@@ -225,7 +295,7 @@ var JS_GET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_GET_WI
 const targetWindow = findWindow({{jsString .Uuid}});
 
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     const result = Math.round(targetWindow.x) + " " + Math.round(targetWindow.y) + " " + targetWindow.width + " " + targetWindow.height;
     returnResult(result);
@@ -253,7 +323,7 @@ var JS_ACTIVATE_WINDOW string = `debugLog(scriptName + " executing JS_ACTIVATE_W
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("Activating window with UUID=" + {{jsString .Uuid}});
     workspace.activeWindow = targetWindow;
@@ -265,7 +335,7 @@ var JS_SET_WINDOW_SIZE string = `debugLog(scriptName + " executing JS_SET_WINDOW
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("New size for window with UUID=" + {{jsString .Uuid}} + ": width={{.Width}}, height={{.Height}}");
     updateWindowGeometry(targetWindow, {
@@ -280,7 +350,7 @@ var JS_SET_WINDOW_POSITION string = `debugLog(scriptName + " executing JS_SET_WI
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("New position for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}");
     updateWindowGeometry(targetWindow, {
@@ -295,7 +365,7 @@ var JS_SET_WINDOW_GEOMETRY string = `debugLog(scriptName + " executing JS_SET_WI
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("New geometry for window with UUID=" + {{jsString .Uuid}} + ": X={{.X}}, Y={{.Y}}, width={{.Width}}, height={{.Height}}");
     updateWindowGeometry(targetWindow, {
@@ -316,7 +386,7 @@ const targetWorkspace = workspace.desktops.find(
 );
 
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else if (!targetWorkspace) {
     returnError("Invalid workspace number: " + {{.WorkspaceId}});
 } else {
@@ -329,7 +399,7 @@ var JS_SET_WINDOW_PROPERTY string = `debugLog(scriptName + " executing JS_SET_WI
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID=" + {{jsString .Uuid}});
     targetWindow.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!targetWindow.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}};
@@ -341,7 +411,7 @@ var JS_CLOSE_WINDOW string = `debugLog(scriptName + " executing JS_CLOSE_WINDOW"
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("Closing window with UUID=" + {{jsString .Uuid}});
     targetWindow.closeWindow();
@@ -405,7 +475,7 @@ const outputName = {{jsString .OutputName}};
 const output = findOutput(outputName);
 
 if (!output) {
-    returnError("Output not found: " + outputName);
+    returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
 } else {
     let area;
     {{if .ClientArea}}
@@ -428,7 +498,7 @@ var JS_GET_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_GET_WIN
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     returnResult(targetWindow.opacity);
 }
@@ -439,7 +509,7 @@ var JS_SET_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_SET_WIN
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     debugLog("Setting opacity of window with UUID=" + {{jsString .Uuid}} + " to {{.Opacity}}");
     targetWindow.opacity = {{.Opacity}};
@@ -451,7 +521,7 @@ var JS_INCREASE_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_IN
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     let newOpacity = targetWindow.opacity;
     newOpacity += 0.05;
@@ -468,7 +538,7 @@ var JS_DECREASE_WINDOW_OPACITY string = `debugLog(scriptName + " executing JS_DE
 
 const targetWindow = findWindow({{jsString .Uuid}});
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     let newOpacity = targetWindow.opacity;
     newOpacity -= 0.05;
@@ -504,7 +574,7 @@ if (targetWindow) {
         height
     });
 } else {
-    returnError("Window not found: " + {{jsString .Uuid}})
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}})
 }
 
 `
@@ -526,7 +596,7 @@ if (targetWindow) {
         height
     });
 } else {
-    returnError("Window not found: " + {{jsString .Uuid}})
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}})
 }
 
 `
@@ -548,27 +618,20 @@ if (targetWindow) {
         y
     });
 } else {
-    returnError("Window not found: " + {{jsString .Uuid}})
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}})
 }
 
 `
 
 var JS_LIST_TILES string = `debugLog(scriptName + " executing JS_LIST_TILES");
 
-let output;
 const outputName = {{jsString .OutputName}};
-
-if (outputName === "") {
-    output = workspace.activeScreen;
-} else {
-    output = findOutput(outputName);
-}
+const output = outputForName(outputName, workspace.activeScreen);
 
 if (!output) {
-    returnError("Output not found: " + outputName);
+    returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
 } else {
-    const tileManager = workspace.tilingForScreen(output);
-    const rootTile = tileManager.rootTile;
+    const rootTile = rootTileForOutput(output);
     const rows = [];
 
     rows.push([
@@ -581,25 +644,12 @@ if (!output) {
     ].join("\t"));
 
     enumerateTiles(rootTile, {{.LeavesOnly}}, (tile, path, isLeaf) => {
-        const relative = tile.relativeGeometry;
-        const absolute = tile.absoluteGeometryInScreen;
-
         rows.push([
             output.name,
             path,
             isLeaf ? "Leaf" : "Layout",
-            [
-                formatFloat(relative.x),
-                formatFloat(relative.y),
-                formatFloat(relative.width),
-                formatFloat(relative.height),
-            ].join(" "),
-            [
-                absolute.x,
-                absolute.y,
-                absolute.width,
-                absolute.height,
-            ].join(" "),
+            formatRelativeGeometry(tile),
+            formatAbsoluteGeometry(tile),
             tile.windows.length,
         ].join("\t"));
     });
@@ -615,7 +665,7 @@ var JS_GET_WINDOW_TILE string = `debugLog(scriptName + " executing JS_GET_WINDOW
 const targetWindow = findWindow({{jsString .Uuid}});
 
 if (!targetWindow) {
-    returnError("Window not found: " + {{jsString .Uuid}});
+    returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
 } else {
     const output = targetWindow.output;
     const currentDesktop = workspace.currentDesktopForScreen(output);
@@ -651,8 +701,6 @@ if (!targetWindow) {
                 returnError("Unable to determine tile path");
             } else {
                 const { path } = pathInfo;
-                const relative = windowTile.relativeGeometry;
-                const absolute = windowTile.absoluteGeometryInScreen;
                 const rows = [];
                 rows.push([
                     "OUTPUT",
@@ -665,18 +713,8 @@ if (!targetWindow) {
                     output.name,
                     tileDesktop.x11DesktopNumber,
                     path,
-                    [
-                        formatFloat(relative.x),
-                        formatFloat(relative.y),
-                        formatFloat(relative.width),
-                        formatFloat(relative.height),
-                    ].join(" "),
-                    [
-                        absolute.x,
-                        absolute.y,
-                        absolute.width,
-                        absolute.height,
-                    ].join(" "),
+                    formatRelativeGeometry(windowTile),
+                    formatAbsoluteGeometry(windowTile),
                 ].join("\t"));
                 returnResult(rows.join("\n"));
             }
@@ -694,22 +732,16 @@ const targetWindow = findWindow(windowId);
 const tilePath = {{jsString .TilePath}};
 
 if (!targetWindow) {
-    returnError("Window not found: " + windowId);
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 } else {
-    let targetOutput;
-    if (outputName === "") {
-        targetOutput = targetWindow.output;
-    } else {
-        targetOutput = findOutput(outputName);
-    }
+    const targetOutput = outputForName(outputName, targetWindow.output);
     if (!targetOutput) {
-        returnError("Output not found: " + outputName);
+        returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
     } else {
         const targetDesktop = workspace.currentDesktopForScreen(targetOutput);
-        const rootTile = workspace.tilingForScreen(targetOutput).rootTile;
-        const targetTile = resolveTile(rootTile, tilePath);
+        const targetTile = tileForPath(targetOutput, tilePath);
         if (!targetTile) {
-            returnError("Unable to find target tile: " + tilePath);
+            returnError(ERROR_TILE_NOT_FOUND + tilePath);
         } else {
             if (!isOnCurrentDesktop(targetWindow, targetOutput)) {
                 targetWindow.desktops = [targetDesktop];
@@ -729,7 +761,7 @@ const windowId = {{jsString .Uuid}};
 const targetWindow = findWindow(windowId);
 
 if (!targetWindow) {
-    returnError("Window not found: " + windowId);
+    returnError(ERROR_WINDOW_NOT_FOUND + windowId);
 } else if (!unassignFromTile(targetWindow)) {
     returnError("Window " + windowId + " could not be removed from tile");
 }
@@ -738,31 +770,25 @@ if (!targetWindow) {
 
 var JS_LIST_TILE_WINDOWS string = `debugLog(scriptName + " executing JS_LIST_TILE_WINDOWS");
 
-let targetOutput;
 const outputName = {{jsString .OutputName}};
 const tilePath = {{jsString .TilePath}};
-if (outputName === "") {
-    targetOutput = workspace.activeScreen;
-} else {
-    targetOutput = findOutput(outputName);
-}
+const targetOutput = outputForName(outputName, workspace.activeScreen);
 
 if (!targetOutput) {
-    returnError("Output not found: " + outputName);
+    returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
 } else {
-    const rootTile = workspace.tilingForScreen(targetOutput).rootTile;
-    const targetTile = resolveTile(rootTile, tilePath);
+    const targetTile = tileForPath(targetOutput, tilePath);
     if (!targetTile) {
-        returnError("Tile not found: " + tilePath);
+        returnError(ERROR_TILE_NOT_FOUND + tilePath);
     } else {
         const windows = targetTile.windows;
         for (let i = 0; i < windows.length; i++) {
             let w = windows[i];
-            returnResult(w.internalId + "\t"
-                + w.resourceClass + "\t"
-                + (w.resourceName.length == 0 ? "n/a" : w.resourceName)
-                {{if .ShowPids}}+ "\t" + w.pid{{end}}
-                {{if .ShowCaptions}}+ "\t" + w.caption{{end}});
+            returnResult(formatWindowRow(
+                w,
+                {{.ShowPids}},
+                {{.ShowCaptions}}
+            ));
         }
     }
 }
