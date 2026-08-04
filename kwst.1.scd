@@ -256,6 +256,28 @@ script to finish returns status 124.
 		making any changes. It returns an error if the window does not exist or its
 		tile association cannot be removed.
 
+	*list-tile-windows* <tile-path> [_flags_]
+		List windows directly assigned to the tile identified by _tile-path_. Windows
+		assigned to descendant tiles are not included. The output uses the same
+		tab-separated format as the *list* command: UUID, resourceClass, and
+		resourceName, with optional PID and caption fields.
+
+		The tile layout for the output's current virtual desktop is used. If no
+		output is specified, the active output as defined by KWin is used.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			List windows assigned to a tile on the named output.
+		*-c*, *--show-captions*
+			Show window captions in the list.
+		*-p*, *--show-pids*
+			Show the PID of the process that the window belongs to. The PID is not
+			guaranteed to be correct for X11 windows.
+
+		The command returns an error if the output does not exist or the tile path is
+		malformed or does not exist.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of
