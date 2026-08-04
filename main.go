@@ -60,6 +60,7 @@ type CLI struct {
 	GetWindowTile             GetWindowTileCmd             `cmd:"" help:"Get the tile that the window with the provided UUID belongs to, provided such a window and such a tile exist."`
 	SetWindowTile             SetWindowTileCmd             `cmd:"" help:"Assign the window with the provided UUID to the tile with the provided locator path (optionally on the specified output)."`
 	UnsetWindowTile           UnsetWindowTileCmd           `cmd:"" help:"Unassign the window with the provided UUID from its current tile, if such a tile exists."`
+	ListTileWindows           ListTileWindowsCmd           `cmd:"" help:"List all windows assigned to the tile with the provided locator path."`
 }
 
 // parameters that are passed to the script template

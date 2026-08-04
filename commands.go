@@ -426,3 +426,19 @@ func (cmd UnsetWindowTileCmd) Run(sp *ScriptPackage) error {
 	sp.Params.Uuid = cmd.Uuid
 	return nil
 }
+
+type ListTileWindowsCmd struct {
+	OutputName   string `name:"output" help:"Name of the output containing the root tile."`
+	ShowCaptions bool   `default:"false" short:"c" help:"Show window captions in the list."`
+	ShowPids     bool   `default:"false" short:"p" help:"Show the PID of the process that the window belongs to (the PID is not guaranteed to be correct for X11 windows)."`
+	TilePath     string `arg:"" required:"" help:"Locator path of the tile."`
+}
+
+func (cmd ListTileWindowsCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_LIST_TILE_WINDOWS
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.ShowCaptions = cmd.ShowCaptions
+	sp.Params.ShowPids = cmd.ShowPids
+	sp.Params.TilePath = cmd.TilePath
+	return nil
+}

@@ -179,7 +179,7 @@ const allWindows = workspace.windowList();
 for (let i = 0; i < allWindows.length; i++) {
     if ({{if .IncludeSpecialWindows}}true{{else}}!allWindows[i].specialWindow{{end}}) {
         let w = allWindows[i];
-        returnResult(w.internalId + "\t" + w.resourceClass + "\t" + (w.resourceName.length == 0 ? "n/a" : w.resourceName ) {{if .ShowPids}}+ "\t" + w.pid{{end}}{{if .ShowCaptions}}+ "\t" + w.caption{{end}});
+        returnResult(w.internalId + "\t" + w.resourceClass + "\t" + (w.resourceName.length == 0 ? "n/a" : w.resourceName) {{if .ShowPids}}+ "\t" + w.pid{{end}}{{if .ShowCaptions}}+ "\t" + w.caption{{end}});
     }
 }
 
@@ -732,6 +732,39 @@ if (!targetWindow) {
     returnError("Window not found: " + windowId);
 } else if (!unassignFromTile(targetWindow)) {
     returnError("Window " + windowId + " could not be removed from tile");
+}
+
+`
+
+var JS_LIST_TILE_WINDOWS string = `debugLog(scriptName + " executing JS_LIST_TILE_WINDOWS");
+
+let targetOutput;
+const outputName = {{jsString .OutputName}};
+const tilePath = {{jsString .TilePath}};
+if (outputName === "") {
+    targetOutput = workspace.activeScreen;
+} else {
+    targetOutput = findOutput(outputName);
+}
+
+if (!targetOutput) {
+    returnError("Output not found: " + outputName);
+} else {
+    const rootTile = workspace.tilingForScreen(targetOutput).rootTile;
+    const targetTile = resolveTile(rootTile, tilePath);
+    if (!targetTile) {
+        returnError("Tile not found: " + tilePath);
+    } else {
+        const windows = targetTile.windows;
+        for (let i = 0; i < windows.length; i++) {
+            let w = windows[i];
+            returnResult(w.internalId + "\t"
+                + w.resourceClass + "\t"
+                + (w.resourceName.length == 0 ? "n/a" : w.resourceName)
+                {{if .ShowPids}}+ "\t" + w.pid{{end}}
+                {{if .ShowCaptions}}+ "\t" + w.caption{{end}});
+        }
+    }
 }
 
 `
