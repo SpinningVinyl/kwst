@@ -2,12 +2,39 @@ package main
 
 import (
 	"bytes"
+	"io"
+	"os"
 	"regexp"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/godbus/dbus/v5/introspect"
+	"kwst/internal/buildinfo"
 )
+
+func TestVersion(t *testing.T) {
+	originalVersion := buildinfo.Version
+	originalBuildTime := buildinfo.BuildTime
+	buildinfo.Version = "v-test"
+	buildinfo.BuildTime = "test build time"
+	t.Cleanup(func() {
+		buildinfo.Version = originalVersion
+		buildinfo.BuildTime = originalBuildTime
+	})
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	if exitCode := run([]string{"--version"}, nil, &stdout, &stderr); exitCode != 0 {
+		t.Fatalf("run returned exit code %d, want 0", exitCode)
+	}
+	if got, want := stdout.String(), "v-test\ntest build time\n"; got != want {
+		t.Fatalf("stdout = %q, want %q", got, want)
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("stderr = %q, want no output", stderr.String())
+	}
+}
 
 func TestDebugListenerPrintsCalls(t *testing.T) {
 	var output bytes.Buffer
@@ -66,5 +93,49 @@ func TestDebugListenerDBusMethods(t *testing.T) {
 func TestWaitForQuit(t *testing.T) {
 	if err := waitForQuit(strings.NewReader("abq")); err != nil {
 		t.Fatalf("waitForQuit returned an error: %v", err)
+	}
+}
+
+func TestWaitForQuitOrSignal(t *testing.T) {
+	t.Run("keyboard input", func(t *testing.T) {
+		receivedSignal, err := waitForQuitOrSignal(strings.NewReader("abq"), make(chan os.Signal))
+		if err != nil {
+			t.Fatalf("waitForQuitOrSignal returned an error: %v", err)
+		}
+		if receivedSignal != nil {
+			t.Fatalf("waitForQuitOrSignal returned signal %v, want nil", receivedSignal)
+		}
+	})
+
+	t.Run("signal", func(t *testing.T) {
+		reader, writer := io.Pipe()
+		t.Cleanup(func() {
+			_ = reader.Close()
+			_ = writer.Close()
+		})
+		signals := make(chan os.Signal, 1)
+		signals <- os.Interrupt
+
+		receivedSignal, err := waitForQuitOrSignal(reader, signals)
+		if err != nil {
+			t.Fatalf("waitForQuitOrSignal returned an error: %v", err)
+		}
+		if receivedSignal != os.Interrupt {
+			t.Fatalf("waitForQuitOrSignal returned signal %v, want %v", receivedSignal, os.Interrupt)
+		}
+	})
+}
+
+func TestSignalExitCode(t *testing.T) {
+	for _, test := range []struct {
+		signal os.Signal
+		want   int
+	}{
+		{signal: os.Interrupt, want: 130},
+		{signal: syscall.SIGTERM, want: 143},
+	} {
+		if got := signalExitCode(test.signal); got != test.want {
+			t.Errorf("signalExitCode(%v) = %d, want %d", test.signal, got, test.want)
+		}
 	}
 }
