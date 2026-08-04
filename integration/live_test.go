@@ -85,6 +85,13 @@ type geometry struct {
 	height int
 }
 
+type tileRow struct {
+	output      string
+	path        string
+	tileType    string
+	windowCount int
+}
+
 type fixtureWindow struct {
 	title string
 	uuid  string
@@ -126,6 +133,9 @@ func TestKWinWorkflow(t *testing.T) {
 			{name: "set-window-opacity", arguments: []string{"set-window-opacity", missingUUID, "0.5"}},
 			{name: "increase-window-opacity", arguments: []string{"increase-window-opacity", missingUUID}},
 			{name: "decrease-window-opacity", arguments: []string{"decrease-window-opacity", missingUUID}},
+			{name: "get-window-tile", arguments: []string{"get-window-tile", missingUUID}},
+			{name: "set-window-tile", arguments: []string{"set-window-tile", missingUUID, "."}},
+			{name: "unset-window-tile", arguments: []string{"unset-window-tile", missingUUID}},
 		}
 
 		for _, test := range tests {
@@ -153,7 +163,10 @@ func TestKWinWorkflow(t *testing.T) {
 	activateAndVerify(t, kwst, first)
 	activateAndVerify(t, kwst, second)
 
-	testOutputCommands(t, kwst)
+	outputNames := testOutputCommands(t, kwst)
+	t.Run("native tile commands", func(t *testing.T) {
+		testNativeTileCommands(t, kwst, first, outputNames)
+	})
 	t.Run("window opacity commands", func(t *testing.T) {
 		testWindowOpacityCommands(t, kwst, first)
 	})
@@ -447,7 +460,7 @@ func activateAndVerify(t *testing.T, kwst string, fixture *fixtureWindow) {
 	})
 }
 
-func testOutputCommands(t *testing.T, kwst string) {
+func testOutputCommands(t *testing.T, kwst string) []string {
 	t.Helper()
 
 	var outputNames []string
@@ -516,6 +529,134 @@ func testOutputCommands(t *testing.T, kwst string) {
 				t.Fatalf("%s returned non-positive dimensions: %+v", test.name, value)
 			}
 		})
+	}
+
+	return outputNames
+}
+
+func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, outputNames []string) {
+	t.Helper()
+
+	for _, outputName := range outputNames {
+		t.Run("list tiles on "+outputName, func(t *testing.T) {
+			result := runKWST(t, kwst, "list-tiles", "--output="+outputName)
+			requireSuccess(t, result, "list tiles on output "+outputName)
+			rows, err := parseTileRows(result.stdout)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, row := range rows {
+				if row.output == outputName && row.path == "." {
+					return
+				}
+			}
+			t.Fatalf("list-tiles did not return the root tile for output %q:\n%s", outputName, result.String())
+		})
+	}
+
+	missingOutput := fmt.Sprintf("kwst-missing-output-%d-%d", os.Getpid(), time.Now().UnixNano())
+	for _, outputName := range outputNames {
+		if outputName == missingOutput {
+			missingOutput += "-missing"
+		}
+	}
+	for _, test := range []struct {
+		name      string
+		arguments []string
+	}{
+		{
+			name:      "list-tiles rejects missing output",
+			arguments: []string{"list-tiles", "--output=" + missingOutput},
+		},
+		{
+			name:      "set-window-tile rejects missing output",
+			arguments: []string{"set-window-tile", "--output=" + missingOutput, fixture.uuid, "."},
+		},
+		{
+			name:      "list-tile-windows rejects missing output",
+			arguments: []string{"list-tile-windows", "--output=" + missingOutput, "."},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			result := runKWST(t, kwst, test.arguments...)
+			if result.exitCode != 1 {
+				t.Fatalf("command returned exit code %d, want 1:\n%s", result.exitCode, result.String())
+			}
+			expectedError := "Output not found: " + missingOutput
+			if !strings.Contains(result.stderr, expectedError) {
+				t.Fatalf("command did not report %q:\n%s", expectedError, result.String())
+			}
+		})
+	}
+
+	activateAndVerify(t, kwst, fixture)
+	requireSuccess(t, runKWST(t, kwst, "unset-window-tile", fixture.uuid), "ensure fixture is initially untiled")
+	t.Cleanup(func() {
+		if result := runKWST(t, kwst, "unset-window-tile", fixture.uuid); result.exitCode != 0 {
+			t.Errorf("untile fixture during cleanup:\n%s", result.String())
+		}
+	})
+
+	initialResult := runKWST(t, kwst, "list-tiles")
+	requireSuccess(t, initialResult, "list tiles on active output")
+	initialRows, err := parseTileRows(initialResult.stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetTile := initialRows[0]
+	for _, row := range initialRows {
+		if row.tileType == "Leaf" {
+			targetTile = row
+			break
+		}
+	}
+
+	requireSuccess(t, runKWST(t, kwst, "set-window-tile", fixture.uuid, targetTile.path), "assign fixture to tile")
+	eventually(t, "the assigned tile's window count to increase", func() (bool, string) {
+		result := runKWST(t, kwst, "list-tiles")
+		if result.exitCode != 0 {
+			return false, result.String()
+		}
+		rows, err := parseTileRows(result.stdout)
+		if err != nil {
+			return false, err.Error()
+		}
+		for _, row := range rows {
+			if row.output == targetTile.output && row.path == targetTile.path {
+				return row.windowCount == targetTile.windowCount+1,
+					fmt.Sprintf("tile %s window count is %d, want %d", row.path, row.windowCount, targetTile.windowCount+1)
+			}
+		}
+		return false, fmt.Sprintf("tile %s on output %s was not returned", targetTile.path, targetTile.output)
+	})
+
+	tileResult := runKWST(t, kwst, "get-window-tile", fixture.uuid)
+	requireSuccess(t, tileResult, "get fixture tile")
+	actualOutput, actualPath, err := parseWindowTile(tileResult.stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if actualOutput != targetTile.output || actualPath != targetTile.path {
+		t.Fatalf("get-window-tile returned output %q and path %q, want output %q and path %q",
+			actualOutput, actualPath, targetTile.output, targetTile.path)
+	}
+
+	windowsResult := runKWST(t, kwst, "list-tile-windows", "--output="+targetTile.output, targetTile.path)
+	requireSuccess(t, windowsResult, "list windows assigned to fixture tile")
+	if !containsWindowUUID(windowsResult.stdout, fixture.uuid) {
+		t.Fatalf("list-tile-windows did not return fixture %q:\n%s", fixture.uuid, windowsResult.String())
+	}
+
+	requireSuccess(t, runKWST(t, kwst, "unset-window-tile", fixture.uuid), "remove fixture from tile")
+	untiledResult := runKWST(t, kwst, "get-window-tile", fixture.uuid)
+	if untiledResult.exitCode != 1 {
+		t.Fatalf("get-window-tile returned exit code %d for an untiled fixture, want 1:\n%s",
+			untiledResult.exitCode, untiledResult.String())
+	}
+	expectedMessage := "It appears that window " + fixture.uuid + " is not tiled"
+	if !strings.Contains(untiledResult.stderr, expectedMessage) {
+		t.Fatalf("get-window-tile did not report %q after unsetting the tile:\n%s", expectedMessage, untiledResult.String())
 	}
 }
 
@@ -903,6 +1044,62 @@ func parseOutputNames(value string) ([]string, error) {
 		names = append(names, name)
 	}
 	return names, nil
+}
+
+func parseTileRows(value string) ([]tileRow, error) {
+	lines := strings.Split(value, "\n")
+	if len(lines) < 2 {
+		return nil, fmt.Errorf("list-tiles returned no tile rows: %q", value)
+	}
+	const expectedHeader = "OUTPUT\tPATH\tTYPE\tRELATIVE\tABSOLUTE\tWINDOWS"
+	if lines[0] != expectedHeader {
+		return nil, fmt.Errorf("list-tiles returned header %q, want %q", lines[0], expectedHeader)
+	}
+
+	rows := make([]tileRow, 0, len(lines)-1)
+	for _, line := range lines[1:] {
+		fields := strings.Split(line, "\t")
+		if len(fields) != 6 {
+			return nil, fmt.Errorf("list-tiles returned invalid row %q", line)
+		}
+		windowCount, err := strconv.Atoi(fields[5])
+		if err != nil {
+			return nil, fmt.Errorf("list-tiles returned invalid window count in row %q: %w", line, err)
+		}
+		rows = append(rows, tileRow{
+			output:      fields[0],
+			path:        fields[1],
+			tileType:    fields[2],
+			windowCount: windowCount,
+		})
+	}
+	return rows, nil
+}
+
+func parseWindowTile(value string) (string, string, error) {
+	lines := strings.Split(value, "\n")
+	if len(lines) != 2 {
+		return "", "", fmt.Errorf("get-window-tile returned %d lines, want 2: %q", len(lines), value)
+	}
+	const expectedHeader = "OUTPUT\tDESKTOP\tPATH\tRELATIVE\tABSOLUTE"
+	if lines[0] != expectedHeader {
+		return "", "", fmt.Errorf("get-window-tile returned header %q, want %q", lines[0], expectedHeader)
+	}
+	fields := strings.Split(lines[1], "\t")
+	if len(fields) != 5 {
+		return "", "", fmt.Errorf("get-window-tile returned invalid row %q", lines[1])
+	}
+	return fields[0], fields[2], nil
+}
+
+func containsWindowUUID(value, uuid string) bool {
+	for _, line := range strings.Split(value, "\n") {
+		fields := strings.SplitN(line, "\t", 2)
+		if len(fields) > 0 && fields[0] == uuid {
+			return true
+		}
+	}
+	return false
 }
 
 func requireSingleOutputName(t *testing.T, result commandResult, action string) string {
