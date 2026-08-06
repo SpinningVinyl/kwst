@@ -99,6 +99,7 @@ type ScriptParams struct {
 type ScriptPackage struct {
 	ScriptTemplate string
 	Params         ScriptParams
+	Custom         bool
 }
 
 // jsString returns value as a quoted JavaScript string literal. JSON string
@@ -113,10 +114,14 @@ func jsString(value string) (string, error) {
 }
 
 func prepareScript(w io.Writer, sp ScriptPackage) error {
-	sp.ScriptTemplate += JS_FOOTER
-	tmpl, err := template.New("kwin_script").Funcs(template.FuncMap{
-		"jsString": jsString,
-	}).Parse(sp.ScriptTemplate)
+	if !sp.Custom {
+		sp.ScriptTemplate += JS_FOOTER
+	}
+	tmpl, err := template.New("kwin_script").
+		Funcs(template.FuncMap{
+			"jsString": jsString,
+		}).
+		Parse(sp.ScriptTemplate)
 	if err != nil {
 		return fmt.Errorf("Error parsing script template: %w", err)
 	}

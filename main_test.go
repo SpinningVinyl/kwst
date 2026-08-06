@@ -42,6 +42,7 @@ func TestCommandRunMethods(t *testing.T) {
 		command      scriptCommand
 		wantTemplate string
 		wantParams   ScriptParams
+		wantCustom   bool
 	}{
 		{
 			name:         "list",
@@ -193,6 +194,7 @@ func TestCommandRunMethods(t *testing.T) {
 				P5: "five",
 				P6: "six",
 			},
+			wantCustom: true,
 		},
 		{
 			name:         "get mouse position",
@@ -311,6 +313,14 @@ func TestCommandRunMethods(t *testing.T) {
 			if sp.Params != test.wantParams {
 				t.Errorf("Params = %+v, want %+v", sp.Params, test.wantParams)
 			}
+			if sp.Custom != test.wantCustom {
+				t.Errorf("Custom = %t, want %t", sp.Custom, test.wantCustom)
+			}
+			if !sp.Custom {
+				if occurrences := strings.Count(sp.ScriptTemplate, "const execute = () => {"); occurrences != 1 {
+					t.Errorf("ScriptTemplate contains execute() declaration %d times, want once", occurrences)
+				}
+			}
 		})
 	}
 }
@@ -424,7 +434,9 @@ func TestJSString(t *testing.T) {
 
 func TestPrepareScript(t *testing.T) {
 	sp := ScriptPackage{
-		ScriptTemplate: `const uuid = {{jsString .Uuid}};
+		ScriptTemplate: `const execute = () => {
+	const uuid = {{jsString .Uuid}};
+}
 `,
 		Params: ScriptParams{Uuid: `uuid"with\characters`},
 	}
@@ -443,6 +455,50 @@ func TestPrepareScript(t *testing.T) {
 	}
 	if !strings.HasSuffix(script.String(), JS_FOOTER) {
 		t.Fatalf("prepared script does not end with JS_FOOTER:\n%s", script.String())
+	}
+}
+
+func TestPrepareCustomScriptDoesNotAppendFooter(t *testing.T) {
+	const customScript = `const value = {{jsString .P1}};
+close();
+`
+	sp := ScriptPackage{
+		ScriptTemplate: customScript,
+		Params:         ScriptParams{P1: `value"with\characters`},
+		Custom:         true,
+	}
+
+	var script strings.Builder
+	if err := prepareScript(&script, sp); err != nil {
+		t.Fatalf("prepareScript returned an error: %v", err)
+	}
+
+	quotedValue, err := jsString(sp.Params.P1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "const value = " + quotedValue + ";\nclose();\n"
+	if got := script.String(); got != want {
+		t.Fatalf("prepared custom script = %q, want %q", got, want)
+	}
+	if strings.Contains(script.String(), "execute();") {
+		t.Fatalf("prepared custom script unexpectedly contains the built-in footer:\n%s", script.String())
+	}
+}
+
+func TestBuiltInFooterHandlesExecutionErrorsAndAlwaysCloses(t *testing.T) {
+	for _, expected := range []string{
+		"try {",
+		"execute();",
+		"} catch (error) {",
+		"error && error.stack",
+		`returnError("Error executing KWin script: " + message);`,
+		"} finally {",
+		"close();",
+	} {
+		if !strings.Contains(JS_FOOTER, expected) {
+			t.Errorf("JS_FOOTER does not contain %q", expected)
+		}
 	}
 }
 
