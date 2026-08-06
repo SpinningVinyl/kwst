@@ -258,7 +258,8 @@ func run() int {
 		return 1
 	}
 	defer conn.Close()
-	debugPrint("DBus address:", conn.Names()[0])
+	names := conn.Names()
+	debugPrint("DBus address:", names[0])
 
 	s := newServer(os.Stdout, os.Stderr)
 	if err := conn.Export(s, "/net/prsv/kwst", "net.prsv.kwst"); err != nil {
@@ -269,7 +270,7 @@ func run() int {
 	// create and populate the ScriptParams struct
 	var sp ScriptPackage
 	sp.Params.ScriptName = filepath.Base(scriptFile.Name())
-	sp.Params.DbusAddr = conn.Names()[0]
+	sp.Params.DbusAddr = names[0]
 	sp.Params.Debug = debug
 
 	// process the template depending on the command line arguments

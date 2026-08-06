@@ -129,10 +129,6 @@ func run(arguments []string, input *os.File, stdout, stderr io.Writer) int {
 	}
 
 	names := conn.Names()
-	if len(names) == 0 {
-		fmt.Fprintln(stderr, "D-Bus connection has no unique address")
-		return 1
-	}
 	fmt.Fprintf(stdout, "*** KWST debug listener ***\n")
 	fmt.Fprintf(stdout, "Listening at address %s, press q to quit.\n", names[0])
 

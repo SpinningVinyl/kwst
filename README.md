@@ -19,6 +19,7 @@ Here is the list of things that you can currently do with **kwst**:
 - Set window geometry (size and position).
 - Set window geometry relative to the client area of its output.
 - Set window properties (such as keepAbove, keepBelow, fullScreen, etc.)
+- Work with KWin's native tiles: list available tiles, assign windows to tiles or unassign windows from tiles.
 - Get the number of the active workspace.
 - Switch to a workspace.
 - Send a window to a workspace.
@@ -105,6 +106,69 @@ window. It is installed separately and is not required for any **kwst** command.
 ## Exit status
 
 **kwst** exits with status 0 when a command succeeds and a non-zero status when setup, D-Bus, or KWin script execution fails. Commands that accept a window UUID return status 1 when no matching window exists. A timeout waiting for a KWin script to finish returns status 124.
+
+## Using KWin's native tiling
+
+Since version v2.9.0, **kwst** supports KWin's native tiling. The following commands are available:
+
+- `list-tiles [--output=OUTPUT] [--leaves-only]`. This command outputs the list of tiles for the specified output. If the output is not specified, the currently active output (as defined by KWin) is used instead. If `--leaves-only` switch is used, the command will list only leaf tiles (i.e. tiles that do not contain other tiles).
+- `get-window-tile <uuid>`. If the window with the specified UUID is assigned to a tile, this command prints information about the tile.
+- `set-window-tile [--output=OUTPUT] <uuid> <tile-path>`. This command assigns the window with the specified UUID to the tile with the specified locator path on the specified output. If no output is specified, the output containing the window is used instead.
+- `unset-window-tile <uuid>`. If the window with the specified UUID is assigned to a tile, it will be unassigned from its tile.
+- `list-tile-windows [--output=OUTPUT] [--show-captions] [--show-pids] <tile-path>`. This command outputs the list of all windows assigned to the specified tile.
+
+### Locator paths
+
+KWin does not expose any sort of persistent tile IDs. The tiling manager's tree is rebuilt every time a new user session starts. The locator paths remain unchanged across sessions only if the layout structure is unchanged.
+
+For normal (non-floating) tiles the following rules are true as long as the layout remains unchanged:
+
+- for horizontal layout tiles, children are enumerated left to right;
+- for vertical layout tiles, children are enumerated top to bottom.
+
+Let's assume we have the following layout: one tile on the left that spans the whole height of the screen, and another tile on the right that is split into two tiles vertically. In that case tile paths would be as follows:
+
+- root: `.`
+- left: `0`
+- right: `1`
+- top right: `1.0`
+- bottom right: `1.1`
+
+It should also be noted that KWin maintains one tile tree per output and (since KWin 6.4) per virtual desktop. This means that if you use different tile layouts on different virtual desktops, locator paths of individual tiles will be different between them as well.
+
+Internally, KWin tracks tile associations of individual windows using the `window.tile` property. If a window belongs to a single virtual desktop, this property will not change when the active virtual desktop changes. However, if a window belongs to multiple virtual desktops, `window.tile` will change according to the currently active desktop -- the window can be assigned to different tiles on different desktops, or assigned on some but not the others.
+
+Hypothetically, let's say a window is present on desktop 1 and desktop 2; it is assigned to tile 1.0 on desktop 1 and not assigned to any tile on desktop 2. In that case, `window.tile` would point to tile 1.0 when desktop 1 is active, but it would be `null` when desktop 2 is active. This means that calling `get-window-tile` with the window's UUID when desktop 2 is active would return a message that the window is not tiled, despite the fact that it's tiled on desktop 1.
+
+Now let's say we switch to desktop 3, on which the window in question is not present. Since the window is not present on desktop 3, the value of `window.tile` would not be updated by KWin. This means that this property can be either `null` or point to the tile 1.0 on desktop 1. But even in the latter case, there is no way for **kwst** to determine the desktop which the tile belongs to. In that case, the `get-window-tile` command returns an error message saying that it is impossible to determine the virtual desktop for the window's tile.
+
+### Tile layouts vs quick tiles
+
+Confusingly, KWin exposes more than one kind of tiling. There are persistent user-defined tile layouts that can be edited in the tile manager, and there are so called "quick tile layouts" that allow user to quickly tile windows to left / right / top / bottom / top-left / top-right / bottom-left / bottom-right. The only **kwst** command that supports quick tiles is `unset-window-tile`, which can remove any kind of tile association. All other commands do not support quick tiles.
+
+### Suggested workflow
+
+Suggested workflow for working with KWin's native tiles:
+
+First, open the tile manager (by default it's tied to the `Logo+T` keyboard shortcut) and create a tile layout. Then run the following command to enumerate the tiles:
+
+```sh
+kwst list-tiles | column -t -s "$(printf '\t')"
+```
+
+If you have more than one monitor, you first need to enumerate outputs:
+
+```sh
+kwst list-outputs
+```
+
+After that you can list tiles for each individual output:
+
+```sh
+kwst list-tiles --output=DP-1 | column -t -s "$(printf '\t')"
+```
+
+Take note of the tile locator paths. You can now use them in your scripts; see [`kwin-tile-native.sh`](_examples/kwin-tile-native.sh) for an example.
 
 ## Running custom scripts
 
