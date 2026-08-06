@@ -177,6 +177,7 @@ type RunCustomScriptCmd struct {
 }
 
 func (rcsc *RunCustomScriptCmd) Run(sp *ScriptPackage) error {
+	sp.Custom = true
 	bytes, err := os.ReadFile(rcsc.ScriptFile.Name())
 	if err != nil {
 		return err
