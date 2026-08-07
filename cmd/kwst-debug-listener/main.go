@@ -29,18 +29,8 @@ func newDebugListener(stdout io.Writer) *debugListener {
 	return &debugListener{stdout: stdout}
 }
 
-func (l *debugListener) Msg(msgType, message string) *dbus.Error {
-	l.printf("Msg() was called, type: %s, message:\n%s\n", msgType, message)
-	return nil
-}
-
-func (l *debugListener) Close() *dbus.Error {
-	l.printf("Close() was called\n")
-	return nil
-}
-
-func (l *debugListener) CloseWithStatus(status int32) *dbus.Error {
-	l.printf("CloseWithStatus() was called, reported status: %d\n", status)
+func (l *debugListener) Complete(status int32, stdout, stderr string) *dbus.Error {
+	l.printf("Complete() was called, reported status: %d\nstdout:\n%s\nstderr:\n%s\n", status, stdout, stderr)
 	return nil
 }
 

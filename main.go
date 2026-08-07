@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
-	"sync/atomic"
 	"text/template"
 	"time"
 
@@ -134,7 +133,6 @@ func prepareScript(w io.Writer, sp ScriptPackage) error {
 // define the DBus object for exporting
 type Server struct {
 	done   chan int
-	failed atomic.Bool
 	once   sync.Once
 	stdout io.Writer
 	stderr io.Writer
@@ -148,34 +146,15 @@ func newServer(stdout, stderr io.Writer) *Server {
 	}
 }
 
-func (s *Server) Msg(msgType, message string) *dbus.Error {
-	if msgType == "result" {
-		fmt.Fprintln(s.stdout, message)
-	} else if msgType == "error" {
-		s.failed.Store(true)
-		fmt.Fprintln(s.stderr, "KWin script returned an error:", message)
+func (s *Server) Complete(exitCode int32, stdout, stderr string) *dbus.Error {
+	if stdout != "" {
+		fmt.Fprintln(s.stdout, stdout)
 	}
-	return nil
-}
+	if stderr != "" {
+		fmt.Fprintln(s.stderr, stderr)
+	}
 
-// Close is retained for compatibility with existing custom scripts. New
-// scripts should use CloseWithStatus so completion does not depend on the
-// ordering of separate Msg and Close calls.
-func (s *Server) Close() *dbus.Error {
-	exitCode := 0
-	if s.failed.Load() {
-		exitCode = 1
-	}
-	s.finish(exitCode)
-	return nil
-}
-
-func (s *Server) CloseWithStatus(exitCode int32) *dbus.Error {
-	status := normalizeExitCode(int(exitCode))
-	if s.failed.Load() {
-		status = 1
-	}
-	s.finish(status)
+	s.finish(normalizeExitCode(int(exitCode)))
 	return nil
 }
 
@@ -207,7 +186,7 @@ func waitForCompletion(done <-chan int, timeout time.Duration, stderr io.Writer)
 	case exitCode := <-done:
 		return normalizeExitCode(exitCode)
 	case <-timer.C:
-		fmt.Fprintln(stderr, "Close() call not received from KWin scripting. Timing out...")
+		fmt.Fprintln(stderr, "Complete() call not received from KWin scripting. Timing out...")
 		return 124
 	}
 }
@@ -317,8 +296,6 @@ func run() int {
 
 	exitCode := waitForCompletion(s.done, scriptTimeout(debug), os.Stderr)
 
-	// give it some time to finish receiving and processing DBus messages
-	time.Sleep(5 * time.Millisecond)
 	if call := kwinConn.Call("unloadScript", 0, sp.Params.ScriptName); call.Err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to unload KWin script:", call.Err)
 		return 1

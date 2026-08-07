@@ -711,41 +711,44 @@ func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
 	}
 }
 
-func TestServerCloseWithStatus(t *testing.T) {
-	server := newServer(io.Discard, io.Discard)
-	if err := server.CloseWithStatus(1); err != nil {
-		t.Fatalf("CloseWithStatus returned a D-Bus error: %v", err)
+func TestServerComplete(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	server := newServer(&stdout, &stderr)
+
+	if err := server.Complete(23, "first\nsecond", "script failed"); err != nil {
+		t.Fatalf("Complete returned a D-Bus error: %v", err)
 	}
 
-	if exitCode := <-server.done; exitCode != 1 {
-		t.Fatalf("exit code = %d, want 1", exitCode)
+	if got, want := stdout.String(), "first\nsecond\n"; got != want {
+		t.Fatalf("stdout = %q, want %q", got, want)
+	}
+	if got, want := stderr.String(), "script failed\n"; got != want {
+		t.Fatalf("stderr = %q, want %q", got, want)
+	}
+	if exitCode := <-server.done; exitCode != 23 {
+		t.Fatalf("exit code = %d, want 23", exitCode)
 	}
 }
 
-func TestCloseWithStatusDBusSignature(t *testing.T) {
-	for _, method := range introspect.Methods(newServer(io.Discard, io.Discard)) {
-		if method.Name != "CloseWithStatus" {
-			continue
-		}
-		if len(method.Args) != 1 || method.Args[0].Type != "i" || method.Args[0].Direction != "in" {
-			t.Fatalf("CloseWithStatus D-Bus arguments = %#v, want one INT32 input", method.Args)
-		}
-		return
-	}
-	t.Fatal("CloseWithStatus is not exported over D-Bus")
-}
-
-func TestLegacyCloseReportsPriorScriptError(t *testing.T) {
-	server := newServer(io.Discard, io.Discard)
-	if err := server.Msg("error", "invalid workspace"); err != nil {
-		t.Fatalf("Msg returned a D-Bus error: %v", err)
-	}
-	if err := server.Close(); err != nil {
-		t.Fatalf("Close returned a D-Bus error: %v", err)
+func TestServerDBusMethods(t *testing.T) {
+	methods := introspect.Methods(newServer(io.Discard, io.Discard))
+	if len(methods) != 1 {
+		t.Fatalf("exported method count = %d, want 1: %#v", len(methods), methods)
 	}
 
-	if exitCode := <-server.done; exitCode != 1 {
-		t.Fatalf("exit code = %d, want 1", exitCode)
+	method := methods[0]
+	if method.Name != "Complete" {
+		t.Fatalf("exported method = %q, want Complete", method.Name)
+	}
+	wantArgs := []string{"i", "s", "s"}
+	if len(method.Args) != len(wantArgs) {
+		t.Fatalf("Complete argument count = %d, want %d", len(method.Args), len(wantArgs))
+	}
+	for i, arg := range method.Args {
+		if arg.Type != wantArgs[i] || arg.Direction != "in" {
+			t.Errorf("Complete argument %d = %#v, want input type %q", i, arg, wantArgs[i])
+		}
 	}
 }
 
@@ -774,7 +777,7 @@ func TestGeneratedScriptReportsExitStatus(t *testing.T) {
 	for _, expected := range []string{
 		"let exitCode = 0;",
 		"exitCode = 1;",
-		`"CloseWithStatus", exitCode`,
+		`"Complete", exitCode, results.join("\n"), errors.join("\n")`,
 	} {
 		if !strings.Contains(JS_HEADER, expected) {
 			t.Errorf("JS_HEADER does not contain %q", expected)
