@@ -206,9 +206,9 @@ Please see the [Go text/template documentation](https://pkg.go.dev/text/template
 
 ## Debugging KWin scripts
 
-The `kwst-debug-listener` executable implements the same D-Bus callback methods
-as **kwst** (`Msg`, `Close`, and `CloseWithStatus`), but prints every call it
-receives instead of processing the result or exiting. This makes it possible to
+The `kwst-debug-listener` executable implements the same `Complete` D-Bus
+callback as **kwst**, but prints every call it receives instead of processing
+the result or exiting. This makes it possible to
 debug scripts interactively with KWin's scripting console.
 
 Build and start the listener:
@@ -226,10 +226,10 @@ plasma-interactiveconsole --kwin
 ```
 
 Use the displayed address as `dbusAddr` in the script being tested, then run the
-script in the console. Calls to the listener's D-Bus methods are printed to its
-standard output with timestamps. `Close()` and `CloseWithStatus()` are logged
-without stopping the listener, so the script can be run repeatedly. Press `q`
-in the listener's terminal to quit.
+script in the console. Calls to the listener's `Complete` D-Bus method are
+printed to its standard output with timestamps without stopping the listener,
+so the script can be run repeatedly. Press `q` in the listener's terminal to
+quit.
 
 ## Installation
 
