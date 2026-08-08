@@ -491,8 +491,10 @@ func TestBuiltInFooterHandlesExecutionErrorsAndAlwaysCloses(t *testing.T) {
 		"try {",
 		"execute();",
 		"} catch (error) {",
-		"error && error.stack",
-		`returnError("Error executing KWin script: " + message);`,
+		"const message = String(error);",
+		`const stack = error && error.stack ? String(error.stack) : "";`,
+		`"Error executing KWin script: " + message +`,
+		`(stack ? "\n" + stack : "")`,
 		"} finally {",
 		"close();",
 	} {
