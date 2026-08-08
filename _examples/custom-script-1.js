@@ -31,17 +31,29 @@ const returnError = (msgBody) => {
     errors.push("KWin script returned an error: " + msgBody.toString());
 }
 
+const execute = () => {
+    debugLog(scriptName + " START");
 
-debugLog(scriptName + " START");
-
-// return UUIDs of all fullscreen windows
-const allWindows = workspace.windowList();
-for (let i = 0; i < allWindows.length; i++) {
-    const w = allWindows[i];
-    if (w.fullScreen) {
-        returnResult(w.internalId);
+    // return UUIDs of all fullscreen windows
+    const allWindows = workspace.windowList();
+    for (let i = 0; i < allWindows.length; i++) {
+        const w = allWindows[i];
+        if (w.fullScreen) {
+            returnResult(w.internalId);
+        }
     }
 }
 
-close();
-debugLog(scriptName + " END");
+try {
+    execute();
+} catch (error) {
+    const message = String(error);
+    const stack = error && error.stack ? String(error.stack) : "";
+    returnError(
+        "Error executing KWin script: " + message +
+        (stack ? "\n" + stack : "")
+    );
+} finally {
+    close();
+    debugLog(scriptName + " END");
+}

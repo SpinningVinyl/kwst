@@ -897,10 +897,12 @@ var JS_LIST_TILE_WINDOWS string = `const execute = () => {
 var JS_FOOTER string = `try {
     execute();
 } catch (error) {
-    const message = error && error.stack
-        ? error.stack
-        : String(error);
-    returnError("Error executing KWin script: " + message);
+    const message = String(error);
+    const stack = error && error.stack ? String(error.stack) : "";
+    returnError(
+        "Error executing KWin script: " + message +
+        (stack ? "\n" + stack : "")
+    );
 } finally {
     close();
     debugLog(scriptName + " END");

@@ -112,6 +112,26 @@ func TestKWinWorkflow(t *testing.T) {
 			t.Fatalf("find with an invalid regular expression did not report the error:\n%s", result.String())
 		}
 	})
+	t.Run("custom script reports unhandled exception", func(t *testing.T) {
+		const failureMessage = "intentional custom script failure"
+		script := writeCustomScript(t, `throw new Error("`+failureMessage+`");`)
+		result := runKWST(t, kwst, "run-custom-script", script)
+
+		if result.exitCode != 1 {
+			t.Fatalf("custom script returned exit code %d, want 1:\n%s", result.exitCode, result.String())
+		}
+		if result.stdout != "" {
+			t.Fatalf("custom script returned unexpected stdout %q", result.stdout)
+		}
+		for _, expected := range []string{
+			"KWin script returned an error: Error executing KWin script:",
+			failureMessage,
+		} {
+			if !strings.Contains(result.stderr, expected) {
+				t.Fatalf("custom script did not report %q:\n%s", expected, result.String())
+			}
+		}
+	})
 	t.Run("UUID commands reject missing windows", func(t *testing.T) {
 		missingUUID := fmt.Sprintf("kwst-missing-window-%d-%d", os.Getpid(), time.Now().UnixNano())
 		tests := []struct {

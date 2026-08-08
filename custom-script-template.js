@@ -21,8 +21,7 @@ const debugLog = (msg) => {
     }
 }
 
-// this function should be called at the end of your script.
-// it tells kwst that the script is done and terminates the execution
+// this function tells kwst that the script is done and terminates the execution
 // of the program.
 const close = () => {
     debugLog("Calling Complete() on " + dbusAddr);
@@ -45,11 +44,28 @@ const returnError = (msgBody) => {
 }
 
 
-debugLog(scriptName + " START");
+const execute = () => {
+    debugLog(scriptName + " START");
 
-// your code goes here
-// When inserting a parameter as a JavaScript string, use {{jsString .P1}}.
-// jsString includes the surrounding quotes, so do not add another pair.
+    // your code goes here
+    // When inserting a parameter as a JavaScript string, use {{jsString .P1}}.
+    // jsString includes the surrounding quotes, so do not add another pair.
 
-close();
-debugLog(scriptName + " END");
+}
+
+// wrapping the call to your code in a try...catch...finally block ensures
+// that if it throws, kwst is going to give you a meaningful error message
+// instead of a generic timeout.
+try {
+    execute();
+} catch (error) {
+    const message = String(error);
+    const stack = error && error.stack ? String(error.stack) : "";
+    returnError(
+        "Error executing KWin script: " + message +
+        (stack ? "\n" + stack : "")
+    );
+} finally {
+    close();
+    debugLog(scriptName + " END");
+}
