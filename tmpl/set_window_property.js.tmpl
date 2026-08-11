@@ -1,0 +1,12 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_WINDOW_PROPERTY");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        debugLog("Setting property (value={{.PropertyValue}}) {{.WindowProperty}} on window with UUID=" + {{jsString .Uuid}});
+        targetWindow.{{.WindowProperty}} = {{if (eq .PropertyValue "toggle")}}!targetWindow.{{.WindowProperty}}{{else}}{{.PropertyValue}}{{end}};
+    }
+}
+

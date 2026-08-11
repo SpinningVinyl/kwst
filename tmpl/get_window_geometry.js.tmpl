@@ -1,0 +1,14 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_GET_WINDOW_GEOMETRY");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        const result = Math.round(targetWindow.x) + " " + Math.round(targetWindow.y) + " " + targetWindow.width + " " + targetWindow.height;
+        returnResult(result);
+    }
+
+}
+

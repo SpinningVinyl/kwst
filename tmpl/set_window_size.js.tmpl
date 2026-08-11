@@ -1,0 +1,21 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_WINDOW_SIZE");
+
+    const windowId = {{jsString .Uuid}};
+    const targetWindow = findWindow(windowId);
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + windowId);
+    } else {
+        debugLog("New size for window with UUID=" + windowId + ": width={{.Width}}, height={{.Height}}");
+        if (!unassignFromTile(targetWindow)) {
+            returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+        } else {
+            updateWindowGeometry(targetWindow, {
+                width: {{.Width}},
+                height: {{.Height}},
+            });
+        }
+    }
+
+}
+

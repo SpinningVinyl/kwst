@@ -1,0 +1,9 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_MOUSE_POS");
+
+    const x = workspace.cursorPos.x;
+    const y = workspace.cursorPos.y;
+
+    returnResult(x + " " + y);
+}
+

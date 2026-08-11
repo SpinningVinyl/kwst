@@ -1,0 +1,12 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_CLOSE_WINDOW");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        debugLog("Closing window with UUID=" + {{jsString .Uuid}});
+        targetWindow.closeWindow();
+    }
+}
+

@@ -1,0 +1,129 @@
+const outputForName = (
+    outputName,
+    fallbackOutput
+) => {
+    return outputName === ""
+        ? fallbackOutput
+        : findOutput(outputName);
+}
+
+const formatFloat = (num) => {
+    const rounded = Number(num.toFixed(6));
+    return Object.is(rounded, -0) ? "0" : String(rounded);
+};
+
+const enumerateTiles = (rootTile, leavesOnly, callback) => {
+    function visit(tile, path) {
+        const children = tile.tiles;
+        const isLeaf = !tile.isLayout;
+
+        if (!leavesOnly || isLeaf) {
+            callback(tile, path, isLeaf);
+        }
+
+        for (let i = 0; i < children.length; i++) {
+            const childPath = path === "."
+            ? String(i)
+            : path + "." + i;
+
+            visit(children[i], childPath);
+        }
+    }
+
+    visit(rootTile, ".");
+}
+
+const resolveTile = (root, path) => {
+    if (path === ".") {
+        return root;
+    }
+    let tile = root;
+    for (const component of path.split(".")) {
+        if (!/^(0|[1-9]\d*)$/.test(component)) {
+            return null;
+        }
+        const index = Number(component);
+        const children = tile.tiles;
+
+        if (index >= children.length) {
+            return null;
+        }
+        tile = children[index];
+    }
+    return tile;
+}
+
+const pathForTile = (tile) => {
+    if (tile === null) {
+        return null;
+    }
+
+    const components = [];
+    let current = tile;
+
+    while (current.parent !== null) {
+        const index = current.positionInLayout;
+
+        if (!Number.isInteger(index) || index < 0) {
+            return null;
+        }
+
+        components.push(String(index));
+        current = current.parent;
+    }
+
+    components.reverse();
+
+    return {
+        path: components.length === 0 ? "." : components.join("."),
+        root: current,
+    };
+}
+
+const assignToTile = (targetWindow, tile) => {
+    if (typeof tile.manage === "function") {
+        return tile.manage(targetWindow);
+    } else {
+        targetWindow.tile = tile;
+        return targetWindow.tile === tile;
+    }
+}
+
+const isOnCurrentDesktop = (targetWindow, targetOutput) => {
+    const currentDesktop = workspace.currentDesktopForScreen(targetOutput);
+    const windowDesktops = targetWindow.desktops;
+
+    return (
+        windowDesktops.length === 0 || // window is on all desktops
+        windowDesktops.includes(currentDesktop)
+    );
+}
+
+const rootTileForOutput = (output) => {
+    return workspace.tilingForScreen(output).rootTile;
+}
+
+const tileForPath = (output, tilePath) => {
+    return resolveTile(rootTileForOutput(output), tilePath);
+}
+
+const formatRelativeGeometry = (tile) => {
+    const geometry = tile.relativeGeometry;
+    return [
+        formatFloat(geometry.x),
+        formatFloat(geometry.y),
+        formatFloat(geometry.width),
+        formatFloat(geometry.height),
+    ].join(" ");
+}
+
+const formatAbsoluteGeometry = (tile) => {
+    const geometry = tile.absoluteGeometryInScreen;
+    return [
+        Math.round(geometry.x),
+        Math.round(geometry.y),
+        Math.round(geometry.width),
+        Math.round(geometry.height),
+    ].join(" ");
+}
+

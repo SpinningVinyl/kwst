@@ -1,0 +1,13 @@
+try {
+    execute();
+} catch (error) {
+    const message = String(error);
+    const stack = error && error.stack ? String(error.stack) : "";
+    returnError(
+        "Error executing KWin script: " + message +
+        (stack ? "\n" + stack : "")
+    );
+} finally {
+    close();
+    debugLog(scriptName + " END");
+}

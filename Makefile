@@ -9,7 +9,7 @@ BUILD_TIME := $(shell date)
 
 .PHONY: integration-test
 
-build: *.go *.scd cmd/kwst-debug-listener/*.go internal/buildinfo/*.go
+build: *.go *.scd tmpl/*.js.tmpl cmd/kwst-debug-listener/*.go internal/buildinfo/*.go
 	mkdir -p $(BUILD_DIR)
 	go build -a -o $(BUILD_DIR)/kwst -v -ldflags="-X 'kwst/internal/buildinfo.Version=$(VERSION)' -X 'kwst/internal/buildinfo.BuildTime=$(BUILD_TIME)'"
 	go build -o $(BUILD_DIR)/kwst-debug-listener -ldflags="-X 'kwst/internal/buildinfo.Version=$(VERSION)' -X 'kwst/internal/buildinfo.BuildTime=$(BUILD_TIME)'" ./cmd/kwst-debug-listener

@@ -1,0 +1,21 @@
+const formatWindowRow = (
+    window,
+    showPids,
+    showCaptions
+) => {
+    const fields = [
+        window.internalId,
+        window.resourceClass,
+        window.resourceName.length === 0 ? "n/a" : window.resourceName,
+    ];
+
+    if (showPids) {
+        fields.push(window.pid);
+    }
+    if (showCaptions) {
+        fields.push(window.caption);
+    }
+
+    return fields.join("\t");
+}
+

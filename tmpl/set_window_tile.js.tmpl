@@ -1,0 +1,31 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_WINDOW_TILE");
+
+    const windowId = {{jsString .Uuid}};
+    const outputName = {{jsString .OutputName}};
+    const targetWindow = findWindow(windowId);
+    const tilePath = {{jsString .TilePath}};
+
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + windowId);
+    } else {
+        const targetOutput = outputForName(outputName, targetWindow.output);
+        if (!targetOutput) {
+            returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+        } else {
+            const targetDesktop = workspace.currentDesktopForScreen(targetOutput);
+            const targetTile = tileForPath(targetOutput, tilePath);
+            if (!targetTile) {
+                returnError(ERROR_TILE_NOT_FOUND + tilePath);
+            } else {
+                if (!isOnCurrentDesktop(targetWindow, targetOutput)) {
+                    targetWindow.desktops = [targetDesktop];
+                }
+                if (!assignToTile(targetWindow, targetTile)) {
+                    returnError("Unable to tile window " + windowId + " to tile " + tilePath);
+                }
+            }
+        }
+    }
+}
+

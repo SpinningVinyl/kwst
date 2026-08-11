@@ -1,0 +1,11 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_GET_CURSOR_OUTPUT");
+
+    const output = workspace.screenAt(workspace.cursorPos);
+    if (output != null) {
+        returnResult(output.name);
+    } else {
+        returnError("Unable to determine the output with the mouse cursor.");
+    }
+}
+

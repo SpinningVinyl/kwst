@@ -1,0 +1,27 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_WINDOW_SIZE_RELATIVE");
+
+    const windowId = {{jsString .Uuid}};
+    const targetWindow = findWindow(windowId);
+    if (targetWindow) {
+        const area = clientAreaForWindow(targetWindow);
+
+        const width = Math.round(area.width * {{.RelativeWidth}} / 100);
+        const height = Math.round(area.height * {{.RelativeHeight}} / 100);
+
+        debugLog("Setting size of window with UUID=" + windowId +
+            " to: width=" + width +
+            " height=" + height);
+        if (!unassignFromTile(targetWindow)) {
+            returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+        } else {
+            updateWindowGeometry(targetWindow, {
+                width,
+                height
+            });
+        }
+    } else {
+        returnError(ERROR_WINDOW_NOT_FOUND + windowId);
+    }
+}
+

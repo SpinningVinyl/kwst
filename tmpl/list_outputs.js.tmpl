@@ -1,0 +1,11 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_LIST_OUTPUTS");
+
+    const outputs = workspace.screens;
+
+    for (let i = 0; i < outputs.length; i++) {
+        const output = outputs[i];
+        returnResult(output.name);
+    }
+}
+
