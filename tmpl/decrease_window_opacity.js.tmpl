@@ -1,0 +1,17 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_DECREASE_WINDOW_OPACITY");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        let newOpacity = targetWindow.opacity;
+        newOpacity -= 0.05;
+        if (newOpacity < 0.1) {
+            newOpacity = 0.1;
+        }
+        debugLog("Setting opacity of window with UUID=" + {{jsString .Uuid}} + " to " + newOpacity);
+        targetWindow.opacity = newOpacity;
+    }
+}
+

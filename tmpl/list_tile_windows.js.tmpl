@@ -1,0 +1,27 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_LIST_TILE_WINDOWS");
+
+    const outputName = {{jsString .OutputName}};
+    const tilePath = {{jsString .TilePath}};
+    const targetOutput = outputForName(outputName, workspace.activeScreen);
+
+    if (!targetOutput) {
+        returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+    } else {
+        const targetTile = tileForPath(targetOutput, tilePath);
+        if (!targetTile) {
+            returnError(ERROR_TILE_NOT_FOUND + tilePath);
+        } else {
+            const windows = targetTile.windows;
+            for (let i = 0; i < windows.length; i++) {
+                let w = windows[i];
+                returnResult(formatWindowRow(
+                    w,
+                    {{.ShowPids}},
+                    {{.ShowCaptions}}
+                ));
+            }
+        }
+    }
+}
+

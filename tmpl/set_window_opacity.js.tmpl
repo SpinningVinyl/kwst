@@ -1,0 +1,12 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_WINDOW_OPACITY");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        debugLog("Setting opacity of window with UUID=" + {{jsString .Uuid}} + " to {{.Opacity}}");
+        targetWindow.opacity = {{.Opacity}};
+    }
+}
+

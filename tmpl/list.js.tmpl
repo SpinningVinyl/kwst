@@ -1,0 +1,17 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_LIST");
+
+    const allWindows = workspace.windowList();
+    for (let i = 0; i < allWindows.length; i++) {
+        if ({{if .IncludeSpecialWindows}}true{{else}}!allWindows[i].specialWindow{{end}}) {
+            let w = allWindows[i];
+            returnResult(formatWindowRow(
+                w,
+                {{.ShowPids}},
+                {{.ShowCaptions}}
+            ));
+        }
+    }
+
+}
+

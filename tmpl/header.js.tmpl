@@ -1,0 +1,72 @@
+const dbusAddr = "{{.DbusAddr}}";
+
+const debug = {{.Debug}};
+
+const scriptName = "{{.ScriptName}}";
+
+const ERROR_WINDOW_NOT_FOUND = "Window not found: ";
+const ERROR_OUTPUT_NOT_FOUND = "Output not found: ";
+const ERROR_TILE_NOT_FOUND = "Tile not found: ";
+const ERROR_TILE_UNASSIGNMENT_FAILED = "Could not unassign window: ";
+
+let exitCode = 0;
+
+const results = [];
+const errors = [];
+
+const debugLog = (msg) => {
+    if (debug) {
+        print(msg.toString());
+    }
+}
+
+const close = () => {
+    debugLog("Calling Complete() on " + dbusAddr);
+    callDBus(dbusAddr, "/net/prsv/kwst", "net.prsv.kwst", "Complete", exitCode, results.join("\n"), errors.join("\n"));
+}
+
+const returnResult = (msgBody) => {
+    debugLog("RESULT: " + msgBody);
+    results.push(msgBody.toString());
+}
+
+const returnError = (msgBody) => {
+    exitCode = 1;
+    debugLog("ERROR: " + msgBody);
+    errors.push("KWin script returned an error: " + msgBody.toString());
+}
+
+const findWindow = (uuid) => {
+    const window = workspace.windowList().find(
+        candidate => candidate.internalId == uuid
+    );
+
+    return window;
+}
+
+const updateWindowGeometry = (window, changes) => {
+    const geometry = Object.assign(
+        {},
+        window.frameGeometry,
+        changes
+    );
+
+    window.frameGeometry = geometry;
+    return geometry;
+}
+
+const clientAreaForWindow = (window) => {
+    const output = window.output;
+    const desktop = workspace.currentDesktopForScreen(output);
+    return workspace.clientArea(KWin.MaximizeArea, output, desktop);
+}
+
+const findOutput = (outputName) => {
+    const normalisedName = outputName.toUpperCase();
+    const output = workspace.screens.find(
+        (candidate) => candidate.name.toUpperCase() === normalisedName
+    );
+    return output;
+}
+
+debugLog(scriptName + " START");

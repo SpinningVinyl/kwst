@@ -1,0 +1,37 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_LIST_TILES");
+
+    const outputName = {{jsString .OutputName}};
+    const output = outputForName(outputName, workspace.activeScreen);
+
+    if (!output) {
+        returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+    } else {
+        const rootTile = rootTileForOutput(output);
+        const rows = [];
+
+        rows.push([
+            "OUTPUT",
+            "PATH",
+            "TYPE",
+            "RELATIVE",
+            "ABSOLUTE",
+            "WINDOWS"
+        ].join("\t"));
+
+        enumerateTiles(rootTile, {{.LeavesOnly}}, (tile, path, isLeaf) => {
+            rows.push([
+                output.name,
+                path,
+                isLeaf ? "Leaf" : "Layout",
+                formatRelativeGeometry(tile),
+                formatAbsoluteGeometry(tile),
+                tile.windows.length,
+            ].join("\t"));
+        });
+        if (rows.length > 1) {
+            returnResult(rows.join("\n"));
+        }
+    }
+}
+

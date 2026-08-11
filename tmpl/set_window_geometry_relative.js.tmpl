@@ -1,0 +1,33 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_WINDOW_GEOMETRY_RELATIVE");
+
+    const windowId = {{jsString .Uuid}};
+    const targetWindow = findWindow(windowId);
+    if (targetWindow) {
+        const area = clientAreaForWindow(targetWindow);
+
+        const width = Math.round(area.width * {{.RelativeWidth}} / 100);
+        const height = Math.round(area.height * {{.RelativeHeight}} / 100);
+        const x = area.x + Math.round(area.width * {{.RelativeX}} / 100);
+        const y = area.y + Math.round(area.height * {{.RelativeY}} / 100);
+
+        debugLog("Setting geometry of window with UUID=" + windowId +
+            " to: X=" + x +
+            " Y=" + y +
+            " width=" + width +
+            " height=" + height);
+        if (!unassignFromTile(targetWindow)) {
+            returnError(ERROR_TILE_UNASSIGNMENT_FAILED + windowId);
+        } else {
+            updateWindowGeometry(targetWindow, {
+                x,
+                y,
+                width,
+                height
+            });
+        }
+    } else {
+        returnError(ERROR_WINDOW_NOT_FOUND + windowId);
+    }
+}
+

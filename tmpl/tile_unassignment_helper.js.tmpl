@@ -1,0 +1,15 @@
+const unassignFromTile = (targetWindow) => {
+    const tile = targetWindow.tile;
+
+    if (!tile) {
+        return true;
+    }
+
+    if (typeof tile.unmanage === "function" && tile.unmanage(targetWindow)) {
+        return true;
+    }
+
+    targetWindow.tile = null;
+    return targetWindow.tile === null;
+}
+

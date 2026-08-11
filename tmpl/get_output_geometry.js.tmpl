@@ -1,0 +1,26 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_OUTPUT_GEOMETRY");
+
+    const outputName = {{jsString .OutputName}};
+
+    const output = findOutput(outputName);
+
+    if (!output) {
+        returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+    } else {
+        let area;
+        {{if .ClientArea}}
+            const desktop = workspace.currentDesktopForScreen(output);
+            area = workspace.clientArea(KWin.MaximizeArea, output, desktop);
+        {{else}}
+            area = output.geometry;
+        {{end}}
+        returnResult(
+            Math.round(area.x) + " " +
+            Math.round(area.y) + " " +
+            Math.round(area.width) + " " +
+            Math.round(area.height)
+        );
+    }
+}
+

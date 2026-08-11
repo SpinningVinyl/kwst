@@ -1,0 +1,13 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_UNSET_WINDOW_TILE");
+
+    const windowId = {{jsString .Uuid}};
+    const targetWindow = findWindow(windowId);
+
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + windowId);
+    } else if (!unassignFromTile(targetWindow)) {
+        returnError("Window " + windowId + " could not be removed from tile");
+    }
+}
+

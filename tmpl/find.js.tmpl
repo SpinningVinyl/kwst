@@ -1,0 +1,25 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SEARCH");
+
+    const allWindows = workspace.windowList();
+    let results = [];
+    let regExp;
+    try {
+        regExp = new RegExp({{jsString .SearchTerm}}, 'i');
+    } catch (error) {
+        returnError("Invalid regular expression: " + error.message);
+    }
+    if (regExp) {
+        for (let i = 0; i < allWindows.length; i++) {
+            let w = allWindows[i];
+            if (w.{{.SearchField}}.search(regExp) >= 0) {
+                results.push(w);
+            }
+        }
+        for (let i = 0; i < results.length; i++) {
+            returnResult(results[i].internalId);
+        }
+    }
+
+}
+

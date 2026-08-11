@@ -1,0 +1,13 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_ACTIVATE_WINDOW");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        debugLog("Activating window with UUID=" + {{jsString .Uuid}});
+        workspace.activeWindow = targetWindow;
+    }
+
+}
+
