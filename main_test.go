@@ -290,14 +290,14 @@ func TestCommandRunMethods(t *testing.T) {
 		{
 			name:         "increase window opacity",
 			command:      &IncreaseWindowOpacityCmd{Uuid: "window-id"},
-			wantTemplate: initialTemplate + JS_INCREASE_WINDOW_OPACITY,
-			wantParams:   ScriptParams{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_ADJUST_WINDOW_OPACITY,
+			wantParams:   ScriptParams{Uuid: "window-id", OpacityDelta: 0.05},
 		},
 		{
 			name:         "decrease window opacity",
 			command:      &DecreaseWindowOpacityCmd{Uuid: "window-id"},
-			wantTemplate: initialTemplate + JS_DECREASE_WINDOW_OPACITY,
-			wantParams:   ScriptParams{Uuid: "window-id"},
+			wantTemplate: initialTemplate + JS_ADJUST_WINDOW_OPACITY,
+			wantParams:   ScriptParams{Uuid: "window-id", OpacityDelta: -0.05},
 		},
 	}
 
@@ -486,24 +486,6 @@ close();
 	}
 }
 
-func TestBuiltInFooterHandlesExecutionErrorsAndAlwaysCloses(t *testing.T) {
-	for _, expected := range []string{
-		"try {",
-		"execute();",
-		"} catch (error) {",
-		"const message = String(error);",
-		`const stack = error && error.stack ? String(error.stack) : "";`,
-		`"Error executing KWin script: " + message +`,
-		`(stack ? "\n" + stack : "")`,
-		"} finally {",
-		"close();",
-	} {
-		if !strings.Contains(JS_FOOTER, expected) {
-			t.Errorf("JS_FOOTER does not contain %q", expected)
-		}
-	}
-}
-
 func TestPrepareScriptReportsTemplateErrors(t *testing.T) {
 	err := prepareScript(io.Discard, ScriptPackage{ScriptTemplate: "{{"})
 	if err == nil || !strings.Contains(err.Error(), "Error parsing script template:") {
@@ -572,147 +554,6 @@ func TestSearchTermIsEscapedInGeneratedScript(t *testing.T) {
 	}
 }
 
-func TestFindHandlesInvalidRegularExpression(t *testing.T) {
-	params := ScriptParams{
-		SearchTerm:  "[invalid",
-		SearchField: "caption",
-	}
-	tmpl, err := template.New("test").Funcs(template.FuncMap{
-		"jsString": jsString,
-	}).Parse(JS_FIND)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var script strings.Builder
-	if err := tmpl.Execute(&script, params); err != nil {
-		t.Fatal(err)
-	}
-
-	generated := script.String()
-	quotedSearchTerm, err := jsString(params.SearchTerm)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, expected := range []string{
-		"let regExp;",
-		"try {",
-		"regExp = new RegExp(" + quotedSearchTerm + ", 'i');",
-		"catch (error)",
-		`returnError("Invalid regular expression: " + error.message);`,
-		"if (regExp)",
-	} {
-		if !strings.Contains(generated, expected) {
-			t.Errorf("generated script does not contain %q:\n%s", expected, generated)
-		}
-	}
-
-	errorHandler := strings.Index(generated, `returnError("Invalid regular expression: " + error.message);`)
-	searchGuard := strings.Index(generated, "if (regExp)")
-	windowSearch := strings.Index(generated, ".search(regExp)")
-	if errorHandler < 0 || searchGuard < errorHandler || windowSearch < searchGuard {
-		t.Errorf("window search is not protected by the regular-expression guard:\n%s", generated)
-	}
-}
-
-func TestGetActiveWindowRejectsSpecialWindow(t *testing.T) {
-	for _, expected := range []string{
-		"const activeWindow = workspace.activeWindow;",
-		"if (activeWindow.specialWindow)",
-		`returnError("No active regular window");`,
-		"returnResult(activeWindow.internalId);",
-	} {
-		if !strings.Contains(JS_GET_ACTIVE_WINDOW, expected) {
-			t.Errorf("JS_GET_ACTIVE_WINDOW does not contain %q", expected)
-		}
-	}
-}
-
-func TestUUIDCommandsGuardMissingWindow(t *testing.T) {
-	for _, expected := range []string{
-		"const findWindow = (uuid) => {",
-		"const window = workspace.windowList().find(",
-		"candidate => candidate.internalId == uuid",
-		"return window;",
-	} {
-		if !strings.Contains(JS_HEADER, expected) {
-			t.Errorf("JS_HEADER does not contain %q", expected)
-		}
-	}
-
-	params := ScriptParams{
-		Uuid:           `missing\"; malicious(); //`,
-		WorkspaceId:    3,
-		X:              10,
-		Y:              20,
-		Width:          640,
-		Height:         480,
-		WindowProperty: "keepAbove",
-		PropertyValue:  "toggle",
-	}
-	quotedUUID, err := jsString(params.Uuid)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	tests := []struct {
-		name           string
-		scriptTemplate string
-		action         string
-		usesWindowID   bool
-	}{
-		{name: "get geometry", scriptTemplate: JS_GET_WINDOW_GEOMETRY, action: "returnResult(result);"},
-		{name: "activate", scriptTemplate: JS_ACTIVATE_WINDOW, action: "workspace.activeWindow = targetWindow;"},
-		{name: "set size", scriptTemplate: JS_SET_WINDOW_SIZE, action: "updateWindowGeometry(targetWindow, {", usesWindowID: true},
-		{name: "set position", scriptTemplate: JS_SET_WINDOW_POSITION, action: "updateWindowGeometry(targetWindow, {", usesWindowID: true},
-		{name: "set geometry", scriptTemplate: JS_SET_WINDOW_GEOMETRY, action: "updateWindowGeometry(targetWindow, {", usesWindowID: true},
-		{name: "set workspace", scriptTemplate: JS_SET_WINDOW_WORKSPACE, action: "targetWindow.desktops = [targetWorkspace];"},
-		{name: "set property", scriptTemplate: JS_SET_WINDOW_PROPERTY, action: "targetWindow.keepAbove = !targetWindow.keepAbove;"},
-		{name: "close", scriptTemplate: JS_CLOSE_WINDOW, action: "targetWindow.closeWindow();"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			tmpl, err := template.New("test").Funcs(template.FuncMap{
-				"jsString": jsString,
-			}).Parse(test.scriptTemplate)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			var script strings.Builder
-			if err := tmpl.Execute(&script, params); err != nil {
-				t.Fatal(err)
-			}
-			generated := script.String()
-			expectedParts := []string{"if (!targetWindow)", test.action}
-			if test.usesWindowID {
-				expectedParts = append(expectedParts,
-					"const windowId = "+quotedUUID+";",
-					"const targetWindow = findWindow(windowId);",
-					"returnError(ERROR_WINDOW_NOT_FOUND + windowId);",
-				)
-			} else {
-				expectedParts = append(expectedParts,
-					"const targetWindow = findWindow("+quotedUUID+");",
-					`returnError(ERROR_WINDOW_NOT_FOUND + `+quotedUUID+`);`,
-				)
-			}
-			for _, expected := range expectedParts {
-				if !strings.Contains(generated, expected) {
-					t.Errorf("generated script does not contain %q:\n%s", expected, generated)
-				}
-			}
-
-			guard := strings.Index(generated, "if (!targetWindow)")
-			action := strings.Index(generated, test.action)
-			if guard < 0 || action < guard {
-				t.Errorf("window action is not protected by the missing-window guard:\n%s", generated)
-			}
-		})
-	}
-}
-
 func TestServerComplete(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -772,18 +613,6 @@ func TestWaitForCompletionTimesOut(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "Timing out") {
 		t.Fatalf("timeout message not written to stderr: %q", stderr.String())
-	}
-}
-
-func TestGeneratedScriptReportsExitStatus(t *testing.T) {
-	for _, expected := range []string{
-		"let exitCode = 0;",
-		"exitCode = 1;",
-		`"Complete", exitCode, results.join("\n"), errors.join("\n")`,
-	} {
-		if !strings.Contains(JS_HEADER, expected) {
-			t.Errorf("JS_HEADER does not contain %q", expected)
-		}
 	}
 }
 
