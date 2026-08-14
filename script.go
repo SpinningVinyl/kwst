@@ -34,6 +34,7 @@ type ScriptParams struct {
 	ClientArea            bool
 	OutputName            string
 	Opacity               float64
+	OpacityDelta          float64
 	RelativeX             float64
 	RelativeY             float64
 	RelativeWidth         float64

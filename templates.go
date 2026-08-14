@@ -77,11 +77,8 @@ var JS_GET_WINDOW_OPACITY string
 //go:embed tmpl/set_window_opacity.js.tmpl
 var JS_SET_WINDOW_OPACITY string
 
-//go:embed tmpl/increase_window_opacity.js.tmpl
-var JS_INCREASE_WINDOW_OPACITY string
-
-//go:embed tmpl/decrease_window_opacity.js.tmpl
-var JS_DECREASE_WINDOW_OPACITY string
+//go:embed tmpl/adjust_window_opacity.js.tmpl
+var JS_ADJUST_WINDOW_OPACITY string
 
 //go:embed tmpl/set_window_geometry_relative.js.tmpl
 var JS_SET_WINDOW_GEOMETRY_RELATIVE string

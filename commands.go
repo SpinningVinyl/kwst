@@ -279,8 +279,9 @@ type IncreaseWindowOpacityCmd struct {
 }
 
 func (iwoc IncreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_INCREASE_WINDOW_OPACITY
+	sp.ScriptTemplate += JS_ADJUST_WINDOW_OPACITY
 	sp.Params.Uuid = iwoc.Uuid
+	sp.Params.OpacityDelta = 0.05
 	return nil
 }
 
@@ -289,8 +290,9 @@ type DecreaseWindowOpacityCmd struct {
 }
 
 func (dwoc DecreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_DECREASE_WINDOW_OPACITY
+	sp.ScriptTemplate += JS_ADJUST_WINDOW_OPACITY
 	sp.Params.Uuid = dwoc.Uuid
+	sp.Params.OpacityDelta = -0.05
 	return nil
 }
 
