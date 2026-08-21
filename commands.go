@@ -281,7 +281,7 @@ type IncreaseWindowOpacityCmd struct {
 func (iwoc IncreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_ADJUST_WINDOW_OPACITY
 	sp.Params.Uuid = iwoc.Uuid
-	sp.Params.OpacityDelta = 0.05
+	sp.Params.Delta = 0.05
 	return nil
 }
 
@@ -292,7 +292,7 @@ type DecreaseWindowOpacityCmd struct {
 func (dwoc DecreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_ADJUST_WINDOW_OPACITY
 	sp.Params.Uuid = dwoc.Uuid
-	sp.Params.OpacityDelta = -0.05
+	sp.Params.Delta = -0.05
 	return nil
 }
 
@@ -442,6 +442,32 @@ func (cmd ListTileWindowsCmd) Run(sp *ScriptPackage) error {
 	sp.Params.OutputName = cmd.OutputName
 	sp.Params.ShowCaptions = cmd.ShowCaptions
 	sp.Params.ShowPids = cmd.ShowPids
+	sp.Params.TilePath = cmd.TilePath
+	return nil
+}
+
+type ResizeTileCmd struct {
+	OutputName string  `name:"output" help:"Name of the output containing the root tile."`
+	TilePath   string  `arg:"" required:"" help:"Locator path of the tile."`
+	Delta      float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)"`
+	Edge       string  `arg:"" required:"" enum:"top,left,right,bottom" help:"The edge that will be moved. Possible values: top, left, right, bottom."`
+}
+
+func (cmd ResizeTileCmd) Validate() error {
+	if math.IsNaN(cmd.Delta) || math.IsInf(cmd.Delta, 0) {
+		return fmt.Errorf("Delta must be a valid number")
+	}
+	if cmd.Delta > 100 || cmd.Delta < -100 || cmd.Delta == 0 {
+		return fmt.Errorf("Delta must be a non-zero value between -100 and 100 (inclusive)")
+	}
+	return nil
+}
+
+func (cmd ResizeTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_RESIZE_TILE
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.Delta = cmd.Delta
+	sp.Params.Edge = cmd.Edge
 	sp.Params.TilePath = cmd.TilePath
 	return nil
 }

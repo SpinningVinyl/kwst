@@ -5,7 +5,7 @@ const execute = () => {
     if (!targetWindow) {
         returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
     } else {
-        const delta = {{.OpacityDelta}};
+        const delta = {{.Delta}};
         let newOpacity = targetWindow.opacity + delta;
         newOpacity = delta > 0
             ? Math.min(newOpacity, 1.0)

@@ -40,4 +40,5 @@ type CLI struct {
 	SetWindowTile             SetWindowTileCmd             `cmd:"" help:"Assign the window with the provided UUID to the tile with the provided locator path (optionally on the specified output)."`
 	UnsetWindowTile           UnsetWindowTileCmd           `cmd:"" help:"Unassign the window with the provided UUID from its current tile, if such a tile exists."`
 	ListTileWindows           ListTileWindowsCmd           `cmd:"" help:"List all windows assigned to the tile with the provided locator path."`
+	ResizeTile                ResizeTileCmd                `cmd:"" help:"Resize the tile with the provided locator path (optionally on the specified output)."`
 }

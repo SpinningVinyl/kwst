@@ -1,0 +1,31 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_RESIZE_TILE");
+
+    const outputName = {{jsString .OutputName}}
+    const tilePath = {{jsString .TilePath}}
+    const delta = {{.Delta}}
+
+    const output = outputForName(outputName, workspace.activeScreen);
+
+    if (!output) {
+        returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+    } else {
+        const t = tileForPath(output, tilePath);
+        if (!t) {
+            returnError(ERROR_TILE_NOT_FOUND + tilePath);
+        } else {
+            const desktop = workspace.currentDesktopForScreen(output);
+            const area = workspace.clientArea(KWin.MaximizeArea, output, desktop);
+
+            let dimension;
+            const edge = edgeForName({{jsString .Edge}});
+            if (edge == 1 || edge == 8) {
+                dimension = area.height;
+            } else {
+                dimension = area.width;
+            }
+            const deltaPx = Math.round(dimension * delta / 100);
+            t.resizeByPixels(deltaPx, edge);
+        }
+    }
+}

@@ -291,13 +291,13 @@ func TestCommandRunMethods(t *testing.T) {
 			name:         "increase window opacity",
 			command:      &IncreaseWindowOpacityCmd{Uuid: "window-id"},
 			wantTemplate: initialTemplate + JS_ADJUST_WINDOW_OPACITY,
-			wantParams:   ScriptParams{Uuid: "window-id", OpacityDelta: 0.05},
+			wantParams:   ScriptParams{Uuid: "window-id", Delta: 0.05},
 		},
 		{
 			name:         "decrease window opacity",
 			command:      &DecreaseWindowOpacityCmd{Uuid: "window-id"},
 			wantTemplate: initialTemplate + JS_ADJUST_WINDOW_OPACITY,
-			wantParams:   ScriptParams{Uuid: "window-id", OpacityDelta: -0.05},
+			wantParams:   ScriptParams{Uuid: "window-id", Delta: -0.05},
 		},
 	}
 

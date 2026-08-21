@@ -1,10 +1,12 @@
 const execute = () => {
     debugLog(scriptName + " executing JS_GET_WINDOW_TILE");
 
-    const targetWindow = findWindow({{jsString .Uuid}});
+    const windowId = {{jsString .Uuid}};
+
+    const targetWindow = findWindow(windowId);
 
     if (!targetWindow) {
-        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+        returnError(ERROR_WINDOW_NOT_FOUND + windowId);
     } else {
         const output = targetWindow.output;
         const currentDesktop = workspace.currentDesktopForScreen(output);
@@ -31,9 +33,9 @@ const execute = () => {
         if (tileDesktop) {
             const windowTile = targetWindow.tile;
             if (windowTile === null) {
-                returnError("It appears that window " + {{jsString .Uuid}} + " is not tiled");
+                returnError(ERROR_WINDOW_NOT_TILED + windowId);
             } else if (typeof targetWindow.tile.layoutDirection === "undefined") {
-                returnError("Window " + {{jsString .Uuid}} + " is assigned to a quick tile");
+                returnError(ERROR_WINDOW_QUICK_TILED + windowId);
             } else {
                 const pathInfo = pathForTile(windowTile);
                 if (pathInfo === null) {

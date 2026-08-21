@@ -674,7 +674,7 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 		t.Fatalf("get-window-tile returned exit code %d for an untiled fixture, want 1:\n%s",
 			untiledResult.exitCode, untiledResult.String())
 	}
-	expectedMessage := "It appears that window " + fixture.uuid + " is not tiled"
+	expectedMessage := "Window does not appear to be tiled: " + fixture.uuid
 	if !strings.Contains(untiledResult.stderr, expectedMessage) {
 		t.Fatalf("get-window-tile did not report %q after unsetting the tile:\n%s", expectedMessage, untiledResult.String())
 	}
