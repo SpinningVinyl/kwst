@@ -1,0 +1,26 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_RESIZE_ACTIVE_TILE");
+
+    const w = workspace.activeWindow;
+    const output = w.output;
+    const delta = {{.Delta}};
+
+    const t = w.tile;
+    if (t === null) {
+        returnError(ERROR_WINDOW_NOT_TILED + w.internalId)
+    } else if (typeof t.layoutDirection === "undefined") {
+        returnError(ERROR_WINDOW_QUICK_TILED + w.internalId)
+    } else {
+        const area = clientAreaForWindow(w);
+        const edge = edgeForName({{jsString .Edge}});
+        let dimension;
+        if (edge == 1 || edge == 8) {
+            dimension = area.height;
+        } else {
+            dimension = area.width;
+        }
+        const deltaPx = Math.round(dimension * delta / 100);
+        t.resizeByPixels(deltaPx, edge);
+    }
+
+}

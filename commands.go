@@ -471,3 +471,26 @@ func (cmd ResizeTileCmd) Run(sp *ScriptPackage) error {
 	sp.Params.TilePath = cmd.TilePath
 	return nil
 }
+
+type ResizeActiveTileCmd struct {
+	Delta float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)"`
+	Edge  string  `arg:"" required:"" enum:"top,left,right,bottom" help:"The edge that will be moved. Possible values: top, left, right, bottom."`
+}
+
+func (cmd ResizeActiveTileCmd) Validate() error {
+	if math.IsNaN(cmd.Delta) || math.IsInf(cmd.Delta, 0) {
+		return fmt.Errorf("Delta must be a valid number")
+	}
+	if cmd.Delta > 100 || cmd.Delta < -100 || cmd.Delta == 0 {
+		return fmt.Errorf("Delta must be a non-zero value between -100 and 100 (inclusive)")
+	}
+	return nil
+
+}
+
+func (cmd ResizeActiveTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_RESIZE_ACTIVE_TILE
+	sp.Params.Delta = cmd.Delta
+	sp.Params.Edge = cmd.Edge
+	return nil
+}

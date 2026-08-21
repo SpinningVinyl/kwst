@@ -107,5 +107,8 @@ var JS_LIST_TILE_WINDOWS string
 //go:embed tmpl/resize_tile.js.tmpl
 var JS_RESIZE_TILE string
 
+//go:embed tmpl/resize_active_tile.js.tmpl
+var JS_RESIZE_ACTIVE_TILE string
+
 //go:embed tmpl/footer.js.tmpl
 var JS_FOOTER string
