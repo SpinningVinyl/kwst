@@ -149,3 +149,9 @@ const edgeForName = (edgeName) => {
         return -1;
     }
 }
+
+const resizeTileByPercent = (tile, area, delta, edgeName) => {
+    const edge = edgeForName(edgeName);
+    const dimension = (edge === 1 || edge === 8) ? area.height : area.width;
+    tile.resizeByPixels(Math.round(dimension * delta /100), edge);
+}

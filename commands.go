@@ -446,6 +446,16 @@ func (cmd ListTileWindowsCmd) Run(sp *ScriptPackage) error {
 	return nil
 }
 
+func validateResizeDelta(delta float64) error {
+	if math.IsNaN(delta) || math.IsInf(delta, 0) {
+		return fmt.Errorf("Delta must be a valid number")
+	}
+	if delta > 100 || delta < -100 || delta == 0 {
+		return fmt.Errorf("Delta must be a non-zero value between -100 and 100 (inclusive)")
+	}
+	return nil
+}
+
 type ResizeTileCmd struct {
 	OutputName string  `name:"output" help:"Name of the output containing the root tile."`
 	TilePath   string  `arg:"" required:"" help:"Locator path of the tile."`
@@ -454,13 +464,7 @@ type ResizeTileCmd struct {
 }
 
 func (cmd ResizeTileCmd) Validate() error {
-	if math.IsNaN(cmd.Delta) || math.IsInf(cmd.Delta, 0) {
-		return fmt.Errorf("Delta must be a valid number")
-	}
-	if cmd.Delta > 100 || cmd.Delta < -100 || cmd.Delta == 0 {
-		return fmt.Errorf("Delta must be a non-zero value between -100 and 100 (inclusive)")
-	}
-	return nil
+	return validateResizeDelta(cmd.Delta)
 }
 
 func (cmd ResizeTileCmd) Run(sp *ScriptPackage) error {
@@ -478,13 +482,7 @@ type ResizeActiveTileCmd struct {
 }
 
 func (cmd ResizeActiveTileCmd) Validate() error {
-	if math.IsNaN(cmd.Delta) || math.IsInf(cmd.Delta, 0) {
-		return fmt.Errorf("Delta must be a valid number")
-	}
-	if cmd.Delta > 100 || cmd.Delta < -100 || cmd.Delta == 0 {
-		return fmt.Errorf("Delta must be a non-zero value between -100 and 100 (inclusive)")
-	}
-	return nil
+	return validateResizeDelta(cmd.Delta)
 
 }
 
