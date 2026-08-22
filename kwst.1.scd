@@ -291,6 +291,11 @@ script to finish returns status 124.
 		*--output=STRING*
 			Resize a tile on the named output.
 
+		If _delta_ is negative, place *--* before the positional arguments and after
+		any flags:
+
+			*kwst resize-tile --output=DP-1 -- 0 -1 right*
+
 		The command returns an error if the output does not exist or the tile path is
 		malformed or does not exist.
 
@@ -298,6 +303,10 @@ script to finish returns status 124.
 		Resize the native KWin tile assigned to the active window by moving _edge_.
 		The _delta_ has the same range and meaning as for *resize-tile*, and is
 		calculated from the client area of the active window's output.
+
+		If _delta_ is negative, place *--* before the positional arguments:
+
+			*kwst resize-active-tile -- -1 right*
 
 		The command returns an error if the active window is not tiled or is assigned
 		to a quick tile rather than a native tile.

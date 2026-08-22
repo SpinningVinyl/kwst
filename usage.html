@@ -792,6 +792,19 @@ output client area's width for the 'left' and 'right' edges or height for the
 </blockquote>
 
 <blockquote>
+<blockquote>If <u>delta</u> is negative, place <b>--</b> before the positional arguments and after
+any flags:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst resize-tile --output=DP-1 -- 0 -1 right</b>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
 <blockquote>The command returns an error if the output does not exist or the tile path is
 malformed or does not exist.
 </blockquote>
@@ -804,6 +817,18 @@ malformed or does not exist.
 <blockquote>Resize the native KWin tile assigned to the active window by moving <u>edge</u>.
 The <u>delta</u> has the same range and meaning as for <b>resize-tile</b>, and is
 calculated from the client area of the active window's output.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>If <u>delta</u> is negative, place <b>--</b> before the positional arguments:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst resize-active-tile -- -1 right</b>
+</blockquote>
 </blockquote>
 </blockquote>
 

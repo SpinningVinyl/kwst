@@ -706,7 +706,7 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 	t.Run("set active tile geometry", func(t *testing.T) {
 		verifyTileGeometryChange(t, kwst, targetTile,
 			append([]string{"set-active-tile-geometry"}, targetGeometryArguments...),
-			append([]string{"set-active-tile-geometry"}, originalGeometryArguments...),
+			append([]string{"set-tile-geometry", "--output=" + targetTile.output, targetTile.path}, originalGeometryArguments...),
 		)
 	})
 
@@ -794,7 +794,6 @@ func verifyTileGeometryChange(t *testing.T, kwst string, tile tileRow, changeArg
 	})
 
 	requireSuccess(t, runKWST(t, kwst, restoreArguments...), "restore tile geometry")
-	restoreNeeded = false
 	eventually(t, "tile geometry to be restored", func() (bool, string) {
 		current, err := readTileGeometry(t, kwst, tile.output, tile.path)
 		if err != nil {
@@ -802,6 +801,7 @@ func verifyTileGeometryChange(t *testing.T, kwst string, tile tileRow, changeArg
 		}
 		return current == initial, fmt.Sprintf("tile geometry is %+v, want %+v", current, initial)
 	})
+	restoreNeeded = false
 }
 
 func readTileGeometry(t *testing.T, kwst, output, path string) (geometry, error) {
