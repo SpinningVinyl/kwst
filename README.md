@@ -170,6 +170,36 @@ kwst list-tiles --output=DP-1 | column -t -s "$(printf '\t')"
 
 Take note of the tile locator paths. You can now use them in your scripts; see [`kwin-tile-native.sh`](_examples/kwin-tile-native.sh) for an example.
 
+### Resizing tiles
+
+Recent versions of **kwst** support resizing KWin native tiles. The following commands are supported:
+
+- `resize-tile [--output=OUTPUT] <tile-path> <delta> <edge>`
+- `set-tile-geometry [--output=OUTPUT] <tile-path> <x> <y> <width> <height>`
+- `resize-active-tile <delta> <edge>`
+- `set-active-tile-geometry <x> <y> <width> <height>`
+- `grow-active-tile <delta> <direction>`
+
+For `resize-tile` and `resize-active-tile`, `delta` is a percentage of client area width or height, depending on the specified edge. It should be a non-zero floating point value between `-100` and `100` (inclusive). `edge` can be either `left`, `right`, `top`, or `bottom`.
+
+For `set-tile-geometry` and `set-active-tile-geometry`, all geometry components are floating point values in [0.0, 1.0].
+
+In practical terms, the most useful command is probably `grow-active-tile`. For that command, `delta` has the same meaning and range of values as for `resize-tile` and `resize-active-tile` commands. Negative values shrink the tile. `direction` can be either `h` (horizontal) or `v` (vertical). Depending on the direction, the command tries to determine if the active tile has a vertical or horizontal edge that is not adjacent to an output boundary, and grows or shrinks the tile in the direction of the found edge. If the active tile has two internal edges that satisfy the criteria, the right/bottom edge has precedence over left/top.
+
+For example, to grow the active tile horizontally by 1% of the client area width, use the following command:
+
+```sh
+kwst grow-active-tile 1 h
+```
+
+To shrink the active tile horizontally by 1% of the client area width, use the following command:
+
+```sh
+kwst grow-active-tile -- -1 h
+```
+
+By replacing `h` with `v`, the same commands would grow or shrink the currently active tile vertically.
+
 ## Running custom scripts
 
 Since version 1.1.0, **kwst** supports running custom scripts. Please see the recommended script template in `custom-script-template.js` and example scripts in the `_examples` directory.
