@@ -314,6 +314,12 @@ func TestCommandRunMethods(t *testing.T) {
 			},
 		},
 		{
+			name:         "grow active tile",
+			command:      &GrowActiveTileCmd{Direction: "h", Delta: 2.5},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_GROW_ACTIVE_TILE,
+			wantParams:   ScriptParams{Direction: "h", Delta: 2.5},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
@@ -428,6 +434,15 @@ func TestCommandHelperBundles(t *testing.T) {
 			includes: []string{"const resizeTileByPercent = ("},
 			excludes: []string{"const formatWindowRow = ("},
 		},
+		{
+			name:    "active tile growth uses tile helpers",
+			command: &GrowActiveTileCmd{Direction: "h", Delta: 1},
+			includes: []string{
+				"const resizeTileByPercent = (",
+				"const growthTarget = (",
+			},
+			excludes: []string{"const formatWindowRow = ("},
+		},
 	}
 
 	for _, test := range tests {
@@ -472,6 +487,12 @@ func TestResizeCommandValidation(t *testing.T) {
 			name: "resize active tile",
 			validate: func(delta float64) error {
 				return (ResizeActiveTileCmd{Delta: delta}).Validate()
+			},
+		},
+		{
+			name: "grow active tile",
+			validate: func(delta float64) error {
+				return (GrowActiveTileCmd{Delta: delta}).Validate()
 			},
 		},
 	}
