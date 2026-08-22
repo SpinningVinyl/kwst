@@ -34,13 +34,14 @@ type ScriptParams struct {
 	ClientArea            bool
 	OutputName            string
 	Opacity               float64
-	OpacityDelta          float64
+	Delta                 float64
 	RelativeX             float64
 	RelativeY             float64
 	RelativeWidth         float64
 	RelativeHeight        float64
 	LeavesOnly            bool
 	TilePath              string
+	Edge                  string
 }
 
 type ScriptPackage struct {

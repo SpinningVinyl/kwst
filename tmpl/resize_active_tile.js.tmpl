@@ -1,0 +1,17 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_RESIZE_ACTIVE_TILE");
+
+    const w = workspace.activeWindow;
+    const delta = {{.Delta}};
+
+    const t = w.tile;
+    if (t === null) {
+        returnError(ERROR_WINDOW_NOT_TILED + w.internalId)
+    } else if (typeof t.layoutDirection === "undefined") {
+        returnError(ERROR_WINDOW_QUICK_TILED + w.internalId)
+    } else {
+        const area = clientAreaForWindow(w);
+        const edgeName = {{jsString .Edge}}
+        resizeTileByPercent(t, area, delta, edgeName);
+    }
+}

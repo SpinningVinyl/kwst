@@ -1,7 +1,4 @@
-const outputForName = (
-    outputName,
-    fallbackOutput
-) => {
+const outputForName = (outputName, fallbackOutput) => {
     return outputName === ""
         ? fallbackOutput
         : findOutput(outputName);
@@ -127,3 +124,34 @@ const formatAbsoluteGeometry = (tile) => {
     ].join(" ");
 }
 
+const updateTileGeometry = (t, changes) => {
+    const geometry = Object.assign(
+        {},
+        t.relativeGeometry,
+        changes
+    );
+
+    t.relativeGeometry = geometry;
+    return geometry;
+}
+
+const edgeForName = (edgeName) => {
+    switch(edgeName) {
+    case "top":
+        return 1;
+    case "left":
+        return 2;
+    case "right":
+        return 4;
+    case "bottom":
+        return 8;
+    default:
+        return -1;
+    }
+}
+
+const resizeTileByPercent = (tile, area, delta, edgeName) => {
+    const edge = edgeForName(edgeName);
+    const dimension = (edge === 1 || edge === 8) ? area.height : area.width;
+    tile.resizeByPixels(Math.round(dimension * delta /100), edge);
+}

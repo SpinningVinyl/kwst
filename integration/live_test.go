@@ -79,17 +79,18 @@ func (r commandResult) String() string {
 }
 
 type geometry struct {
-	x      int
-	y      int
-	width  int
-	height int
+	x      float64
+	y      float64
+	width  float64
+	height float64
 }
 
 type tileRow struct {
-	output      string
-	path        string
-	tileType    string
-	windowCount int
+	output           string
+	path             string
+	tileType         string
+	relativeGeometry geometry
+	windowCount      int
 }
 
 type fixtureWindow struct {
@@ -624,13 +625,40 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 	if err != nil {
 		t.Fatal(err)
 	}
-	targetTile := initialRows[0]
+	var targetTile tileRow
+	resizeEdge := ""
+	leavesFound := 0
 	for _, row := range initialRows {
 		if row.tileType == "Leaf" {
-			targetTile = row
-			break
+			leavesFound++
+			if edge, ok := resizableTileEdge(row.relativeGeometry); ok && resizeEdge == "" {
+				targetTile = row
+				resizeEdge = edge
+			}
 		}
 	}
+	if leavesFound == 0 {
+		t.Fatal("list-tiles returned no leaf tiles")
+	}
+	if resizeEdge == "" {
+		t.Fatal("list-tiles returned no leaf tile with an interior edge")
+	}
+
+	t.Run("resize tile", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			[]string{"resize-tile", "--output=" + targetTile.output, targetTile.path, "1", resizeEdge},
+			[]string{"resize-tile", "--output=" + targetTile.output, "--", targetTile.path, "-1", resizeEdge},
+		)
+	})
+
+	originalGeometryArguments := formatTileGeometryArguments(targetTile.relativeGeometry)
+	targetGeometryArguments := formatTileGeometryArguments(moveTileInteriorEdge(targetTile.relativeGeometry, resizeEdge))
+	t.Run("set tile geometry", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			append([]string{"set-tile-geometry", "--output=" + targetTile.output, targetTile.path}, targetGeometryArguments...),
+			append([]string{"set-tile-geometry", "--output=" + targetTile.output, targetTile.path}, originalGeometryArguments...),
+		)
+	})
 
 	requireSuccess(t, runKWST(t, kwst, "set-window-tile", fixture.uuid, targetTile.path), "assign fixture to tile")
 	eventually(t, "the assigned tile's window count to increase", func() (bool, string) {
@@ -668,16 +696,130 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 		t.Fatalf("list-tile-windows did not return fixture %q:\n%s", fixture.uuid, windowsResult.String())
 	}
 
+	activateAndVerify(t, kwst, fixture)
+	t.Run("resize active tile", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			[]string{"resize-active-tile", "1", resizeEdge},
+			[]string{"resize-tile", "--output=" + targetTile.output, "--", targetTile.path, "-1", resizeEdge},
+		)
+	})
+	t.Run("set active tile geometry", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			append([]string{"set-active-tile-geometry"}, targetGeometryArguments...),
+			append([]string{"set-active-tile-geometry"}, originalGeometryArguments...),
+		)
+	})
+
 	requireSuccess(t, runKWST(t, kwst, "unset-window-tile", fixture.uuid), "remove fixture from tile")
 	untiledResult := runKWST(t, kwst, "get-window-tile", fixture.uuid)
 	if untiledResult.exitCode != 1 {
 		t.Fatalf("get-window-tile returned exit code %d for an untiled fixture, want 1:\n%s",
 			untiledResult.exitCode, untiledResult.String())
 	}
-	expectedMessage := "It appears that window " + fixture.uuid + " is not tiled"
+	expectedMessage := "Window does not appear to be tiled: " + fixture.uuid
 	if !strings.Contains(untiledResult.stderr, expectedMessage) {
 		t.Fatalf("get-window-tile did not report %q after unsetting the tile:\n%s", expectedMessage, untiledResult.String())
 	}
+}
+
+func resizableTileEdge(geometry geometry) (string, bool) {
+	const boundaryTolerance = 1e-6
+	if geometry.x+geometry.width < 1-boundaryTolerance {
+		return "right", true
+	}
+	if geometry.y+geometry.height < 1-boundaryTolerance {
+		return "bottom", true
+	}
+	if geometry.x > boundaryTolerance {
+		return "left", true
+	}
+	if geometry.y > boundaryTolerance {
+		return "top", true
+	}
+	return "", false
+}
+
+func moveTileInteriorEdge(value geometry, edge string) geometry {
+	const maximumDelta = 0.01
+	switch edge {
+	case "right":
+		value.width += min(maximumDelta, 1-value.x-value.width)
+	case "bottom":
+		value.height += min(maximumDelta, 1-value.y-value.height)
+	case "left":
+		delta := min(maximumDelta, value.x)
+		value.x -= delta
+		value.width += delta
+	case "top":
+		delta := min(maximumDelta, value.y)
+		value.y -= delta
+		value.height += delta
+	}
+	return value
+}
+
+func formatTileGeometryArguments(value geometry) []string {
+	return []string{
+		strconv.FormatFloat(value.x, 'f', -1, 64),
+		strconv.FormatFloat(value.y, 'f', -1, 64),
+		strconv.FormatFloat(value.width, 'f', -1, 64),
+		strconv.FormatFloat(value.height, 'f', -1, 64),
+	}
+}
+
+func verifyTileGeometryChange(t *testing.T, kwst string, tile tileRow, changeArguments, restoreArguments []string) {
+	t.Helper()
+
+	initial, err := readTileGeometry(t, kwst, tile.output, tile.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restoreNeeded := false
+	t.Cleanup(func() {
+		if restoreNeeded {
+			if result := runKWST(t, kwst, restoreArguments...); result.exitCode != 0 {
+				t.Errorf("restore tile geometry during cleanup:\n%s", result.String())
+			}
+		}
+	})
+
+	requireSuccess(t, runKWST(t, kwst, changeArguments...), strings.Join(changeArguments, " "))
+	restoreNeeded = true
+	eventually(t, "tile geometry to change", func() (bool, string) {
+		current, err := readTileGeometry(t, kwst, tile.output, tile.path)
+		if err != nil {
+			return false, err.Error()
+		}
+		return current != initial, fmt.Sprintf("tile geometry is still %+v", current)
+	})
+
+	requireSuccess(t, runKWST(t, kwst, restoreArguments...), "restore tile geometry")
+	restoreNeeded = false
+	eventually(t, "tile geometry to be restored", func() (bool, string) {
+		current, err := readTileGeometry(t, kwst, tile.output, tile.path)
+		if err != nil {
+			return false, err.Error()
+		}
+		return current == initial, fmt.Sprintf("tile geometry is %+v, want %+v", current, initial)
+	})
+}
+
+func readTileGeometry(t *testing.T, kwst, output, path string) (geometry, error) {
+	t.Helper()
+	result := runKWST(t, kwst, "list-tiles", "--output="+output)
+	if result.exitCode != 0 {
+		return geometry{}, fmt.Errorf("list tiles on output %s: %s", output, result.String())
+	}
+	rows, err := parseTileRows(result.stdout)
+	if err != nil {
+		return geometry{}, err
+	}
+	for _, row := range rows {
+		if row.output == output && row.path == path {
+			return row.relativeGeometry, nil
+		}
+	}
+	return geometry{}, fmt.Errorf("tile %s on output %s was not returned", path, output)
 }
 
 func testWindowOpacityCommands(t *testing.T, kwst string, fixture *fixtureWindow) {
@@ -881,12 +1023,12 @@ func relativeGeometry(area geometry, xPercent, yPercent, widthPercent, heightPer
 	}
 }
 
-func relativeCoordinate(origin, length int, percent float64) int {
+func relativeCoordinate(origin, length, percent float64) float64 {
 	return origin + relativeLength(length, percent)
 }
 
-func relativeLength(length int, percent float64) int {
-	return int(math.Round(float64(length) * percent / 100))
+func relativeLength(length, percent float64) float64 {
+	return math.Round(length * percent / 100)
 }
 
 func verifyRelativeClamp(t *testing.T, kwst, uuid string, baseline geometry, boundaryArgs, clampedArgs []string) {
@@ -912,8 +1054,14 @@ func resizeAndMoveFixture(t *testing.T, kwst string, fixture *fixtureWindow) {
 		height: adjustedSize(original.height, 40, 240),
 	}
 
-	requireSuccess(t, runKWST(t, kwst, "set-window-size", fixture.uuid, strconv.Itoa(target.width), strconv.Itoa(target.height)), "resize fixture")
-	requireSuccess(t, runKWST(t, kwst, "set-window-position", fixture.uuid, strconv.Itoa(target.x), strconv.Itoa(target.y)), "move fixture")
+	requireSuccess(t, runKWST(t, kwst, "set-window-size", fixture.uuid,
+		strconv.FormatFloat(target.width, 'f', 0, 64),
+		strconv.FormatFloat(target.height, 'f', 0, 64),
+	), "resize fixture")
+	requireSuccess(t, runKWST(t, kwst, "set-window-position", fixture.uuid,
+		strconv.FormatFloat(target.x, 'f', 0, 64),
+		strconv.FormatFloat(target.y, 'f', 0, 64),
+	), "move fixture")
 
 	eventually(t, "fixture geometry to change", func() (bool, string) {
 		result := runKWST(t, kwst, "get-window-geometry", fixture.uuid)
@@ -928,7 +1076,7 @@ func resizeAndMoveFixture(t *testing.T, kwst string, fixture *fixtureWindow) {
 	})
 }
 
-func adjustedSize(current, delta, threshold int) int {
+func adjustedSize(current, delta, threshold float64) float64 {
 	if current > threshold {
 		return current - delta
 	}
@@ -949,10 +1097,10 @@ func getGeometry(t *testing.T, kwst, uuid string) geometry {
 func setGeometryAndWait(t *testing.T, kwst, uuid string, expected geometry) {
 	t.Helper()
 	requireSuccess(t, runKWST(t, kwst, "set-window-geometry", uuid,
-		strconv.Itoa(expected.x),
-		strconv.Itoa(expected.y),
-		strconv.Itoa(expected.width),
-		strconv.Itoa(expected.height),
+		strconv.FormatFloat(expected.x, 'f', 0, 64),
+		strconv.FormatFloat(expected.y, 'f', 0, 64),
+		strconv.FormatFloat(expected.width, 'f', 0, 64),
+		strconv.FormatFloat(expected.height, 'f', 0, 64),
 	), "set fixture geometry")
 	waitForGeometry(t, kwst, uuid, expected)
 }
@@ -1038,13 +1186,13 @@ func parseGeometry(value string) (geometry, error) {
 	if len(fields) != 4 {
 		return geometry{}, fmt.Errorf("invalid geometry %q", value)
 	}
-	parts := make([]int, 4)
+	parts := make([]float64, 4)
 	for index, field := range fields {
 		part, err := strconv.ParseFloat(field, 64)
 		if err != nil {
 			return geometry{}, fmt.Errorf("invalid geometry %q: %w", value, err)
 		}
-		parts[index] = int(math.Round(part))
+		parts[index] = math.Round(part)
 	}
 	return geometry{x: parts[0], y: parts[1], width: parts[2], height: parts[3]}, nil
 }
@@ -1086,14 +1234,35 @@ func parseTileRows(value string) ([]tileRow, error) {
 		if err != nil {
 			return nil, fmt.Errorf("list-tiles returned invalid window count in row %q: %w", line, err)
 		}
+		relativeGeometry, err := parseTileGeometry(fields[3])
+		if err != nil {
+			return nil, fmt.Errorf("list-tiles returned invalid relative geometry in row %q: %w", line, err)
+		}
 		rows = append(rows, tileRow{
-			output:      fields[0],
-			path:        fields[1],
-			tileType:    fields[2],
-			windowCount: windowCount,
+			output:           fields[0],
+			path:             fields[1],
+			tileType:         fields[2],
+			relativeGeometry: relativeGeometry,
+			windowCount:      windowCount,
 		})
 	}
 	return rows, nil
+}
+
+func parseTileGeometry(value string) (geometry, error) {
+	fields := strings.Fields(value)
+	if len(fields) != 4 {
+		return geometry{}, fmt.Errorf("invalid geometry %q", value)
+	}
+	parts := make([]float64, 4)
+	for index, field := range fields {
+		part, err := strconv.ParseFloat(field, 64)
+		if err != nil {
+			return geometry{}, fmt.Errorf("invalid geometry %q: %w", value, err)
+		}
+		parts[index] = part
+	}
+	return geometry{x: parts[0], y: parts[1], width: parts[2], height: parts[3]}, nil
 }
 
 func parseWindowTile(value string) (string, string, error) {

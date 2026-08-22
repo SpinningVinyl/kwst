@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"testing"
@@ -255,6 +256,64 @@ func TestCommandRunMethods(t *testing.T) {
 			},
 		},
 		{
+			name: "resize tile",
+			command: &ResizeTileCmd{
+				OutputName: "DP-1",
+				TilePath:   "1.0",
+				Delta:      2.5,
+				Edge:       "right",
+			},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_RESIZE_TILE,
+			wantParams: ScriptParams{
+				OutputName: "DP-1",
+				TilePath:   "1.0",
+				Delta:      2.5,
+				Edge:       "right",
+			},
+		},
+		{
+			name:         "resize active tile",
+			command:      &ResizeActiveTileCmd{Delta: -2.5, Edge: "left"},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_RESIZE_ACTIVE_TILE,
+			wantParams:   ScriptParams{Delta: -2.5, Edge: "left"},
+		},
+		{
+			name: "set tile geometry",
+			command: &SetTileGeometryCmd{
+				OutputName: "DP-1",
+				TilePath:   "1.0",
+				X:          0.1,
+				Y:          0.2,
+				Width:      0.3,
+				Height:     0.4,
+			},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_SET_TILE_GEOMETRY,
+			wantParams: ScriptParams{
+				OutputName:     "DP-1",
+				TilePath:       "1.0",
+				RelativeX:      0.1,
+				RelativeY:      0.2,
+				RelativeWidth:  0.3,
+				RelativeHeight: 0.4,
+			},
+		},
+		{
+			name: "set active tile geometry",
+			command: &SetActiveTileGeometryCmd{
+				X:      0.1,
+				Y:      0.2,
+				Width:  0.3,
+				Height: 0.4,
+			},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_SET_ACTIVE_TILE_GEOMETRY,
+			wantParams: ScriptParams{
+				RelativeX:      0.1,
+				RelativeY:      0.2,
+				RelativeWidth:  0.3,
+				RelativeHeight: 0.4,
+			},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
@@ -291,13 +350,13 @@ func TestCommandRunMethods(t *testing.T) {
 			name:         "increase window opacity",
 			command:      &IncreaseWindowOpacityCmd{Uuid: "window-id"},
 			wantTemplate: initialTemplate + JS_ADJUST_WINDOW_OPACITY,
-			wantParams:   ScriptParams{Uuid: "window-id", OpacityDelta: 0.05},
+			wantParams:   ScriptParams{Uuid: "window-id", Delta: 0.05},
 		},
 		{
 			name:         "decrease window opacity",
 			command:      &DecreaseWindowOpacityCmd{Uuid: "window-id"},
 			wantTemplate: initialTemplate + JS_ADJUST_WINDOW_OPACITY,
-			wantParams:   ScriptParams{Uuid: "window-id", OpacityDelta: -0.05},
+			wantParams:   ScriptParams{Uuid: "window-id", Delta: -0.05},
 		},
 	}
 
@@ -357,6 +416,18 @@ func TestCommandHelperBundles(t *testing.T) {
 				"const tileForPath = (",
 			},
 		},
+		{
+			name:     "tile resize uses tile helpers",
+			command:  &ResizeTileCmd{TilePath: ".", Delta: 1, Edge: "right"},
+			includes: []string{"const resizeTileByPercent = ("},
+			excludes: []string{"const formatWindowRow = ("},
+		},
+		{
+			name:     "active tile resize uses tile helpers",
+			command:  &ResizeActiveTileCmd{Delta: 1, Edge: "right"},
+			includes: []string{"const resizeTileByPercent = ("},
+			excludes: []string{"const formatWindowRow = ("},
+		},
 	}
 
 	for _, test := range tests {
@@ -383,6 +454,95 @@ func TestCommandHelperBundles(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestResizeCommandValidation(t *testing.T) {
+	commands := []struct {
+		name     string
+		validate func(float64) error
+	}{
+		{
+			name: "resize tile",
+			validate: func(delta float64) error {
+				return (ResizeTileCmd{Delta: delta}).Validate()
+			},
+		},
+		{
+			name: "resize active tile",
+			validate: func(delta float64) error {
+				return (ResizeActiveTileCmd{Delta: delta}).Validate()
+			},
+		},
+	}
+	values := []struct {
+		name    string
+		delta   float64
+		wantErr bool
+	}{
+		{name: "minimum", delta: -100},
+		{name: "negative fraction", delta: -0.5},
+		{name: "positive fraction", delta: 0.5},
+		{name: "maximum", delta: 100},
+		{name: "below minimum", delta: -100.1, wantErr: true},
+		{name: "zero", delta: 0, wantErr: true},
+		{name: "above maximum", delta: 100.1, wantErr: true},
+		{name: "NaN", delta: math.NaN(), wantErr: true},
+		{name: "infinity", delta: math.Inf(1), wantErr: true},
+	}
+
+	for _, command := range commands {
+		for _, value := range values {
+			t.Run(command.name+"/"+value.name, func(t *testing.T) {
+				err := command.validate(value.delta)
+				if (err != nil) != value.wantErr {
+					t.Errorf("Validate() error = %v, wantErr %t", err, value.wantErr)
+				}
+			})
+		}
+	}
+}
+
+func TestSetTileGeometryCommandValidation(t *testing.T) {
+	commands := []struct {
+		name     string
+		validate func(float64, float64, float64, float64) error
+	}{
+		{
+			name: "set tile geometry",
+			validate: func(x, y, width, height float64) error {
+				return (SetTileGeometryCmd{X: x, Y: y, Width: width, Height: height}).Validate()
+			},
+		},
+		{
+			name: "set active tile geometry",
+			validate: func(x, y, width, height float64) error {
+				return (SetActiveTileGeometryCmd{X: x, Y: y, Width: width, Height: height}).Validate()
+			},
+		},
+	}
+	values := []struct {
+		name                string
+		x, y, width, height float64
+		wantErr             bool
+	}{
+		{name: "minimum", x: 0, y: 0, width: 0, height: 0},
+		{name: "maximum", x: 1, y: 1, width: 1, height: 1},
+		{name: "x below minimum", x: -0.1, wantErr: true},
+		{name: "y above maximum", y: 1.1, wantErr: true},
+		{name: "width NaN", width: math.NaN(), wantErr: true},
+		{name: "height infinity", height: math.Inf(1), wantErr: true},
+	}
+
+	for _, command := range commands {
+		for _, value := range values {
+			t.Run(command.name+"/"+value.name, func(t *testing.T) {
+				err := command.validate(value.x, value.y, value.width, value.height)
+				if (err != nil) != value.wantErr {
+					t.Errorf("Validate() error = %v, wantErr %t", err, value.wantErr)
+				}
+			})
+		}
 	}
 }
 

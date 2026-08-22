@@ -1,0 +1,19 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_ACTIVE_TILE_GEOMETRY");
+    const w = workspace.activeWindow;
+    const t = w.tile;
+
+    if (t === null) {
+        returnError(ERROR_WINDOW_NOT_TILED + w.internalId);
+        return;
+    }
+    if (typeof t.layoutDirection === "undefined") {
+        returnError(ERROR_WINDOW_QUICK_TILED + w.internalId);
+        return;
+    }
+    const x = {{.RelativeX}};
+    const y = {{.RelativeY}};
+    const width = {{.RelativeWidth}};
+    const height = {{.RelativeHeight}};
+    updateTileGeometry(t, {x, y, width, height});
+}

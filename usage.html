@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-08-05</p>
+<p class="header-date">2026-08-22</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -755,6 +755,113 @@ guaranteed to be correct for X11 windows.
 <blockquote>
 <blockquote>The command returns an error if the output does not exist or the tile path is
 malformed or does not exist.
+</blockquote>
+</blockquote>
+
+<blockquote><b>resize-tile</b> &lt;tile-path&gt; &lt;delta&gt; &lt;edge&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Resize the native KWin tile identified by <u>tile-path</u> by moving <u>edge</u>. The
+<u>delta</u> is a non-zero percentage between -100 and 100, inclusive, of the
+output client area's width for the 'left' and 'right' edges or height for the
+'top' and 'bottom' edges. Fractional percentages are accepted.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>If no output is specified, the active output as defined by KWin is used.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Resize a tile on the named output.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the output does not exist or the tile path is
+malformed or does not exist.
+</blockquote>
+</blockquote>
+
+<blockquote><b>resize-active-tile</b> &lt;delta&gt; &lt;edge&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Resize the native KWin tile assigned to the active window by moving <u>edge</u>.
+The <u>delta</u> has the same range and meaning as for <b>resize-tile</b>, and is
+calculated from the client area of the active window's output.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the active window is not tiled or is assigned
+to a quick tile rather than a native tile.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-tile-geometry</b> &lt;tile-path&gt; &lt;x&gt; &lt;y&gt; &lt;width&gt; &lt;height&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Set the relative geometry of the native KWin tile identified by <u>tile-path</u>.
+Each geometry component must be between 0.0 and 1.0, inclusive.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>If no output is specified, the active output as defined by KWin is used.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The currently supported flags are:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--output=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Set the geometry of a tile on the named output.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the output does not exist or the tile path is
+malformed or does not exist.
+</blockquote>
+</blockquote>
+
+<blockquote><b>set-active-tile-geometry</b> &lt;x&gt; &lt;y&gt; &lt;width&gt; &lt;height&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Set the relative geometry of the native KWin tile assigned to the active
+window. Each geometry component must be between 0.0 and 1.0, inclusive.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the active window is not tiled or is assigned
+to a quick tile rather than a native tile.
 </blockquote>
 </blockquote>
 

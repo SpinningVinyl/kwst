@@ -281,7 +281,7 @@ type IncreaseWindowOpacityCmd struct {
 func (iwoc IncreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_ADJUST_WINDOW_OPACITY
 	sp.Params.Uuid = iwoc.Uuid
-	sp.Params.OpacityDelta = 0.05
+	sp.Params.Delta = 0.05
 	return nil
 }
 
@@ -292,7 +292,7 @@ type DecreaseWindowOpacityCmd struct {
 func (dwoc DecreaseWindowOpacityCmd) Run(sp *ScriptPackage) error {
 	sp.ScriptTemplate += JS_ADJUST_WINDOW_OPACITY
 	sp.Params.Uuid = dwoc.Uuid
-	sp.Params.OpacityDelta = -0.05
+	sp.Params.Delta = -0.05
 	return nil
 }
 
@@ -443,5 +443,112 @@ func (cmd ListTileWindowsCmd) Run(sp *ScriptPackage) error {
 	sp.Params.ShowCaptions = cmd.ShowCaptions
 	sp.Params.ShowPids = cmd.ShowPids
 	sp.Params.TilePath = cmd.TilePath
+	return nil
+}
+
+func validateResizeDelta(delta float64) error {
+	if math.IsNaN(delta) || math.IsInf(delta, 0) {
+		return fmt.Errorf("Delta must be a valid number")
+	}
+	if delta > 100 || delta < -100 || delta == 0 {
+		return fmt.Errorf("Delta must be a non-zero value between -100 and 100 (inclusive)")
+	}
+	return nil
+}
+
+type ResizeTileCmd struct {
+	OutputName string  `name:"output" help:"Name of the output containing the root tile."`
+	TilePath   string  `arg:"" required:"" help:"Locator path of the tile."`
+	Delta      float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)"`
+	Edge       string  `arg:"" required:"" enum:"top,left,right,bottom" help:"The edge that will be moved. Possible values: top, left, right, bottom."`
+}
+
+func (cmd ResizeTileCmd) Validate() error {
+	return validateResizeDelta(cmd.Delta)
+}
+
+func (cmd ResizeTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_RESIZE_TILE
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.Delta = cmd.Delta
+	sp.Params.Edge = cmd.Edge
+	sp.Params.TilePath = cmd.TilePath
+	return nil
+}
+
+type ResizeActiveTileCmd struct {
+	Delta float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)"`
+	Edge  string  `arg:"" required:"" enum:"top,left,right,bottom" help:"The edge that will be moved. Possible values: top, left, right, bottom."`
+}
+
+func (cmd ResizeActiveTileCmd) Validate() error {
+	return validateResizeDelta(cmd.Delta)
+
+}
+
+func (cmd ResizeActiveTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_RESIZE_ACTIVE_TILE
+	sp.Params.Delta = cmd.Delta
+	sp.Params.Edge = cmd.Edge
+	return nil
+}
+
+func validateTileGeometry(x, y, width, height float64) error {
+	if math.IsNaN(x) || math.IsInf(x, 0) ||
+		math.IsNaN(y) || math.IsInf(y, 0) ||
+		math.IsNaN(width) || math.IsInf(width, 0) ||
+		math.IsNaN(height) || math.IsInf(height, 0) {
+		return fmt.Errorf("geometry components must be valid numbers.")
+	}
+	if x < 0 || x > 1.0 ||
+		y < 0 || y > 1.0 ||
+		width < 0 || width > 1.0 ||
+		height < 0 || height > 1.0 {
+		return fmt.Errorf("geometry components must be between 0.0 and 1.0.")
+	}
+	return nil
+}
+
+type SetTileGeometryCmd struct {
+	OutputName string  `name:"output" help:"Name of the output containing the root tile."`
+	TilePath   string  `arg:"" required:"" help:"Locator path of the target tile."`
+	X          float64 `arg:"" required:"" help:"New X coordinate of the tile."`
+	Y          float64 `arg:"" required:"" help:"New Y coordinate of the tile."`
+	Width      float64 `arg:"" required:"" help:"New width of the tile."`
+	Height     float64 `arg:"" required:"" help:"New height of the tile."`
+}
+
+func (cmd SetTileGeometryCmd) Validate() error {
+	return validateTileGeometry(cmd.X, cmd.Y, cmd.Width, cmd.Height)
+}
+
+func (cmd SetTileGeometryCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_SET_TILE_GEOMETRY
+	sp.Params.RelativeX = cmd.X
+	sp.Params.RelativeY = cmd.Y
+	sp.Params.RelativeWidth = cmd.Width
+	sp.Params.RelativeHeight = cmd.Height
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.TilePath = cmd.TilePath
+	return nil
+}
+
+type SetActiveTileGeometryCmd struct {
+	X      float64 `arg:"" required:"" help:"New X coordinate of the tile."`
+	Y      float64 `arg:"" required:"" help:"New Y coordinate of the tile."`
+	Width  float64 `arg:"" required:"" help:"New width of the tile."`
+	Height float64 `arg:"" required:"" help:"New height of the tile."`
+}
+
+func (cmd SetActiveTileGeometryCmd) Validate() error {
+	return validateTileGeometry(cmd.X, cmd.Y, cmd.Width, cmd.Height)
+}
+
+func (cmd SetActiveTileGeometryCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_SET_ACTIVE_TILE_GEOMETRY
+	sp.Params.RelativeX = cmd.X
+	sp.Params.RelativeY = cmd.Y
+	sp.Params.RelativeWidth = cmd.Width
+	sp.Params.RelativeHeight = cmd.Height
 	return nil
 }
