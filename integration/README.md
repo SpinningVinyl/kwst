@@ -8,7 +8,7 @@ virtual desktops, it is advised not to run them during important interactive wor
 
 - A running KWin session w/session D-Bus.
 - KDialog available in `PATH`.
-- Go 1.23 or later.
+- Go 1.27 or later.
 
 The optional previous-window test also requires `kpackagetool6`, the
 `net.prsv.kwst.previouswindow` package, and its registered KGlobalAccel

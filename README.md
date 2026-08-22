@@ -267,7 +267,7 @@ quit.
 
 Starting with version 3.0.0, the project also includes a debug listener (`kwst-debug-listener`), which is useful for developing custom scripts using KWin's scripting console.
 
-To build from source, you need GNU make and Go v1.23 or later. First clone the repository:
+To build from source, you need GNU make and Go 1.27 or later. First clone the repository:
 
 ```sh
 git clone https://github.com/SpinningVinyl/kwst.git && cd kwst
