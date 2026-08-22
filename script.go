@@ -42,6 +42,7 @@ type ScriptParams struct {
 	LeavesOnly            bool
 	TilePath              string
 	Edge                  string
+	Direction             string
 }
 
 type ScriptPackage struct {

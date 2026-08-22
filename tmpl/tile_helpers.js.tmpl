@@ -153,5 +153,28 @@ const edgeForName = (edgeName) => {
 const resizeTileByPercent = (tile, area, delta, edgeName) => {
     const edge = edgeForName(edgeName);
     const dimension = (edge === 1 || edge === 8) ? area.height : area.width;
-    tile.resizeByPixels(Math.round(dimension * delta /100), edge);
+    const pixels = Math.sign(delta) * Math.round(Math.abs(dimension * delta /100));
+    tile.resizeByPixels(pixels, edge);
+}
+
+const growthTarget = (tile, direction) => {
+    for (let current = tile; current.parent !== null; current = current.parent) {
+        const geometry = current.relativeGeometry;
+        if (direction === "h") {
+            if (geometry.x + geometry.width < 1) {
+                return { tile: current, edge: "right", sign: 1 };
+            }
+            if (geometry.x > 0) {
+                return { tile: current, edge: "left", sign: -1 };
+            }
+        } else {
+            if (geometry.y + geometry.height < 1) {
+                return {tile: current, edge: "bottom", sign: 1};
+            }
+            if (geometry.y > 0) {
+                return {tile: current, edge: "top", sign: -1};
+            }
+        }
+    }
+    return null;
 }

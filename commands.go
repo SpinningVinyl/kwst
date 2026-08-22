@@ -459,7 +459,7 @@ func validateResizeDelta(delta float64) error {
 type ResizeTileCmd struct {
 	OutputName string  `name:"output" help:"Name of the output containing the root tile."`
 	TilePath   string  `arg:"" required:"" help:"Locator path of the tile."`
-	Delta      float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)"`
+	Delta      float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)."`
 	Edge       string  `arg:"" required:"" enum:"top,left,right,bottom" help:"The edge that will be moved. Possible values: top, left, right, bottom."`
 }
 
@@ -477,7 +477,7 @@ func (cmd ResizeTileCmd) Run(sp *ScriptPackage) error {
 }
 
 type ResizeActiveTileCmd struct {
-	Delta float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)"`
+	Delta float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)."`
 	Edge  string  `arg:"" required:"" enum:"top,left,right,bottom" help:"The edge that will be moved. Possible values: top, left, right, bottom."`
 }
 
@@ -550,5 +550,21 @@ func (cmd SetActiveTileGeometryCmd) Run(sp *ScriptPackage) error {
 	sp.Params.RelativeY = cmd.Y
 	sp.Params.RelativeWidth = cmd.Width
 	sp.Params.RelativeHeight = cmd.Height
+	return nil
+}
+
+type GrowActiveTileCmd struct {
+	Direction string  `arg:"" required:"" enum:"h,v" help:"Direction of growth."`
+	Delta     float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)."`
+}
+
+func (cmd GrowActiveTileCmd) Validate() error {
+	return validateResizeDelta(cmd.Delta)
+}
+
+func (cmd GrowActiveTileCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_GROW_ACTIVE_TILE
+	sp.Params.Delta = cmd.Delta
+	sp.Params.Direction = cmd.Direction
 	return nil
 }

@@ -116,5 +116,8 @@ var JS_SET_TILE_GEOMETRY string
 //go:embed tmpl/set_active_tile_geometry.js.tmpl
 var JS_SET_ACTIVE_TILE_GEOMETRY string
 
+//go:embed tmpl/grow_active_tile.js.tmpl
+var JS_GROW_ACTIVE_TILE string
+
 //go:embed tmpl/footer.js.tmpl
 var JS_FOOTER string
