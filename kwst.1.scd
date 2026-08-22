@@ -278,6 +278,51 @@ script to finish returns status 124.
 		The command returns an error if the output does not exist or the tile path is
 		malformed or does not exist.
 
+	*resize-tile* <tile-path> <delta> <edge> [_flags_]
+		Resize the native KWin tile identified by _tile-path_ by moving _edge_. The
+		_delta_ is a non-zero percentage between -100 and 100, inclusive, of the
+		output client area's width for the 'left' and 'right' edges or height for the
+		'top' and 'bottom' edges. Fractional percentages are accepted.
+
+		If no output is specified, the active output as defined by KWin is used.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			Resize a tile on the named output.
+
+		The command returns an error if the output does not exist or the tile path is
+		malformed or does not exist.
+
+	*resize-active-tile* <delta> <edge>
+		Resize the native KWin tile assigned to the active window by moving _edge_.
+		The _delta_ has the same range and meaning as for *resize-tile*, and is
+		calculated from the client area of the active window's output.
+
+		The command returns an error if the active window is not tiled or is assigned
+		to a quick tile rather than a native tile.
+
+	*set-tile-geometry* <tile-path> <x> <y> <width> <height> [_flags_]
+		Set the relative geometry of the native KWin tile identified by _tile-path_.
+		Each geometry component must be between 0.0 and 1.0, inclusive.
+
+		If no output is specified, the active output as defined by KWin is used.
+
+		The currently supported flags are:
+
+		*--output=STRING*
+			Set the geometry of a tile on the named output.
+
+		The command returns an error if the output does not exist or the tile path is
+		malformed or does not exist.
+
+	*set-active-tile-geometry* <x> <y> <width> <height>
+		Set the relative geometry of the native KWin tile assigned to the active
+		window. Each geometry component must be between 0.0 and 1.0, inclusive.
+
+		The command returns an error if the active window is not tiled or is assigned
+		to a quick tile rather than a native tile.
+
 	*get-active-output*
 		Get the active output as defined by KWin. Usually, it's the output with
 		the mouse cursor, but it can also be an output containing the centre of

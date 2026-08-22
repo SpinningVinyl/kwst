@@ -498,13 +498,13 @@ func validateTileGeometry(x, y, width, height float64) error {
 		math.IsNaN(y) || math.IsInf(y, 0) ||
 		math.IsNaN(width) || math.IsInf(width, 0) ||
 		math.IsNaN(height) || math.IsInf(height, 0) {
-		return fmt.Errorf("geometry parameters must be valid numbers.")
+		return fmt.Errorf("geometry components must be valid numbers.")
 	}
 	if x < 0 || x > 1.0 ||
 		y < 0 || y > 1.0 ||
 		width < 0 || width > 1.0 ||
 		height < 0 || height > 1.0 {
-		return fmt.Errorf("geometry parameters must be between 0.0 and 1.0.")
+		return fmt.Errorf("geometry components must be between 0.0 and 1.0.")
 	}
 	return nil
 }
