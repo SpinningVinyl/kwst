@@ -44,5 +44,5 @@ type CLI struct {
 	ResizeActiveTile          ResizeActiveTileCmd          `cmd:"" help:"Resize the tile that the active window is assigned to."`
 	SetTileGeometry           SetTileGeometryCmd           `cmd:"" help:"Sets the relative geometry of the tile with the provided locator path (optionally on the specified output)."`
 	SetActiveTileGeometry     SetActiveTileGeometryCmd     `cmd:"" help:"Sets the relative geometry of the tile that the active window is assigned to, provided that such a tile exists."`
-	GrowActiveTile            GrowActiveTileCmd            `cmd:"" help:"Grow the active tile in the specified direction."`
+	GrowActiveTile            GrowActiveTileCmd            `cmd:"" help:"Grow the active tile horizontally or vertically."`
 }

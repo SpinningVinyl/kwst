@@ -554,8 +554,8 @@ func (cmd SetActiveTileGeometryCmd) Run(sp *ScriptPackage) error {
 }
 
 type GrowActiveTileCmd struct {
-	Direction string  `arg:"" required:"" enum:"h,v" help:"Direction of growth."`
 	Delta     float64 `arg:"" required:"" help:"Change in the size of the tile (as a percentage of the client area width/height)."`
+	Direction string  `arg:"" required:"" enum:"h,v" help:"Direction of growth."`
 }
 
 func (cmd GrowActiveTileCmd) Validate() error {
