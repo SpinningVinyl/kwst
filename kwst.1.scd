@@ -39,23 +39,23 @@ List regular windows and include their captions:
 
 Get the active window and inspect or change its geometry:
 
-	window_id=$(*kwst get-active-window*)
-	*kwst get-window-geometry "$window_id"*
-	*kwst set-window-geometry "$window_id" 100 100 1200 800*
-	*kwst set-window-geometry-relative "$window_id" 0 0 50 100*
-	*kwst set-window-size-relative "$window_id" 50 100*
+	window_id=$(*kwst get-active-window*)++
+	*kwst get-window-geometry "$window_id"*++
+	*kwst set-window-geometry "$window_id" 100 100 1200 800*++
+	*kwst set-window-geometry-relative "$window_id" 0 0 50 100*++
+	*kwst set-window-size-relative "$window_id" 50 100*++
 	*kwst set-window-position-relative "$window_id" 25 25*
 
 Toggle the active window's always-on-top state:
 
-	window_id=$(*kwst get-active-window*)
+	window_id=$(*kwst get-active-window*)++
 	*kwst set-window-property --property=keepAbove --value=toggle "$window_id"*
 
 Find the first window whose caption begins with "Konsole" and activate it:
 
-	window_id=$(*kwst find --search-field=caption '^Konsole'* | head -n 1)
-	if [ -n "$window_id" ]; then
-		*kwst activate-window "$window_id"*
+	window_id=$(*kwst find --search-field=caption '^Konsole'* | head -n 1)++
+	if [ -n "$window_id" ]; then++
+		*kwst activate-window "$window_id"*++
 	fi
 
 # EXIT STATUS
@@ -310,6 +310,27 @@ script to finish returns status 124.
 
 		The command returns an error if the active window is not tiled or is assigned
 		to a quick tile rather than a native tile.
+
+	*grow-active-tile* <delta> <direction>
+		Grow the native KWin tile assigned to the active window in the specified
+		_direction_ which can be either 'h' (horizontal) or 'v' (vertical). The
+		_delta_ has the same range and meaning as for *resize-tile* and
+		*resize-active-tile*, and is calculated from the client area of the active
+		window's output. Negative values shrink the tile.
+
+		Depending on the _direction_, the command tries to determine if the active
+		tile has a vertical or horizontal edge that is not adjacent to an output
+		boundary, and grows or shrinks the tile in the direction of the found edge.
+		If the active tile has two internal edges that satisfy the criteria, the
+		right/bottom edge has precedence over left/top.
+
+		If _delta_ is negative, place *--* before the arguments:
+
+			*kwst grow-active-tile -- -1 h*
+
+		The command returns an error if the active window is not tiled or is assigned
+		to a quick tile, or if the native tile that the window is assigned to has no
+		internal edges in the specified direction.
 
 	*set-tile-geometry* <tile-path> <x> <y> <width> <height> [_flags_]
 		Set the relative geometry of the native KWin tile identified by _tile-path_.

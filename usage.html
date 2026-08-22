@@ -193,30 +193,30 @@ managers implementing NET_WM and EWMH specifications.
 <p>Get the active window and inspect or change its geometry:
 </p>
 
-<blockquote>window_id=$(<b>kwst get-active-window</b>)
-<b>kwst get-window-geometry "$window_id"</b>
-<b>kwst set-window-geometry "$window_id" 100 100 1200 800</b>
-<b>kwst set-window-geometry-relative "$window_id" 0 0 50 100</b>
-<b>kwst set-window-size-relative "$window_id" 50 100</b>
+<blockquote>window_id=$(<b>kwst get-active-window</b>)<br>
+<b>kwst get-window-geometry "$window_id"</b><br>
+<b>kwst set-window-geometry "$window_id" 100 100 1200 800</b><br>
+<b>kwst set-window-geometry-relative "$window_id" 0 0 50 100</b><br>
+<b>kwst set-window-size-relative "$window_id" 50 100</b><br>
 <b>kwst set-window-position-relative "$window_id" 25 25</b>
 </blockquote>
 
 <p>Toggle the active window's always-on-top state:
 </p>
 
-<blockquote>window_id=$(<b>kwst get-active-window</b>)
+<blockquote>window_id=$(<b>kwst get-active-window</b>)<br>
 <b>kwst set-window-property --property=keepAbove --value=toggle "$window_id"</b>
 </blockquote>
 
 <p>Find the first window whose caption begins with "Konsole" and activate it:
 </p>
 
-<blockquote>window_id=$(<b>kwst find --search-field=caption '^Konsole'</b> | head -n 1)
-if [ -n "$window_id" ]; then
+<blockquote>window_id=$(<b>kwst find --search-field=caption '^Konsole'</b> | head -n 1)<br>
+if [ -n "$window_id" ]; then<br>
 </blockquote>
 
 <blockquote>
-<blockquote><b>kwst activate-window "$window_id"</b>
+<blockquote><b>kwst activate-window "$window_id"</b><br>
 </blockquote>
 </blockquote>
 
@@ -835,6 +835,46 @@ calculated from the client area of the active window's output.
 <blockquote>
 <blockquote>The command returns an error if the active window is not tiled or is assigned
 to a quick tile rather than a native tile.
+</blockquote>
+</blockquote>
+
+<blockquote><b>grow-active-tile</b> &lt;delta&gt; &lt;direction&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Grow the native KWin tile assigned to the active window in the specified
+<u>direction</u> which can be either 'h' (horizontal) or 'v' (vertical). The
+<u>delta</u> has the same range and meaning as for <b>resize-tile</b> and
+<b>resize-active-tile</b>, and is calculated from the client area of the active
+window's output. Negative values shrink the tile.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Depending on the <u>direction</u>, the command tries to determine if the active
+tile has a vertical or horizontal edge that is not adjacent to an output
+boundary, and grows or shrinks the tile in the direction of the found edge.
+If the active tile has two internal edges that satisfy the criteria, the
+right/bottom edge has precedence over left/top.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>If <u>delta</u> is negative, place <b>--</b> before the arguments:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst grow-active-tile -- -1 h</b>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The command returns an error if the active window is not tiled or is assigned
+to a quick tile, or if the native tile that the window is assigned to has no
+internal edges in the specified direction.
 </blockquote>
 </blockquote>
 
