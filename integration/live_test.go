@@ -697,6 +697,16 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 	}
 
 	activateAndVerify(t, kwst, fixture)
+	growthDirection := "h"
+	if resizeEdge == "top" || resizeEdge == "bottom" {
+		growthDirection = "v"
+	}
+	t.Run("grow active tile", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			[]string{"grow-active-tile", "1", growthDirection},
+			append([]string{"set-tile-geometry", "--output=" + targetTile.output, targetTile.path}, originalGeometryArguments...),
+		)
+	})
 	t.Run("resize active tile", func(t *testing.T) {
 		verifyTileGeometryChange(t, kwst, targetTile,
 			[]string{"resize-active-tile", "1", resizeEdge},
