@@ -1,9 +1,9 @@
 module kwst
 
-go 1.23.5
+go 1.27.0
 
 require (
-	github.com/alecthomas/kong v1.8.1
-	github.com/godbus/dbus/v5 v5.1.0
-	golang.org/x/sys v0.35.0
+	github.com/alecthomas/kong v1.16.1
+	github.com/godbus/dbus/v5 v5.2.2
+	golang.org/x/sys v0.47.0
 )
