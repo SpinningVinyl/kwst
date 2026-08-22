@@ -645,9 +645,18 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 	}
 
 	t.Run("resize tile", func(t *testing.T) {
-		verifyTileResize(t, kwst, targetTile,
+		verifyTileGeometryChange(t, kwst, targetTile,
 			[]string{"resize-tile", "--output=" + targetTile.output, targetTile.path, "1", resizeEdge},
 			[]string{"resize-tile", "--output=" + targetTile.output, "--", targetTile.path, "-1", resizeEdge},
+		)
+	})
+
+	originalGeometryArguments := formatTileGeometryArguments(targetTile.relativeGeometry)
+	targetGeometryArguments := formatTileGeometryArguments(moveTileInteriorEdge(targetTile.relativeGeometry, resizeEdge))
+	t.Run("set tile geometry", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			append([]string{"set-tile-geometry", "--output=" + targetTile.output, targetTile.path}, targetGeometryArguments...),
+			append([]string{"set-tile-geometry", "--output=" + targetTile.output, targetTile.path}, originalGeometryArguments...),
 		)
 	})
 
@@ -689,9 +698,15 @@ func testNativeTileCommands(t *testing.T, kwst string, fixture *fixtureWindow, o
 
 	activateAndVerify(t, kwst, fixture)
 	t.Run("resize active tile", func(t *testing.T) {
-		verifyTileResize(t, kwst, targetTile,
+		verifyTileGeometryChange(t, kwst, targetTile,
 			[]string{"resize-active-tile", "1", resizeEdge},
 			[]string{"resize-tile", "--output=" + targetTile.output, "--", targetTile.path, "-1", resizeEdge},
+		)
+	})
+	t.Run("set active tile geometry", func(t *testing.T) {
+		verifyTileGeometryChange(t, kwst, targetTile,
+			append([]string{"set-active-tile-geometry"}, targetGeometryArguments...),
+			append([]string{"set-active-tile-geometry"}, originalGeometryArguments...),
 		)
 	})
 
@@ -724,7 +739,35 @@ func resizableTileEdge(geometry geometry) (string, bool) {
 	return "", false
 }
 
-func verifyTileResize(t *testing.T, kwst string, tile tileRow, resizeArguments, restoreArguments []string) {
+func moveTileInteriorEdge(value geometry, edge string) geometry {
+	const maximumDelta = 0.01
+	switch edge {
+	case "right":
+		value.width += min(maximumDelta, 1-value.x-value.width)
+	case "bottom":
+		value.height += min(maximumDelta, 1-value.y-value.height)
+	case "left":
+		delta := min(maximumDelta, value.x)
+		value.x -= delta
+		value.width += delta
+	case "top":
+		delta := min(maximumDelta, value.y)
+		value.y -= delta
+		value.height += delta
+	}
+	return value
+}
+
+func formatTileGeometryArguments(value geometry) []string {
+	return []string{
+		strconv.FormatFloat(value.x, 'f', -1, 64),
+		strconv.FormatFloat(value.y, 'f', -1, 64),
+		strconv.FormatFloat(value.width, 'f', -1, 64),
+		strconv.FormatFloat(value.height, 'f', -1, 64),
+	}
+}
+
+func verifyTileGeometryChange(t *testing.T, kwst string, tile tileRow, changeArguments, restoreArguments []string) {
 	t.Helper()
 
 	initial, err := readTileGeometry(t, kwst, tile.output, tile.path)
@@ -740,7 +783,7 @@ func verifyTileResize(t *testing.T, kwst string, tile tileRow, resizeArguments, 
 		}
 	})
 
-	requireSuccess(t, runKWST(t, kwst, resizeArguments...), strings.Join(resizeArguments, " "))
+	requireSuccess(t, runKWST(t, kwst, changeArguments...), strings.Join(changeArguments, " "))
 	restoreNeeded = true
 	eventually(t, "tile geometry to change", func() (bool, string) {
 		current, err := readTileGeometry(t, kwst, tile.output, tile.path)
