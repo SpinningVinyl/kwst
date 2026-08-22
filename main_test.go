@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"testing"
@@ -255,6 +256,28 @@ func TestCommandRunMethods(t *testing.T) {
 			},
 		},
 		{
+			name: "resize tile",
+			command: &ResizeTileCmd{
+				OutputName: "DP-1",
+				TilePath:   "1.0",
+				Delta:      2.5,
+				Edge:       "right",
+			},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_RESIZE_TILE,
+			wantParams: ScriptParams{
+				OutputName: "DP-1",
+				TilePath:   "1.0",
+				Delta:      2.5,
+				Edge:       "right",
+			},
+		},
+		{
+			name:         "resize active tile",
+			command:      &ResizeActiveTileCmd{Delta: -2.5, Edge: "left"},
+			wantTemplate: initialTemplate + JS_TILE_HELPERS + JS_RESIZE_ACTIVE_TILE,
+			wantParams:   ScriptParams{Delta: -2.5, Edge: "left"},
+		},
+		{
 			name:         "get active output",
 			command:      &GetActiveOutputCmd{},
 			wantTemplate: initialTemplate + JS_GET_ACTIVE_OUTPUT,
@@ -357,6 +380,18 @@ func TestCommandHelperBundles(t *testing.T) {
 				"const tileForPath = (",
 			},
 		},
+		{
+			name:     "tile resize uses tile helpers",
+			command:  &ResizeTileCmd{TilePath: ".", Delta: 1, Edge: "right"},
+			includes: []string{"const resizeTileByPercent = ("},
+			excludes: []string{"const formatWindowRow = ("},
+		},
+		{
+			name:     "active tile resize uses tile helpers",
+			command:  &ResizeActiveTileCmd{Delta: 1, Edge: "right"},
+			includes: []string{"const resizeTileByPercent = ("},
+			excludes: []string{"const formatWindowRow = ("},
+		},
 	}
 
 	for _, test := range tests {
@@ -383,6 +418,52 @@ func TestCommandHelperBundles(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestResizeCommandValidation(t *testing.T) {
+	commands := []struct {
+		name     string
+		validate func(float64) error
+	}{
+		{
+			name: "resize tile",
+			validate: func(delta float64) error {
+				return (ResizeTileCmd{Delta: delta}).Validate()
+			},
+		},
+		{
+			name: "resize active tile",
+			validate: func(delta float64) error {
+				return (ResizeActiveTileCmd{Delta: delta}).Validate()
+			},
+		},
+	}
+	values := []struct {
+		name    string
+		delta   float64
+		wantErr bool
+	}{
+		{name: "minimum", delta: -100},
+		{name: "negative fraction", delta: -0.5},
+		{name: "positive fraction", delta: 0.5},
+		{name: "maximum", delta: 100},
+		{name: "below minimum", delta: -100.1, wantErr: true},
+		{name: "zero", delta: 0, wantErr: true},
+		{name: "above maximum", delta: 100.1, wantErr: true},
+		{name: "NaN", delta: math.NaN(), wantErr: true},
+		{name: "infinity", delta: math.Inf(1), wantErr: true},
+	}
+
+	for _, command := range commands {
+		for _, value := range values {
+			t.Run(command.name+"/"+value.name, func(t *testing.T) {
+				err := command.validate(value.delta)
+				if (err != nil) != value.wantErr {
+					t.Errorf("Validate() error = %v, wantErr %t", err, value.wantErr)
+				}
+			})
+		}
 	}
 }
 
