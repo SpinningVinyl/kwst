@@ -42,4 +42,6 @@ type CLI struct {
 	ListTileWindows           ListTileWindowsCmd           `cmd:"" help:"List all windows assigned to the tile with the provided locator path."`
 	ResizeTile                ResizeTileCmd                `cmd:"" help:"Resize the tile with the provided locator path (optionally on the specified output)."`
 	ResizeActiveTile          ResizeActiveTileCmd          `cmd:"" help:"Resize the tile that the active window is assigned to."`
+	SetTileGeometry           SetTileGeometryCmd           `cmd:"" help:"Sets the relative geometry of the tile with the provided locator path (optionally on the specified output)."`
+	SetActiveTileGeometry     SetActiveTileGeometryCmd     `cmd:"" help:"Sets the relative geometry of the tile that the active window is assigned to, provided that such a tile exists."`
 }

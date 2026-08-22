@@ -1,0 +1,22 @@
+const execute = () => {
+    debugLog(scriptName + " executing JS_SET_TILE_GEOMETRY");
+    const outputName = {{jsString .OutputName}}
+    const tilePath = {{jsString .TilePath}}
+
+    const output = outputForName(outputName, workspace.activeScreen);
+
+    if (!output) {
+        returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+        return;
+    }
+    const t = tileForPath(output, tilePath);
+    if (!t) {
+        returnError(ERROR_TILE_NOT_FOUND + tilePath);
+        return;
+    }
+    const x = {{.RelativeX}};
+    const y = {{.RelativeY}};
+    const width = {{.RelativeWidth}};
+    const height = {{.RelativeHeight}};
+    updateTileGeometry(t, {x, y, width, height});
+}

@@ -492,3 +492,63 @@ func (cmd ResizeActiveTileCmd) Run(sp *ScriptPackage) error {
 	sp.Params.Edge = cmd.Edge
 	return nil
 }
+
+func validateTileGeometry(x, y, width, height float64) error {
+	if math.IsNaN(x) || math.IsInf(x, 0) ||
+		math.IsNaN(y) || math.IsInf(y, 0) ||
+		math.IsNaN(width) || math.IsInf(width, 0) ||
+		math.IsNaN(height) || math.IsInf(height, 0) {
+		return fmt.Errorf("geometry parameters must be valid numbers.")
+	}
+	if x < 0 || x > 1.0 ||
+		y < 0 || y > 1.0 ||
+		width < 0 || width > 1.0 ||
+		height < 0 || height > 1.0 {
+		return fmt.Errorf("geometry parameters must be between 0.0 and 1.0.")
+	}
+	return nil
+}
+
+type SetTileGeometryCmd struct {
+	OutputName string  `name:"output" help:"Name of the output containing the root tile."`
+	TilePath   string  `arg:"" required:"" help:"Locator path of the target tile."`
+	X          float64 `arg:"" required:"" help:"New X coordinate of the tile."`
+	Y          float64 `arg:"" required:"" help:"New Y coordinate of the tile."`
+	Width      float64 `arg:"" required:"" help:"New width of the tile."`
+	Height     float64 `arg:"" required:"" help:"New height of the tile."`
+}
+
+func (cmd SetTileGeometryCmd) Validate() error {
+	return validateTileGeometry(cmd.X, cmd.Y, cmd.Width, cmd.Height)
+}
+
+func (cmd SetTileGeometryCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_SET_TILE_GEOMETRY
+	sp.Params.RelativeX = cmd.X
+	sp.Params.RelativeY = cmd.Y
+	sp.Params.RelativeWidth = cmd.Width
+	sp.Params.RelativeHeight = cmd.Height
+	sp.Params.OutputName = cmd.OutputName
+	sp.Params.TilePath = cmd.TilePath
+	return nil
+}
+
+type SetActiveTileGeometryCmd struct {
+	X      float64 `arg:"" required:"" help:"New X coordinate of the tile."`
+	Y      float64 `arg:"" required:"" help:"New Y coordinate of the tile."`
+	Width  float64 `arg:"" required:"" help:"New width of the tile."`
+	Height float64 `arg:"" required:"" help:"New height of the tile."`
+}
+
+func (cmd SetActiveTileGeometryCmd) Validate() error {
+	return validateTileGeometry(cmd.X, cmd.Y, cmd.Width, cmd.Height)
+}
+
+func (cmd SetActiveTileGeometryCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_TILE_HELPERS + JS_SET_ACTIVE_TILE_GEOMETRY
+	sp.Params.RelativeX = cmd.X
+	sp.Params.RelativeY = cmd.Y
+	sp.Params.RelativeWidth = cmd.Width
+	sp.Params.RelativeHeight = cmd.Height
+	return nil
+}
