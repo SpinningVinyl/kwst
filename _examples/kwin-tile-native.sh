@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-or-later
 # Assign the currently active window to a native KWin tile on the specified
 # output.
 

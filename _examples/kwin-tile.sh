@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-or-later
 # This script is used to manually tile the currently active window into one of the tiling zones.
 # Tiling zones are defined in the four arrays below. Adjust the values for your
 # display layout. The zone number is used to index the arrays.

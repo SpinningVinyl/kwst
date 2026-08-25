@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-or-later
 # This script first checks if there is a window that matches the regular
 # expression. If such a window is found, the script activates it. Otherwise,
 # the script runs the provided program.
