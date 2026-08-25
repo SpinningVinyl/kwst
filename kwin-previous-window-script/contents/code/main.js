@@ -52,6 +52,13 @@ function switchToPreviouslyActiveWindow() {
         const candidate = activationHistory[index];
         if (!isTrackable(activeWindow) || !sameWindow(candidate, activeWindow)) {
             workspace.activeWindow = candidate;
+            callDBus(
+                "org.kde.kglobalaccel",
+                "/component/kwin",
+                "org.kde.kglobalaccel.Component",
+                "invokeShortcut",
+                "MoveMouseToFocus"
+            );
             return;
         }
     }
