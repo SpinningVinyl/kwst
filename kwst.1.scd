@@ -173,8 +173,8 @@ script to finish returns status 124.
 
 		*-p*, *--property=STRING*
 			Property to change the value of. Possible values of this flag:
-			'keepAbove', 'keepBelow', 'shade', 'fullScreen', 'skipTaskbar',
-			'skipPager', 'skipSwitcher'
+			'excludeFromCapture', 'keepAbove', 'keepBelow', 'fullScreen',
+			'skipTaskbar', 'skipPager', 'skipSwitcher'
 		*-v*, *--value=STRING*
 			Possible values: 'true', 'false', 'toggle'
 

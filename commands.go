@@ -143,7 +143,7 @@ func (swwc *SetWindowWorkspaceCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowPropertyCmd struct {
-	Property string `required:"" enum:"keepAbove,keepBelow,shade,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: keepAbove, keepBelow, shade, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
+	Property string `required:"" enum:"excludeFromCapture,keepAbove,keepBelow,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: excludeFromCapture, keepAbove, keepBelow, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
 	Value    string `required:"" enum:"true,false,toggle" short:"v" help:"Possible values: true, false, toggle"`
 
 	Uuid string `arg:"" required:"" help:"UUID of the window to manipulate"`
