@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+const execute = () => {
+    debugLog(scriptName + " executing JS_GET_WINDOW_PROPERTY");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+        return;
+    }
+
+    const properties = [
+        "active", "demandsAttention", "dialog", "fullScreen", "fullScreenable",
+        "hidden", "keepAbove", "keepBelow", "layer", "maximizable", "minimizable",
+        "minimized", "modal", "noBorder", "normalWindow", "onAllDesktops",
+        "onScreenDisplay", "popupMenu", "popupWindow", "resizeable", "resourceClass",
+        "resourceName", "skipPager", "skipSwitcher", "skipTaskbar", "specialWindow",
+        "splash", "transient", "utility", "windowRole", "windowType"
+    ];
+
+    // KWin's scripting global does not expose the Layer or WindowType enums.
+    const layers = {
+        "-1": "UnknownLayer",
+        0: "DesktopLayer",
+        1: "BelowLayer",
+        2: "NormalLayer",
+        3: "AboveLayer",
+        4: "NotificationLayer",
+        5: "ActiveLayer",
+        6: "PopupLayer",
+        7: "CriticalNotificationLayer",
+        8: "OnScreenDisplayLayer",
+        9: "OverlayLayer"
+    };
+    const windowTypes = {
+        "-2": "Undefined",
+        "-1": "Unknown",
+        0: "Normal",
+        1: "Desktop",
+        2: "Dock",
+        3: "Toolbar",
+        4: "Menu",
+        5: "Dialog",
+        6: "Override",
+        7: "TopMenu",
+        8: "Utility",
+        9: "Splash",
+        10: "DropdownMenu",
+        11: "PopupMenu",
+        12: "Tooltip",
+        13: "Notification",
+        14: "ComboBox",
+        15: "DNDIcon",
+        16: "OnScreenDisplay",
+        17: "CriticalNotification",
+        18: "AppletPopup"
+    };
+
+    const readProperty = (property) => {
+        const value = targetWindow[property];
+        if (value === undefined || value === null) {
+            throw new Error("Window property unavailable: " + property);
+        }
+        if (property === "layer" || property === "windowType") {
+            const names = property === "layer" ? layers : windowTypes;
+            if (!Object.prototype.hasOwnProperty.call(names, value)) {
+                throw new Error("Unknown value for " + property + ": " + value);
+            }
+            return names[value];
+        }
+        return String(value);
+    };
+
+    const property = {{jsString .WindowProperty}};
+    if (property === "all") {
+        const escapeValue = (value) => value.replace(/\\/g, "\\\\")
+            .replace(/\t/g, "\\t").replace(/\r/g, "\\r").replace(/\n/g, "\\n");
+        returnResult(properties.map((name) => name + "\t" + escapeValue(readProperty(name))).join("\n"));
+    } else if (properties.includes(property)) {
+        returnResult(readProperty(property));
+    } else {
+        returnError("Unsupported window property: " + property);
+    }
+}

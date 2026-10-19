@@ -49,6 +49,9 @@ var JS_SET_WINDOW_GEOMETRY string
 //go:embed tmpl/set_window_workspace.js.tmpl
 var JS_SET_WINDOW_WORKSPACE string
 
+//go:embed tmpl/get_window_property.js.tmpl
+var JS_GET_WINDOW_PROPERTY string
+
 //go:embed tmpl/set_window_property.js.tmpl
 var JS_SET_WINDOW_PROPERTY string
 

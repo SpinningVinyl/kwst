@@ -914,9 +914,13 @@ func testRelativeGeometryCommands(t *testing.T, kwst string, fixture *fixtureWin
 	t.Helper()
 
 	activateAndVerify(t, kwst, fixture)
-	outputResult := runKWST(t, kwst, "get-active-window-output")
-	outputName := requireSingleOutputName(t, outputResult, "get fixture output")
-	areaResult := runKWST(t, kwst, "get-output-geometry", "--client-area", outputName)
+	// Relative commands use KWin's fractional area, before get-output-geometry rounds it.
+	areaScript := writeCustomScript(t, `const window = workspace.windowList().find(
+    candidate => candidate.internalId == {{jsString .P1}}
+);
+const area = workspace.clientArea(KWin.MaximizeArea, window.output, workspace.currentDesktopForScreen(window.output));
+returnResult([area.x, area.y, area.width, area.height].join(" "));`)
+	areaResult := runKWST(t, kwst, "run-custom-script", "--parameter-1="+fixture.uuid, areaScript)
 	requireSuccess(t, areaResult, "get fixture output client area")
 	clientArea, err := parseGeometry(areaResult.stdout)
 	if err != nil {
@@ -1036,7 +1040,7 @@ func relativeGeometry(area geometry, xPercent, yPercent, widthPercent, heightPer
 }
 
 func relativeCoordinate(origin, length, percent float64) float64 {
-	return origin + relativeLength(length, percent)
+	return math.Round(origin + relativeLength(length, percent))
 }
 
 func relativeLength(length, percent float64) float64 {
@@ -1084,7 +1088,7 @@ func resizeAndMoveFixture(t *testing.T, kwst string, fixture *fixtureWindow) {
 		if err != nil {
 			return false, err.Error()
 		}
-		return actual == target, fmt.Sprintf("got %+v, want %+v", actual, target)
+		return geometryMatches(actual, target), fmt.Sprintf("got %+v, want %+v", actual, target)
 	})
 }
 
@@ -1128,8 +1132,14 @@ func waitForGeometry(t *testing.T, kwst, uuid string, expected geometry) {
 		if err != nil {
 			return false, err.Error()
 		}
-		return actual == expected, fmt.Sprintf("got %+v, want %+v", actual, expected)
+		return geometryMatches(actual, expected), fmt.Sprintf("got %+v, want %+v", actual, expected)
 	})
+}
+
+func geometryMatches(actual, expected geometry) bool {
+	// Fractional scaling can round the client's resized dimensions by one logical pixel.
+	return actual.x == expected.x && actual.y == expected.y &&
+		math.Abs(actual.width-expected.width) <= 1 && math.Abs(actual.height-expected.height) <= 1
 }
 
 func waitForGeometryChange(t *testing.T, kwst, uuid string, original geometry) geometry {

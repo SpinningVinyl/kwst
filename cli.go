@@ -21,6 +21,7 @@ type CLI struct {
 	SetWindowPosition         SetWindowPosCmd              `cmd:"" help:"Set the position of the window with the provided UUID."`
 	SetWindowGeometry         SetWindowGeometryCmd         `cmd:"" help:"Change geometry of the window with the provided UUID."`
 	SetWindowWorkspace        SetWindowWorkspaceCmd        `cmd:"" help:"Send the window with the specified UUID to the workspace with the specified number."`
+	GetWindowProperty         GetWindowPropertyCmd         `cmd:"" help:"Get the value of the specified property for the window with the provided UUID."`
 	SetWindowProperty         SetWindowPropertyCmd         `cmd:"" help:"Change the value of a property on a window with the specified UUID."`
 	CloseWindow               CloseWindowCmd               `cmd:"" help:"Close the window with the provided UUID."`
 	RunCustomScript           RunCustomScriptCmd           `cmd:"" help:"Run a custom script. Supports up to six optional parameters."`
