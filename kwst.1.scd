@@ -166,6 +166,34 @@ script to finish returns status 124.
 		Send the window with the specified UUID to the workspace with the specified
 		number, provided that both exist.
 
+	*get-window-property* _--property_=STRING <uuid>
+		Get the value of a property on the window with the specified UUID.
+		Returns only the value: 'true' or 'false' for boolean properties, a string
+		for 'resourceClass', 'resourceName', and 'windowRole', or a readable enum
+		name for 'layer' and 'windowType' (for example, 'AboveLayer' or 'Dialog').
+
+		The required flag is:
+
+		*-p*, *--property=STRING*
+			Property to query. Possible values:
+			'all', 'active', 'demandsAttention', 'dialog', 'fullScreen',
+			'fullScreenable', 'hidden', 'keepAbove', 'keepBelow', 'layer',
+			'maximizable', 'minimizable', 'minimized', 'modal', 'noBorder',
+			'normalWindow', 'onAllDesktops', 'onScreenDisplay', 'popupMenu',
+			'popupWindow', 'resizeable', 'resourceClass', 'resourceName',
+			'skipPager', 'skipSwitcher', 'skipTaskbar', 'specialWindow',
+			'splash', 'transient', 'utility', 'windowRole', 'windowType'.
+
+		With '--property=all', returns all supported properties, one per line,
+		as tab-separated property names and values. Within values, backslashes,
+		tabs, carriage returns, and newlines are escaped as '\\\\', '\\t', '\\r',
+		and '\\n', respectively. Single-property queries return strings unchanged.
+
+		For example:
+
+			*kwst get-window-property --property=keepAbove "$window_id"*++
+			*kwst get-window-property --property=all "$window_id"*
+
 	*set-window-property* _--property_=STRING _--value_=STRING <uuid>
 		Change the value of a property on a window with the specified UUID.
 

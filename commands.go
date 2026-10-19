@@ -142,6 +142,19 @@ func (swwc *SetWindowWorkspaceCmd) Run(sp *ScriptPackage) error {
 	return nil
 }
 
+type GetWindowPropertyCmd struct {
+	Property string `required:"" enum:"all,active,demandsAttention,dialog,fullScreen,fullScreenable,hidden,keepAbove,keepBelow,layer,maximizable,minimizable,minimized,modal,noBorder,normalWindow,onAllDesktops,onScreenDisplay,popupMenu,popupWindow,resizeable,resourceClass,resourceName,skipPager,skipSwitcher,skipTaskbar,specialWindow,splash,transient,utility,windowRole,windowType" short:"p" help:"Property to get the value of. Possible values: all, active, demandsAttention, dialog, fullScreen, fullScreenable, hidden, keepAbove, keepBelow, layer, maximizable, minimizable, minimized, modal, noBorder, normalWindow, onAllDesktops, onScreenDisplay, popupMenu, popupWindow, resizeable, resourceClass, resourceName, skipPager, skipSwitcher, skipTaskbar, specialWindow, splash, transient, utility, windowRole, windowType"`
+
+	Uuid string `arg:"" required:"" help:"UUID of the window to query"`
+}
+
+func (cmd *GetWindowPropertyCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_GET_WINDOW_PROPERTY
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.WindowProperty = cmd.Property
+	return nil
+}
+
 type SetWindowPropertyCmd struct {
 	Property string `required:"" enum:"excludeFromCapture,keepAbove,keepBelow,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: excludeFromCapture, keepAbove, keepBelow, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
 	Value    string `required:"" enum:"true,false,toggle" short:"v" help:"Possible values: true, false, toggle"`

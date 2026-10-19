@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-09-11</p>
+<p class="header-date">2026-10-19</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -475,6 +475,62 @@ between 10 and 100 percent. Fractional percentages are accepted.
 <blockquote>
 <blockquote>Send the window with the specified UUID to the workspace with the specified
 number, provided that both exist.
+</blockquote>
+</blockquote>
+
+<blockquote><b>get-window-property</b> <u>--property</u>=STRING &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Get the value of a property on the window with the specified UUID.
+Returns only the value: 'true' or 'false' for boolean properties, a string
+for 'resourceClass', 'resourceName', and 'windowRole', or a readable enum
+name for 'layer' and 'windowType' (for example, 'AboveLayer' or 'Dialog').
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The required flag is:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-p</b>, <b>--property=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Property to query. Possible values:
+'all', 'active', 'demandsAttention', 'dialog', 'fullScreen',
+'fullScreenable', 'hidden', 'keepAbove', 'keepBelow', 'layer',
+'maximizable', 'minimizable', 'minimized', 'modal', 'noBorder',
+'normalWindow', 'onAllDesktops', 'onScreenDisplay', 'popupMenu',
+'popupWindow', 'resizeable', 'resourceClass', 'resourceName',
+'skipPager', 'skipSwitcher', 'skipTaskbar', 'specialWindow',
+'splash', 'transient', 'utility', 'windowRole', 'windowType'.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>With '--property=all', returns all supported properties, one per line,
+as tab-separated property names and values. Within values, backslashes,
+tabs, carriage returns, and newlines are escaped as '\\', '\t', '\r',
+and '\n', respectively. Single-property queries return strings unchanged.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For example:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst get-window-property --property=keepAbove "$window_id"</b><br>
+<b>kwst get-window-property --property=all "$window_id"</b>
+</blockquote>
 </blockquote>
 </blockquote>
 
