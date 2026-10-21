@@ -3,11 +3,11 @@
 const execute = () => {
     debugLog(scriptName + " executing JS_SET_WORKSPACE");
 
-    let ws = workspace.desktops.find((ws) => ws.x11DesktopNumber == {{.WorkspaceId}});
+    const ws = findWorkspace({{.WorkspaceId}});
     if (ws) {
         workspace.currentDesktop = ws;
     } else {
-        returnError("Invalid workspace number: " + {{.WorkspaceId}});
+        returnError(ERROR_WORKSPACE_NOT_FOUND + {{.WorkspaceId}});
     }
 
 }

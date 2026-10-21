@@ -183,6 +183,20 @@ func TestKWinWorkflow(t *testing.T) {
 
 	waitForFixtureWindows(t, kwst, first, second)
 
+	t.Run("workspace commands reject missing workspaces", func(t *testing.T) {
+		for _, arguments := range [][]string{
+			{"set-workspace", "--", "-1"},
+			{"set-window-workspace", "--", first.uuid, "-1"},
+		} {
+			t.Run(arguments[0], func(t *testing.T) {
+				result := runKWST(t, kwst, arguments...)
+				if result.exitCode != 1 || result.stdout != "" || !strings.Contains(result.stderr, "Workspace not found: -1") {
+					t.Fatalf("missing workspace should return the standard error:\n%s", result.String())
+				}
+			})
+		}
+	})
+
 	activateAndVerify(t, kwst, first)
 	activateAndVerify(t, kwst, second)
 
@@ -223,7 +237,7 @@ func TestKWinWorkflow(t *testing.T) {
 			}
 		})
 
-		if result.exitCode != 0 && originalWorkspace == 1 && strings.Contains(result.stderr, "Invalid workspace number") {
+		if result.exitCode != 0 && originalWorkspace == 1 && strings.Contains(result.stderr, "Workspace not found: ") {
 			removeTemporaryWorkspace = true
 			targetWorkspace = createWorkspace(t, kwst, temporaryWorkspaceName)
 			result = runKWST(t, kwst, "set-workspace", strconv.Itoa(targetWorkspace))
