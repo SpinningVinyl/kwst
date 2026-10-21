@@ -4,14 +4,12 @@ const execute = () => {
     debugLog(scriptName + " executing JS_SET_WINDOW_WORKSPACE");
 
     const targetWindow = findWindow({{jsString .Uuid}});
-    const targetWorkspace = workspace.desktops.find(
-        (desktop) => desktop.x11DesktopNumber == {{.WorkspaceId}}
-    );
+    const targetWorkspace = findWorkspace({{.WorkspaceId}});
 
     if (!targetWindow) {
         returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
     } else if (!targetWorkspace) {
-        returnError("Invalid workspace number: " + {{.WorkspaceId}});
+        returnError(ERROR_WORKSPACE_NOT_FOUND + {{.WorkspaceId}});
     } else {
         targetWindow.desktops = [targetWorkspace];
     }

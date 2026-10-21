@@ -3,14 +3,43 @@
 const execute = () => {
     debugLog(scriptName + " executing JS_LIST");
 
+    const outputName = {{jsString .OutputName}};
+    const workspaceId = {{.WorkspaceId}};
+
+    let targetOutput = null;
+    if (outputName) {
+        targetOutput = findOutput(outputName);
+        if (!targetOutput) {
+            returnError(ERROR_OUTPUT_NOT_FOUND + outputName);
+            return;
+        }
+    }
+    let targetWorkspace = null;
+    if (workspaceId) {
+        targetWorkspace = findWorkspace(workspaceId);
+        if (!targetWorkspace) {
+            returnError(ERROR_WORKSPACE_NOT_FOUND + workspaceId);
+            return;
+        }
+    }
+
     const allWindows = workspace.windowList();
-    for (let i = 0; i < allWindows.length; i++) {
-        if ({{if .IncludeSpecialWindows}}true{{else}}!allWindows[i].specialWindow{{end}}) {
-            let w = allWindows[i];
+    let targetList = allWindows;
+    if (targetWorkspace) {
+        targetList = targetList.filter(window => (window.onAllDesktops === true || window.desktops.includes(targetWorkspace)));
+    }
+    if (targetOutput) {
+        targetList = targetList.filter(window => window.output === targetOutput);
+    }
+    
+    for (let i = 0; i < targetList.length; i++) {
+        if ({{if .IncludeSpecialWindows}}true{{else}}!targetList[i].specialWindow{{end}}) {
+            let w = targetList[i];
             returnResult(formatWindowRow(
                 w,
                 {{.ShowPids}},
-                {{.ShowCaptions}}
+                {{.ShowCaptions}},
+                {{.IdOnly}}
             ));
         }
     }

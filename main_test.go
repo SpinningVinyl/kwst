@@ -48,13 +48,28 @@ func TestCommandRunMethods(t *testing.T) {
 		wantCustom   bool
 	}{
 		{
-			name:         "list",
-			command:      &ListCmd{IncludeSpecialWindows: true, ShowCaptions: true, ShowPids: true},
+			name:         "list defaults",
+			command:      &ListCmd{},
+			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_LIST,
+		},
+		{
+			name: "list",
+			command: &ListCmd{
+				IncludeSpecialWindows: true,
+				ShowCaptions:          true,
+				ShowPids:              true,
+				IdOnly:                true,
+				Workspace:             3,
+				Output:                "DP-1",
+			},
 			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_LIST,
 			wantParams: ScriptParams{
 				IncludeSpecialWindows: true,
 				ShowCaptions:          true,
 				ShowPids:              true,
+				IdOnly:                true,
+				WorkspaceId:           3,
+				OutputName:            "DP-1",
 			},
 		},
 		{

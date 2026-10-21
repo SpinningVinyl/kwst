@@ -14,9 +14,12 @@ const (
 )
 
 type ListCmd struct {
-	IncludeSpecialWindows bool `default:"false" short:"s" help:"Include special windows that are not meant to be manipulated, e.g. plasmashell panels, desktop, etc. Such windows are not listed by default."`
-	ShowCaptions          bool `default:"false" short:"c" help:"Show window captions in the list."`
-	ShowPids              bool `default:"false" short:"p" help:"Show the PID of the process that the window belongs to (the PID is not guaranteed to be correct for X11 windows)."`
+	IncludeSpecialWindows bool   `default:"false" short:"s" help:"Include special windows that are not meant to be manipulated, e.g. plasmashell panels, desktop, etc. Such windows are not listed by default."`
+	ShowCaptions          bool   `default:"false" short:"c" help:"Show window captions in the list."`
+	ShowPids              bool   `default:"false" short:"p" help:"Show the PID of the process that the window belongs to (the PID is not guaranteed to be correct for X11 windows)."`
+	IdOnly                bool   `default:"false" short:"i" help:"List only UUIDs without any additional information."`
+	Workspace             int    `short:"w" help:"List only windows asssigned to the specified workspace (including windows pinned to all workspaces)."`
+	Output                string `short:"o" help:"List only windows on the specified output."`
 }
 
 func (lc *ListCmd) Run(sp *ScriptPackage) error {
@@ -24,6 +27,9 @@ func (lc *ListCmd) Run(sp *ScriptPackage) error {
 	sp.Params.IncludeSpecialWindows = lc.IncludeSpecialWindows
 	sp.Params.ShowCaptions = lc.ShowCaptions
 	sp.Params.ShowPids = lc.ShowPids
+	sp.Params.IdOnly = lc.IdOnly
+	sp.Params.WorkspaceId = lc.Workspace
+	sp.Params.OutputName = lc.Output
 	return nil
 }
 
