@@ -19,6 +19,7 @@ type ScriptParams struct {
 	IncludeSpecialWindows bool
 	ShowCaptions          bool
 	ShowPids              bool
+	IdOnly                bool
 	Uuid                  string
 	WorkspaceId           int
 	X                     int

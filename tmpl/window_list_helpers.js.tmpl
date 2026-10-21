@@ -3,19 +3,24 @@
 const formatWindowRow = (
     window,
     showPids,
-    showCaptions
+    showCaptions,
+    idOnly
 ) => {
     const fields = [
-        window.internalId,
-        window.resourceClass,
-        window.resourceName.length === 0 ? "n/a" : window.resourceName,
+        window.internalId
     ];
 
-    if (showPids) {
-        fields.push(window.pid);
-    }
-    if (showCaptions) {
-        fields.push(window.caption);
+    if (!idOnly) {
+
+        fields.push(window.resourceClass);
+        fields.push(window.resourceName.length === 0 ? "n/a" : window.resourceName);
+
+        if (showPids) {
+            fields.push(window.pid);
+        }
+        if (showCaptions) {
+            fields.push(window.caption);
+        }
     }
 
     return fields.join("\t");
