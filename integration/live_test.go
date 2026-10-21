@@ -187,6 +187,9 @@ func TestKWinWorkflow(t *testing.T) {
 	activateAndVerify(t, kwst, second)
 
 	outputNames := testOutputCommands(t, kwst)
+	t.Run("list command", func(t *testing.T) {
+		testListCommand(t, kwst, first, second, outputNames)
+	})
 	t.Run("native tile commands", func(t *testing.T) {
 		testNativeTileCommands(t, kwst, first, outputNames)
 	})
