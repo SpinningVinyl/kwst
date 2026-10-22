@@ -83,6 +83,24 @@ script to finish returns status 124.
 		*-p*, *--show-pids*
 			Show the PID of the process that the window belongs to (the PID is
 			not guaranteed to be correct for X11 windows).
+		*-i*, *--id-only*
+			Return only window UUIDs, one per line. This overrides
+			*--show-captions* and *--show-pids*.
+		*-w*, *--workspace*=_workspace-id_
+			List only windows assigned to the specified workspace number,
+			including windows pinned to all workspaces. By default, windows
+			from all workspaces are listed.
+		*-o*, *--output*=_output_
+			List only windows on the specified output. Use *list-outputs* to
+			find output names. By default, windows on all outputs are listed.
+
+		Workspace and output filters can be combined. A workspace or output that
+		does not exist is reported on standard error with exit status 1 and no
+		windows are returned.
+
+		For example, list only UUIDs for windows on workspace 2 and output DP-1:
+
+		*kwst list --id-only --workspace=2 --output=DP-1*
 
 	*find* <search-term> [_flags_]
 		Search for windows using the specified case-insensitive JavaScript regular

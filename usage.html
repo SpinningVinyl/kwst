@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-10-19</p>
+<p class="header-date">2026-10-22</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -288,6 +288,63 @@ default.
 <blockquote>Show the PID of the process that the window belongs to (the PID is
 not guaranteed to be correct for X11 windows).
 </blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-i</b>, <b>--id-only</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Return only window UUIDs, one per line. This overrides
+<b>--show-captions</b> and <b>--show-pids</b>.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-w</b>, <b>--workspace</b>=<u>workspace-id</u>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List only windows assigned to the specified workspace number,
+including windows pinned to all workspaces. By default, windows
+from all workspaces are listed.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-o</b>, <b>--output</b>=<u>output</u>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>List only windows on the specified output. Use <b>list-outputs</b> to
+find output names. By default, windows on all outputs are listed.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Workspace and output filters can be combined. A workspace or output that
+does not exist is reported on standard error with exit status 1 and no
+windows are returned.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For example, list only UUIDs for windows on workspace 2 and output DP-1:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>kwst list --id-only --workspace=2 --output=DP-1</b>
 </blockquote>
 </blockquote>
 
