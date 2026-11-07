@@ -162,7 +162,7 @@ func (cmd *GetWindowPropertyCmd) Run(sp *ScriptPackage) error {
 }
 
 type SetWindowPropertyCmd struct {
-	Property string `required:"" enum:"excludeFromCapture,keepAbove,keepBelow,fullScreen,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: excludeFromCapture, keepAbove, keepBelow, fullScreen, skipTaskbar, skipPager, skipSwitcher"`
+	Property string `required:"" enum:"excludeFromCapture,keepAbove,keepBelow,fullScreen,minimized,skipTaskbar,skipPager,skipSwitcher" short:"p" help:"Property to change the value of. Possible values: excludeFromCapture, keepAbove, keepBelow, fullScreen, minimized, skipTaskbar, skipPager, skipSwitcher"`
 	Value    string `required:"" enum:"true,false,toggle" short:"v" help:"Possible values: true, false, toggle"`
 
 	Uuid string `arg:"" required:"" help:"UUID of the window to manipulate"`
@@ -173,6 +173,30 @@ func (swpc *SetWindowPropertyCmd) Run(sp *ScriptPackage) error {
 	sp.Params.Uuid = swpc.Uuid
 	sp.Params.WindowProperty = swpc.Property
 	sp.Params.PropertyValue = swpc.Value
+	return nil
+}
+
+type MinimizeWindowCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to minimize"`
+}
+
+func (cmd *MinimizeWindowCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_PROPERTY
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.WindowProperty = "minimized"
+	sp.Params.PropertyValue = "true"
+	return nil
+}
+
+type UnminimizeWindowCmd struct {
+	Uuid string `arg:"" required:"" help:"UUID of the window to unminimize"`
+}
+
+func (cmd *UnminimizeWindowCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_SET_WINDOW_PROPERTY
+	sp.Params.Uuid = cmd.Uuid
+	sp.Params.WindowProperty = "minimized"
+	sp.Params.PropertyValue = "false"
 	return nil
 }
 
