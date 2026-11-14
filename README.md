@@ -13,6 +13,8 @@ Here is the list of things that you can currently do with **kwst**:
 - Get the UUID of the active window.
 - Activate a window.
 - Close a window.
+- Minimize and unminimize a window.
+- Maximize and unmaximize a window horizontally, vertically, or in both directions.
 - Get window geometry (size and position).
 - Get window opacity.
 - Change window opacity by setting it directly or using increase/decrease commands.
@@ -79,6 +81,34 @@ window_id=$(kwst find --search-field=caption '^Konsole' | head -n 1)
 if [ -n "$window_id" ]; then
     kwst activate-window "$window_id"
 fi
+```
+
+## Minimizing and maximizing windows
+
+All four commands take a window UUID:
+
+```sh
+window_id=$(kwst get-active-window)
+kwst minimize-window "$window_id"
+kwst unminimize-window "$window_id"
+kwst maximize-window "$window_id"
+kwst unmaximize-window "$window_id"
+```
+
+For `maximize-window` and `unmaximize-window`, the optional `--direction` flag
+accepts `horizontal`, `vertical`, or `both` (the default). Changing one direction
+preserves the other direction's maximization state. For example:
+
+```sh
+kwst maximize-window "$window_id" --direction=horizontal
+kwst unmaximize-window "$window_id" --direction=horizontal
+```
+
+You can also query or toggle minimization through the property commands:
+
+```sh
+kwst get-window-property --property=minimized "$window_id"
+kwst set-window-property --property=minimized --value=toggle "$window_id"
 ```
 
 ## Finding windows
