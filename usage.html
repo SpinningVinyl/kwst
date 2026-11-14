@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-10-22</p>
+<p class="header-date">2026-11-14</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -206,6 +206,16 @@ managers implementing NET_WM and EWMH specifications.
 
 <blockquote>window_id=$(<b>kwst get-active-window</b>)<br>
 <b>kwst set-window-property --property=keepAbove --value=toggle "$window_id"</b>
+</blockquote>
+
+<p>Minimize, restore, maximize, and unmaximize the active window:
+</p>
+
+<blockquote>window_id=$(<b>kwst get-active-window</b>)<br>
+<b>kwst minimize-window "$window_id"</b><br>
+<b>kwst unminimize-window "$window_id"</b><br>
+<b>kwst maximize-window "$window_id"</b><br>
+<b>kwst unmaximize-window "$window_id"</b>
 </blockquote>
 
 <p>Find the first window whose caption begins with "Konsole" and activate it:
@@ -613,7 +623,7 @@ and '\n', respectively. Single-property queries return strings unchanged.
 <blockquote>
 <blockquote>Property to change the value of. Possible values of this flag:
 'excludeFromCapture', 'keepAbove', 'keepBelow', 'fullScreen',
-'skipTaskbar', 'skipPager', 'skipSwitcher'
+'minimized', 'skipTaskbar', 'skipPager', 'skipSwitcher'
 </blockquote>
 </blockquote>
 </blockquote>
@@ -626,6 +636,103 @@ and '\n', respectively. Single-property queries return strings unchanged.
 <blockquote>
 <blockquote>
 <blockquote>Possible values: 'true', 'false', 'toggle'
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote><b>minimize-window</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Minimize the window with the specified UUID. If it is already minimized,
+its state is unchanged.
+</blockquote>
+</blockquote>
+
+<blockquote><b>unminimize-window</b> &lt;uuid&gt;
+</blockquote>
+
+<blockquote>
+<blockquote>Restore the window with the specified UUID from its minimized state.
+If it is not minimized, its state is unchanged.
+</blockquote>
+</blockquote>
+
+<blockquote><b>maximize-window</b> &lt;uuid&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Maximize the window with the specified UUID.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The optional flag is:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--direction=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Direction to maximize: 'horizontal', 'vertical', or 'both' (default).
+Changing one direction preserves the other direction's maximization
+state.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For example, maximize a window horizontally:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst maximize-window "$window_id" --direction=horizontal</b>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote><b>unmaximize-window</b> &lt;uuid&gt; [<u>flags</u>]
+</blockquote>
+
+<blockquote>
+<blockquote>Remove maximization from the window with the specified UUID.
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The optional flag is:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>--direction=STRING</b>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Direction to unmaximize: 'horizontal', 'vertical', or 'both' (default).
+Changing one direction preserves the other direction's maximization
+state.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For example, remove horizontal maximization while preserving vertical
+maximization:
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote><b>kwst unmaximize-window "$window_id" --direction=horizontal</b>
 </blockquote>
 </blockquote>
 </blockquote>

@@ -55,6 +55,9 @@ var JS_GET_WINDOW_PROPERTY string
 //go:embed tmpl/set_window_property.js.tmpl
 var JS_SET_WINDOW_PROPERTY string
 
+//go:embed tmpl/maximize_window.js.tmpl
+var JS_MAXIMIZE_WINDOW string
+
 //go:embed tmpl/close_window.js.tmpl
 var JS_CLOSE_WINDOW string
 

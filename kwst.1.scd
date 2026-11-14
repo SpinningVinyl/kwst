@@ -51,6 +51,14 @@ Toggle the active window's always-on-top state:
 	window_id=$(*kwst get-active-window*)++
 	*kwst set-window-property --property=keepAbove --value=toggle "$window_id"*
 
+Minimize, restore, maximize, and unmaximize the active window:
+
+	window_id=$(*kwst get-active-window*)++
+	*kwst minimize-window "$window_id"*++
+	*kwst unminimize-window "$window_id"*++
+	*kwst maximize-window "$window_id"*++
+	*kwst unmaximize-window "$window_id"*
+
 Find the first window whose caption begins with "Konsole" and activate it:
 
 	window_id=$(*kwst find --search-field=caption '^Konsole'* | head -n 1)++
@@ -220,9 +228,46 @@ script to finish returns status 124.
 		*-p*, *--property=STRING*
 			Property to change the value of. Possible values of this flag:
 			'excludeFromCapture', 'keepAbove', 'keepBelow', 'fullScreen',
-			'skipTaskbar', 'skipPager', 'skipSwitcher'
+			'minimized', 'skipTaskbar', 'skipPager', 'skipSwitcher'
 		*-v*, *--value=STRING*
 			Possible values: 'true', 'false', 'toggle'
+
+	*minimize-window* <uuid>
+		Minimize the window with the specified UUID. If it is already minimized,
+		its state is unchanged.
+
+	*unminimize-window* <uuid>
+		Restore the window with the specified UUID from its minimized state.
+		If it is not minimized, its state is unchanged.
+
+	*maximize-window* <uuid> [_flags_]
+		Maximize the window with the specified UUID.
+
+		The optional flag is:
+
+		*--direction=STRING*
+			Direction to maximize: 'horizontal', 'vertical', or 'both' (default).
+			Changing one direction preserves the other direction's maximization
+			state.
+
+		For example, maximize a window horizontally:
+
+			*kwst maximize-window "$window_id" --direction=horizontal*
+
+	*unmaximize-window* <uuid> [_flags_]
+		Remove maximization from the window with the specified UUID.
+
+		The optional flag is:
+
+		*--direction=STRING*
+			Direction to unmaximize: 'horizontal', 'vertical', or 'both' (default).
+			Changing one direction preserves the other direction's maximization
+			state.
+
+		For example, remove horizontal maximization while preserving vertical
+		maximization:
+
+			*kwst unmaximize-window "$window_id" --direction=horizontal*
 
 	*close-window* <uuid>
 		Close the window with the provided UUID, provided that it exists.
