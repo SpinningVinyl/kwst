@@ -10,6 +10,9 @@ var JS_HEADER string
 //go:embed tmpl/window_list_helpers.js.tmpl
 var JS_WINDOW_LIST_HELPERS string
 
+//go:embed tmpl/window_filter_helpers.js.tmpl
+var JS_WINDOW_FILTER_HELPERS string
+
 //go:embed tmpl/tile_unassignment_helper.js.tmpl
 var JS_TILE_UNASSIGNMENT_HELPER string
 

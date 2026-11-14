@@ -23,7 +23,7 @@ type ListCmd struct {
 }
 
 func (lc *ListCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_WINDOW_LIST_HELPERS + JS_LIST
+	sp.ScriptTemplate += JS_WINDOW_LIST_HELPERS + JS_WINDOW_FILTER_HELPERS + JS_LIST
 	sp.Params.IncludeSpecialWindows = lc.IncludeSpecialWindows
 	sp.Params.ShowCaptions = lc.ShowCaptions
 	sp.Params.ShowPids = lc.ShowPids

@@ -50,7 +50,7 @@ func TestCommandRunMethods(t *testing.T) {
 		{
 			name:         "list defaults",
 			command:      &ListCmd{},
-			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_LIST,
+			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_WINDOW_FILTER_HELPERS + JS_LIST,
 		},
 		{
 			name: "list",
@@ -62,7 +62,7 @@ func TestCommandRunMethods(t *testing.T) {
 				Workspace:             3,
 				Output:                "DP-1",
 			},
-			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_LIST,
+			wantTemplate: initialTemplate + JS_WINDOW_LIST_HELPERS + JS_WINDOW_FILTER_HELPERS + JS_LIST,
 			wantParams: ScriptParams{
 				IncludeSpecialWindows: true,
 				ShowCaptions:          true,
@@ -417,12 +417,12 @@ func TestCommandHelperBundles(t *testing.T) {
 		{
 			name:     "workspace command uses only common header",
 			command:  &GetWorkspaceCmd{},
-			excludes: []string{"const formatWindowRow = (", "const enumerateTiles = ("},
+			excludes: []string{"const formatWindowRow = (", "const enumerateTiles = (", "const filterWindows = ("},
 		},
 		{
-			name:     "window list uses row formatter",
+			name:     "window list uses row formatter and filters",
 			command:  &ListCmd{},
-			includes: []string{"const formatWindowRow = ("},
+			includes: []string{"const formatWindowRow = (", "const filterWindows = (", "filterWindows(workspace.windowList(),"},
 			excludes: []string{"const enumerateTiles = ("},
 		},
 		{
