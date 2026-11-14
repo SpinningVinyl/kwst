@@ -46,6 +46,7 @@ type ScriptParams struct {
 	TilePath              string
 	Edge                  string
 	Direction             string
+	Maximize              bool
 }
 
 type ScriptPackage struct {

@@ -25,6 +25,8 @@ type CLI struct {
 	SetWindowProperty         SetWindowPropertyCmd         `cmd:"" help:"Change the value of a property on a window with the specified UUID."`
 	MinimizeWindow            MinimizeWindowCmd            `cmd:"" help:"Minimize the window with the specified UUID."`
 	UnminimizeWindow          UnminimizeWindowCmd          `cmd:"" help:"Unminimize the window with the specified UUID."`
+	MaximizeWindow            MaximizeWindowCmd            `cmd:"" help:"Maximize the window with the specified UUID."`
+	UnmaximizeWindow          UnmaximizeWindowCmd          `cmd:"" help:"Unmaximize the window with the specified UUID."`
 	CloseWindow               CloseWindowCmd               `cmd:"" help:"Close the window with the provided UUID."`
 	RunCustomScript           RunCustomScriptCmd           `cmd:"" help:"Run a custom script. Supports up to six optional parameters."`
 	GetMousePosition          MousePosCmd                  `cmd:"" help:"Return the absolute position of the mouse cursor."`

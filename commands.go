@@ -188,6 +188,34 @@ func (cmd *MinimizeWindowCmd) Run(sp *ScriptPackage) error {
 	return nil
 }
 
+type MaximizeWindowCmd struct {
+	Direction string `enum:"horizontal,vertical,both" default:"both" help:"Direction. Possible values: horizontal, vertical, both (default)"`
+
+	Uuid string `arg:"" required:"" help:"UUID of the window to maximize"`
+}
+
+func (cmd *MaximizeWindowCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_MAXIMIZE_WINDOW
+	sp.Params.Maximize = true
+	sp.Params.Direction = cmd.Direction
+	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
+
+type UnmaximizeWindowCmd struct {
+	Direction string `enum:"horizontal,vertical,both" default:"both" help:"Direction. Possible values: horizontal, vertical, both (default)"`
+
+	Uuid string `arg:"" required:"" help:"UUID of the window to unmaximize"`
+}
+
+func (cmd *UnmaximizeWindowCmd) Run(sp *ScriptPackage) error {
+	sp.ScriptTemplate += JS_MAXIMIZE_WINDOW
+	sp.Params.Maximize = false
+	sp.Params.Direction = cmd.Direction
+	sp.Params.Uuid = cmd.Uuid
+	return nil
+}
+
 type UnminimizeWindowCmd struct {
 	Uuid string `arg:"" required:"" help:"UUID of the window to unminimize"`
 }

@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+const execute = () => {
+    debugLog(scriptName + " executing JS_MAXIMIZE_WINDOW");
+
+    const targetWindow = findWindow({{jsString .Uuid}});
+    const maximize = {{.Maximize}};
+    const direction = {{jsString .Direction}};
+
+    if (!targetWindow) {
+        returnError(ERROR_WINDOW_NOT_FOUND + {{jsString .Uuid}});
+    } else {
+        const mode = targetWindow.maximizeMode;
+        let vertically = (mode & 1) !== 0;
+        let horizontally = (mode & 2) !== 0;
+
+        if (direction === "vertical" || direction === "both") {
+            vertically = maximize;
+        }
+        if (direction === "horizontal" || direction === "both") {
+            horizontally = maximize;
+        }
+        targetWindow.setMaximize(vertically, horizontally);
+    }
+}
+
