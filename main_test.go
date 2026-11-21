@@ -75,7 +75,7 @@ func TestCommandRunMethods(t *testing.T) {
 		{
 			name:         "find",
 			command:      &FindCmd{SearchField: "caption", SearchTerm: "terminal"},
-			wantTemplate: initialTemplate + JS_FIND,
+			wantTemplate: initialTemplate + JS_WINDOW_FILTER_HELPERS + JS_FIND,
 			wantParams:   ScriptParams{SearchField: "caption", SearchTerm: "terminal"},
 		},
 		{
@@ -424,6 +424,12 @@ func TestCommandHelperBundles(t *testing.T) {
 			command:  &ListCmd{},
 			includes: []string{"const formatWindowRow = (", "const filterWindows = (", "filterWindows(workspace.windowList(),"},
 			excludes: []string{"const enumerateTiles = ("},
+		},
+		{
+			name:     "find uses window filters without row formatter",
+			command:  &FindCmd{SearchTerm: "konsole"},
+			includes: []string{"const filterWindows = (", "filterWindows(workspace.windowList(),"},
+			excludes: []string{"const formatWindowRow = (", "const enumerateTiles = ("},
 		},
 		{
 			name:     "tile list uses tile helpers",

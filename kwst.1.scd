@@ -117,9 +117,22 @@ script to finish returns status 124.
 
 		The currently supported flags are:
 
-		*-f*, *--search-field*="_resourceClass_"
-			Specify the field to search in. Possible values: 'resourceClass'
-			(default), 'resourceName', 'caption'.
+		*-f*, *--search-field*=STRING
+			Restrict the search to 'resourceClass', 'resourceName', or 'caption'.
+			If omitted, search all three fields. Each matching window's UUID is
+			returned once.
+		*-w*, *--workspace*=_workspace-id_
+			Find only windows assigned to the specified workspace number,
+			including windows pinned to all workspaces.
+		*-o*, *--output*=_output_
+			Find only windows on the named output. Output names are case insensitive.
+		*-p*, *--property*=NAME:VALUE
+			Filter by a boolean property supported by *get-window-property*.
+			The value must be literal 'true' or 'false', for example 'minimized:false'.
+
+		All supplied filters must match. A valid search with no matches returns no
+		UUIDs and exits with status 0. An unknown workspace or output returns an
+		error and exits with status 1, even when the search term matches no windows.
 
 		Quote the regular expression to prevent the shell from expanding it. For
 		example:

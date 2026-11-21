@@ -122,9 +122,23 @@ kwst find --search-field=caption 'terminal|konsole'
 kwst find --search-field=resourceClass '^org\.kde\.konsole$'
 ```
 
-The searchable fields are `resourceClass` (used by default), `resourceName`, and
-`caption`. Invalid regular expressions are reported on standard error and
-return exit status 1.
+By default, `find` searches `resourceClass`, `resourceName`, and `caption`,
+returning each matching window's UUID once. Use `--search-field` to restrict
+the search to one field. Invalid regular expressions are reported on standard
+error and return exit status 1.
+
+Combine workspace, output, and boolean property filters to narrow the results:
+
+```sh
+kwst find '^org\.kde\.konsole$' --search-field=resourceClass \
+  --workspace=2 --output=DP-1 --property=minimized:false
+```
+
+All supplied filters must match. Workspace filters include windows pinned to
+all workspaces, and output names are case insensitive. `--property` accepts a
+boolean property supported by `get-window-property`, followed by literal `true`
+or `false`. A valid search with no matches returns no UUIDs and exits with status
+0; an unknown workspace or output returns an error and exits with status 1.
 
 ## Optional previous-window shortcut
 

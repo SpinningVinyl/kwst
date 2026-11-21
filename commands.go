@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strings"
 )
 
 const (
@@ -34,15 +35,46 @@ func (lc *ListCmd) Run(sp *ScriptPackage) error {
 }
 
 type FindCmd struct {
-	SearchField string `enum:"resourceClass,resourceName,caption" help:"Specify the field to search in. Possible values: resourceClass, resourceName, caption" short:"f" default:"resourceClass"`
+	SearchField string `help:"Search only this field: resourceClass, resourceName, or caption. If omitted, search all three." short:"f"`
+	Workspace   int    `short:"w" help:"Find only windows assigned to the specified workspace (including windows pinned to all workspaces)."`
+	Output      string `short:"o" help:"Find only windows on the specified output."`
+	Property    string `short:"p" help:"Filter by a boolean window property using NAME:true or NAME:false."`
 
 	SearchTerm string `arg:"" required:"" help:"Case-insensitive JavaScript regular expression to search for"`
 }
 
+func (fc *FindCmd) Validate() error {
+	switch fc.SearchField {
+	case "", "resourceClass", "resourceName", "caption":
+	default:
+		return fmt.Errorf("unsupported search field: %q (expected resourceClass, resourceName, or caption)", fc.SearchField)
+	}
+	if fc.Property == "" {
+		return nil
+	}
+	name, value, ok := strings.Cut(fc.Property, ":")
+	if !ok || (value != "true" && value != "false") {
+		return fmt.Errorf("property filter must be NAME:true or NAME:false")
+	}
+	switch name {
+	case "active", "demandsAttention", "dialog", "fullScreen", "fullScreenable",
+		"hidden", "keepAbove", "keepBelow", "maximizable", "minimizable",
+		"minimized", "modal", "noBorder", "normalWindow", "onAllDesktops",
+		"onScreenDisplay", "popupMenu", "popupWindow", "resizeable", "skipPager",
+		"skipSwitcher", "skipTaskbar", "specialWindow", "splash", "transient", "utility":
+		return nil
+	default:
+		return fmt.Errorf("unsupported boolean window property: %q", name)
+	}
+}
+
 func (fc *FindCmd) Run(sp *ScriptPackage) error {
-	sp.ScriptTemplate += JS_FIND
+	sp.ScriptTemplate += JS_WINDOW_FILTER_HELPERS + JS_FIND
 	sp.Params.SearchTerm = fc.SearchTerm
 	sp.Params.SearchField = fc.SearchField
+	sp.Params.WorkspaceId = fc.Workspace
+	sp.Params.OutputName = fc.Output
+	sp.Params.WindowProperty, sp.Params.PropertyValue, _ = strings.Cut(fc.Property, ":")
 	return nil
 }
 
