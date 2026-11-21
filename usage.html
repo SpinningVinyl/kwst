@@ -134,7 +134,7 @@
 <body>
 <header>
 <h1>KWST(1)</h1>
-<p class="header-date">2026-11-14</p>
+<p class="header-date">2026-11-21</p>
 </header>
 <section>
 <h2 id="NAME">NAME <a aria-hidden="true" href="#NAME">¶</a></h2>
@@ -374,15 +374,61 @@ return exit status 1.
 </blockquote>
 
 <blockquote>
-<blockquote><b>-f</b>, <b>--search-field</b>="<u>resourceClass</u>"
+<blockquote><b>-f</b>, <b>--search-field</b>=STRING
 </blockquote>
 </blockquote>
 
 <blockquote>
 <blockquote>
-<blockquote>Specify the field to search in. Possible values: 'resourceClass'
-(default), 'resourceName', 'caption'.
+<blockquote>Restrict the search to 'resourceClass', 'resourceName', or 'caption'.
+If omitted, search all three fields. Each matching window's UUID is
+returned once.
 </blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-w</b>, <b>--workspace</b>=<u>workspace-id</u>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Find only windows assigned to the specified workspace number,
+including windows pinned to all workspaces.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-o</b>, <b>--output</b>=<u>output</u>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Find only windows on the named output. Output names are case insensitive.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>-p</b>, <b>--property</b>=NAME:VALUE
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>Filter by a boolean property supported by <b>get-window-property</b>.
+The value must be literal 'true' or 'false', for example 'minimized:false'.
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>All supplied filters must match. A valid search with no matches returns no
+UUIDs and exits with status 0. An unknown workspace or output returns an
+error and exits with status 1, even when the search term matches no windows.
 </blockquote>
 </blockquote>
 

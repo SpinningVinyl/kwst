@@ -3,7 +3,13 @@
 const execute = () => {
     debugLog(scriptName + " executing JS_SEARCH");
 
-    const allWindows = workspace.windowList();
+    const allWindows = filterWindows(workspace.windowList(), {{jsString .OutputName}}, {{.WorkspaceId}});
+    if (!allWindows) {
+        return;
+    }
+    const property = {{jsString .WindowProperty}};
+    const propertyValue = {{jsString .PropertyValue}} === "true";
+    const searchFields = {{if .SearchField}}[{{jsString .SearchField}}]{{else}}["resourceClass", "resourceName", "caption"]{{end}};
     let results = [];
     let regExp;
     try {
@@ -14,7 +20,8 @@ const execute = () => {
     if (regExp) {
         for (let i = 0; i < allWindows.length; i++) {
             let w = allWindows[i];
-            if (w.{{.SearchField}}.search(regExp) >= 0) {
+            if ((!property || w[property] === propertyValue) &&
+                searchFields.some(field => w[field].search(regExp) >= 0)) {
                 results.push(w);
             }
         }
